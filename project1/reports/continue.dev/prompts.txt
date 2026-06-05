@@ -1,0 +1,24 @@
+prompt 1:
+For these units, generate unit test using JUnit 5.
+do not use mock for dependencies.
+the generated test classes must end with Test(modelName)1
+
+prompt 2:
+For these units, generate unit test using JUnit5.
+do not use mock for dependencies. focus on boundary values
+and replace them with normal tests (e.g. if 0 is a boundary, test -1,
+0 and 1). Try to use only one assertion per method. Use JUnit's @TempDir for 
+temporary storage. make sure to test many edge cases like
+empty arrays or strings. the generated test classes
+must end with "Test(modelName)_P2".
+
+prompt 3:
+For these units, generate unit test using JUnit5.
+do not use mock for dependencies. make sure to have
+a robust boundary values testing (test the boundary itself, 
+just above it and just below it). Try to use only one 
+assertion per method. Use JUnit's @TempDir for temporary 
+storage. make sure to test many edge cases like empty arrays 
+or strings. achieve MC/DC coverage. use parametrized tests 
+for normal values. avoid generating redundant tests.  the 
+generated test classes must end with "Test(modelName)_P3".
