@@ -1,6 +1,6 @@
 # Experiment with continue.dev in Unit Test Generation
 ## Continue.dev Introduction
-explain what it is. who develop it. where it can be installed.  
+Continue.dev is a open-source coding agent available as CLI, VS Code extension and JetBrains plugins.
 Continue.dev allows access to many model provides. here is a list of its popular provides
 with some of their models:
 - Anthropic
@@ -3668,7 +3668,7 @@ Three methods were generated that include:
 - a file with multiple lines
 
 Non-existing test case is missing, this was covered previously. This has resulted in
-losing the MC/DC. Stile empty file, and the single line file tests are new.
+losing the MC/DC. Still empty file, and the single line file tests are new.
 
 #### NameSearch Unit
 ```java
@@ -6195,7 +6195,7 @@ Four methods with multiple are generated which include:
 - a test without result.
 - a test with a single result
 - a test with multiple result
-- a test with prefix matching all.
+- a test that prefix matches all.
 
 The test achieves MC/DC.  
 Empty prefix test and empty file test are missing.  
@@ -6822,6 +6822,26 @@ here is my ranking:
 5. Qwen 2.5 Coder 7b
 
 The only difference compared to the previous round is that Gemma3 did better than GPT-OSS.
+
+## Cloud models vs Local models
+I have tested two small cloud models and five local models varying in their parameter counts.  
+It's a good idea to compare these models to ask ourselves, is it worth it to use these
+local models over the small cloud models?  
+I will compare both clouds and local models overall, and Gemini 3 Flash and Qwen 3 since
+they were the best in their category.  
+With the first prompt, They were close. Cloud models performed slightly better in
+MyAdvancedMath and FileIO units and in other units, they were equal. 
+With the second prompt, Cloud models did slightly better in MyMath and MyAdvancedMath
+units while local models did slightly better in NameSearch.  
+With the final prompt, cloud models did more than slightly better. This shows these models can
+handle complex prompts better.  
+Surprisingly, across all three prompts, Gemini and Qwen3 performed the same. Maybe in a prompt
+Gemini did only slightly better, but overall, there is no concrete winner!
+It should be noted that It does take some time for Qwen3 to generate the code, especially if
+the computer that is running it does not have a good specification, but it's completely free, and
+you can be confident about your codes not being stolen from cloud companies. However, these online
+models are cheap and you can use them anywhere without additional setup.
+
 
 ## Final Conclusion
 This is a powerful tool. Users can access a larger variety of models compared
