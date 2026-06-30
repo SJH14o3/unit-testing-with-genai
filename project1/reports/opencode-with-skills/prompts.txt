@@ -1,0 +1,11 @@
+prompt 1 (GPT-OSS with "junit-5-skill"):
+For these units, generate unit tests. the generated test classes must end with "TestGPTOSS_SP". use "junit-5-skill" skill. Do not mock the dependencies.
+
+prompt 2 (MiMo V2.5 medium variant with "java-junit"):
+For these units, generate unit tests. the generated test classes must end with "TestMiMo_SP". use "java-junit" skill. Do not mock the dependencies.
+
+prompt 3 (DeepSeek V4 Flash default variant with both skills):
+For these units, generate unit tests. the generated test classes must end with "TestDeepSeek_SP". use "java-junit" and "junit-5-skill" skills. Do not mock the dependencies.
+
+prompt 4 (DeepSeek V4 Flash default variant without skill):
+For these units, generate unit tests. Do not mock the dependencies and do not use any skill. The generated test classes must end with "TestDeepSeek_NS".

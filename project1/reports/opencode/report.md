@@ -326,7 +326,7 @@ There are some slight differences in comparison to Continue.dev:
 Last time with Continue.dev, they did not.
 - More methods have multiple assertions.
 - It did not use private variables for units while Continue.dev did.
-- Continue Covered non-existing file edge case for FileIO.
+- Continue.dev Covered non-existing file edge case for FileIO.
 - OpenCode generated one less redundant test.
 - OpenCode took 9 minutes and 17 seconds more to generate!
 Almost twice as Continue!
@@ -982,7 +982,7 @@ Three methods are generated that include:
 
 The tests have MC/DC.  
 It performed worst. It did not cover the Integer.MIN_VALUE edge case unlike
-Continue.dev. Also Continue had a just above the boundary test.
+Continue.dev. Also Continue.dev had a just above the boundary test.
 
 #### MyAdvancedMath Unit
 ```java
@@ -1137,7 +1137,7 @@ y is never negative, therefore there is condition coverage.
 An additional and redundant normal test was generated, but Continue.dev also
 did generate a redundant test which doesn't exist here.
 Continue.dev tested negativity of both x and y while OpenCode only tested negativity
-of x. Continue also had a near overflow test. The tested numbers are quite different
+of x. Continue.dev also had a near overflow test. The tested numbers are quite different
 between them.  
 Continue.dev demonstrated significantly better performance in coverage and depth here.
 
@@ -1150,7 +1150,7 @@ Five methods are generated. The tests include:
 - just above the upper boundary
 
 We have MC/DC.  
-Continue generated two normal tests while OpenCode generated none.
+Continue.dev generated two normal tests while OpenCode generated none.
 Since we are checking boundary values, we don't necessarily need to test
 normal values.
 
@@ -1567,7 +1567,7 @@ Three methods were generated that include:
 - a file with multiple lines
 
 MC/DC attained.
-Continue had covered a single line file test while OpenCode covered non-existing file test.
+Continue.dev had covered a single line file test while OpenCode covered non-existing file test.
 
 #### NameSearch Unit
 ```java
@@ -1705,7 +1705,7 @@ Two methods are generated that include:
 
 
 The tests have MC/DC.  
-Continue generated ideal tests, but OpenCode made two
+Continue.dev generated ideal tests, but OpenCode made two
 mistakes. firstly, it mixed the parametrized test by also passing 
 the result. secondly, it made a parametrized test with a single value!
 Also, all the extreme value tests are redundant.
@@ -1722,7 +1722,7 @@ Two methods are generated that include:
 
 Model made a foolish mistake. In the extreme values, it did not
 realize that MAX and MIN values are not the reverse of each other!
-Continue did not use parametrized test, but it did generate the test for MIN value correctly.
+Continue.dev did not use parametrized test, but it did generate the test for MIN value correctly.
 
 
 #### MyAdvancedMath Unit
@@ -1948,8 +1948,8 @@ Four methods are generated that include:
 - a file with empty line in between its content test
 
 MC/DC is achieved.  
-Continue had a single line and only empty line test, while OpenCode has a file with empty line in between
-its content test. So Continue covered one edge case more than OpenCode.
+Continue.dev had a single line and only empty line test, while OpenCode has a file with empty line in between
+its content test. So Continue.dev covered one edge case more than OpenCode.
 
 #### NameSearch Unit
 ```java
