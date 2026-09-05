@@ -2839,3 +2839,797 @@ Missing coverage:
 | tokens used                    |    2,789     |    14,828     |     1,473     |     15,046     |
 | tokens per decision coverage % |      56      |      148      |      45       |      225       |
 Gemma4 is the winner here. Although in group mode, both models did poor. As I mentioned, with not considering hard to make IOExceptions, Gemma4 single did attain full coverage, shockingly with less token usage!
+
+### ArrayTypeAdapter
+This file has 144 statements and 18 decisions.
+#### Gemma Group
+The Generated file contained 3 errors:
+- wrong import path for *com.google.gson.reflect.TypeToken*.
+- in factory_returnsArrayTypeAdapterForArrayType(), *adapter* must be a *TypeAdapter<String[]>* type.
+- in read_handlesNull() and onward test, *ArrayTypeAdapter* had been instantiated wrongly. I Used *gson.getAdapter()* to fix this.
+
+After fixing all errors, all 7 tests passed.
+
+list of tests:
+1. factory returns null for non array type
+2. factory returns array type adapter for array type
+3. read() handles null
+4. read() handles primitive array
+5. read() handles object array
+6. write() handles null
+7. write() handles array
+
+Missing coverage:
+- create(Gson, TypeToken) has two missing branches.
+
+#### Gemma Single
+The Generated file contained 3 errors:
+- missing import for *com.google.gson.TypeAdapter*.
+- in factoryReturnsAdapterForClassArrayType(), gson was not passed to *FACTORY.create()*.
+- in readReturnsNullForJsonNull() and onward tests, it was not possible to cast *TypeAdapter<{a primitive type}[]>* to *TypeAdapter<Object>. Therefore, changed adapter variable type so no casting was needed.
+
+After fixing all errors, all 11 tests passed.
+
+list of tests:
+1. factory returns null for non array type
+2. factory returns adapter for class array type
+3. factory returns adapter for generic array type
+4. read() returns null for json null
+5. read() returns empty array for empty json array
+6. read() returns primitive array
+7. read() returns object array
+8. write() writes null
+9. write() writes empty array
+10. write() writes primitive array
+11. write() writes object array
+
+Missing coverage:
+- create(Gson, TypeToken) has two missing branches.
+
+#### GPT-OSS Group
+The Generated file contained 3 errors:
+- unnecessary importing of *StringArrayAdapter* which doesn't exist.
+- I had to add a generic for the class for *createAdapter()* utility method to work. Then, I had to cast return values of this method to appropriate type.
+
+After fixing all errors, all 4 tests passed.
+
+list of tests:
+1. write() primitive array
+2. write() object array
+3. read() primitive array
+4. read() null
+
+utility method *createAdapter* was generated to instantiate *ArrayTypeAdapter*.
+
+Missing coverage:
+- read(JsonReader) and write(JsonWriter, Object) have missing branches.
+- create(Gson, TypeToken) is not tested at all.
+
+#### GPT-OSS Single
+The Generated file contained an error which was missing package statement.
+
+After fixing the error, all 7 tests passed.
+
+list of tests:
+1. read() null input returns null
+2. read() empty object array returns empty array
+3. read() empty primitive array returns empty array
+4. read() integer array converts JSON array to int[]
+5. write() null writes JSON null
+6. write() primitive array writes JSON array
+7. write() object array writes JSON array
+
+Missing coverage:
+- create(Gson, TypeToken) is not tested at all.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      3       |       3       |       3       |       1        |
+| Statement coverage             |     100%     |     100%      |      69%      |      78%       |
+| Decision coverage              |     89%      |      89%      |      56%      |      67%       |
+| total tests                    |      7       |      11       |       4       |       7        |
+| failed tests                   |      0       |       0       |       0       |       0        |
+| method names start with test   |      no      |      no       |      no       |       no       |
+| private variables used         |      no      |      yes      |      no       |      yes       |
+| tokens used                    |    2,824     |    15,316     |     1,491     |     11,337     |
+| tokens per decision coverage % |      32      |      172      |      27       |      169       |
+Obviously, Gemma4 performed here, however, with higher token usage, but the higher coverage is worth it. For a relatively small file, Gemma4 coverage is satisfactory. Somehow, Group and Single had the same performance.
+
+### ObjectTypeAdapter
+This file has 213 statements and 34 decisions.
+#### Gemma Group
+The Generated file contained 2 errors:
+- wrong import path for *com.google.gson.reflect.TypeToken*.
+- in factory_returnsNullForOtherClass(), I had to change *adapter* type to *TypeAdapter<String>*.
+
+After fixing all errors, all 8 tests passed.
+
+list of tests:
+1. factory returns adapter for object class
+2. factory returns null for other class
+3. read() handles string
+4. read() handles number
+5. read() handles boolean
+6. read() handles null
+7. read() handles array
+8. read() handles object
+
+Missing coverage:
+- getFactory(ToNumberStrategy), readTerminal(JsonReader, Json Token), and read(JsonReader) have missing branches.
+- write(JsonWriter, Object) is not tested at all.
+
+
+#### Gemma Single
+The Generated file contained 3 errors:
+- in testGetFactoryOtherStrategy(), replaced non-existing *ToNumberPolicy.LONG* to *ToNumberPolicy.LONG_OR_DOUBLE*.
+- in testRead(), *adapter* was not initialized correctly.
+- in testWrite(), *JsonWriter* was improperly reset.
+
+After fixing all errors, all 12 tests passed.
+
+list of tests:
+1. getFactory returns DOUBLE_FACTORY when ToNumberPolicy.DOUBLE is used
+2. getFactory returns new factory for other strategies
+3. [parametrized] read should correctly parse various JSON types into Object (8 tests)
+4. write should correctly serialize various objects
+5. write handles ObjectTypeAdapter case (empty object for Object class)
+
+*ObjectCompleter* and *ObjectTypeAdapterAccess* helper classes were generated. The latter was not used though.
+
+Missing coverage:
+- readTerminal(JsonReader, JsonToken) a missing branch which is an exception thrown case.
+
+#### GPT-OSS Group
+The Generated file contained 6 errors:
+- wrong import path for *com.google.gson.ToNumberPolicy*.
+- wrong import path for *com.google.gson.ToNumberStrategy*. It was also unused.
+- missing import for *java.util.Arrays*.
+- missing import for *java.util.List*.
+- I had to cast the initialization of private variable *adapter* to its defined type.
+- in initialization of private *adapter*, a null argument was passed to *create* which caused exception.
+
+After fixing all errors, all 5 tests passed.
+
+list of tests:
+1. read() null returns null
+2. read() array deserializes to list
+3. read() object deserializes to map
+4. write() null writes null value
+5. write() primitive writes value
+
+Missing coverage:
+- getFactory(ToNumberStrategy), readTerminal(JsonReader, JsonToken), write(JsonWriter, Object), and read(JsonReader) have missing branches.
+
+#### GPT-OSS Single
+The Generated file contained 5 errors:
+- missing package statement.
+- wrong import path for *com.google.gson.ToNumberPolicy*.
+- in testGetFactoryOther(), non-existing *ToNumberPolicy.INT* was used. It was replaced with *ToNumberPolicy.LONG_OR_DOUBLE*.
+- in testGetFactoryOther(), adapter was initialized incorrectly.
+- in testGetFactoryOther() last assertion, the second argument was given incorrectly.
+
+After fixing all errors, 6 tests passed and a test failed. In testReadArrayAndNested(), three of the assertions were expecting wrong values.
+
+list of tests:
+1. getFactory() returns DOUBLE_FACTORY when strategy is DOUBLE
+2. getFactory() creates new factory for other strategies
+3. read() decodes array, elements and nested structures
+4. read() decodes object with primitive members
+5. write() null serialise to JSON null
+6. write() handles empty Object as ObjectTypeAdapter by writing empty object
+7. write() delegates for non-ObjectTypeAdapter types
+
+Missing coverage:
+- read(JsonReader) and readTerminal(JsonReader, Json Token) both are missing a branch.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      2       |       3       |       6       |       5        |
+| Statement coverage             |     78%      |      97%      |      86%      |      95%       |
+| Decision coverage              |     71%      |      97%      |      76%      |      94%       |
+| total tests                    |      8       |      12       |       5       |       7        |
+| failed tests                   |      0       |       0       |       0       |       1        |
+| method names start with test   |      no      |      yes      |      no       |      yes       |
+| private variables used         |     yes      |      no       |      yes      |      yes       |
+| tokens used                    |    4,614     |    13,998     |     2,437     |     12,014     |
+| tokens per decision coverage % |      65      |      144      |      32       |      128       |
+In group mode, GPT-OSS gained a slightly higher coverage with using near half tokens. In single mode, Gemma4 performed slightly better, but GPT-OSS consumed fewer tokens. Do you pay a little extra to have a little more coverage? Probably yes. Still, group mode performance is acceptable considering the cost.
+Summary: Compare agents overall.
+
+### TypeAdapterRuntimeTypeWrapper
+This file has 98 statements and 20 decisions.
+#### Gemma Group
+The Generated file contained no error.
+
+Both tests passed.
+
+list of tests:
+1. read delegates to delegate
+2. write delegates to delegate
+
+Variable *delegate* in both methods has the same implementation, causing redundant code.  
+Coverage was very poor. The agent should have generated more tests.
+
+Missing coverage:
+- getRuntimeTypeIfMoreSpecific(Type, Object) and write(JsonWriter, Object) have missing branches.
+- isReflective(TypeAdapter) is not tested at all.
+
+#### Gemma Single
+The Generated file contained 3 errors:
+- wrong import path for *com.google.gson.stream.JsonWriter*.
+- missing import for *com.google.gson.TypeAdapter*.
+- utility class *TypeCReflectiveAdapterWrapper* is inherited from final class *TypeAdapterRuntimeTypeWrapper*. Still, I manage to run the tests correctly without this class.
+
+After fixing all errors, 2 tests passed and 2 tests failed. Failed tests are:
+- in write_usesDelegateWhenTypesMatch, there was no way to access what *JsonWriter* has written, which agent assumed it was possible through *toString*. Thus, I instantiated it again with a *StringWriter* , so I can access the output.
+- write_handlesMoreSpecificRuntimeType() was also the same deal as above.
+
+list of tests:
+1. Read should delegate to the delegate adapter
+2. Write should use delegate when runtime type is the same as declared type
+3. Write should use delegate when value is null
+4. Write should handle more specific runtime type
+
+Coverage is still low.
+
+Missing coverage:
+- getRuntimeTypeIfMoreSpecific(Type, Object) and write(JsonWriter, Object) have missing branches.
+- isReflective(TypeAdapter) and read(JsonReader) are not tested at all.
+
+#### GPT-OSS Group
+The Generated file contained 2 errors:
+- missing import for *com.google.gson.stream.JsonWriter*.
+- wrong import path for *Primitives*. This import was unused.
+
+After fixing all errors, all 2 tests passed.
+
+list of tests:
+1. delegate for matching runtime type
+2. delegate falls back when runtime equals declared
+
+There are no assertions!
+
+Missing coverage:
+- getRuntimeTypeIfMoreSpecific(Type, Object) and write(JsonWriter, Object) have missing branches.
+- isReflective(TypeAdapter) and read(JsonReader) are not tested at all.
+
+#### GPT-OSS Single
+The Generated file contained an error. I Had to add generic *T* to class signature since subclasses were using generic and this was causing errors.
+
+After fixing the error, all 4 tests passed.
+
+list of tests:
+1. delegate used when runtime type same
+2. custom runtime adapter chosen when different type
+3. delegate chosen when runtime adapter is reflective and delegate not
+4. runtime adapter chosen when both reflective
+
+Utility classes *Base*, *Sub*, *RecordingAdapter*, and *ContextHasNonReflectiveDelegate* alongside *TypeAdapterRuntimeTypeWrapper* method were generated.
+
+Missing coverage:
+- getRuntimeTypeIfMoreSpecific(Type, Object) and isReflective(TypeAdapter) have missing branches.
+- read(JsonReader) is not tested at all.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      0       |       3       |       2       |       1        |
+| Statement coverage             |     48%      |      57%      |      57%      |      74%       |
+| Decision coverage              |     20%      |      25%      |      25%      |      55%       |
+| total tests                    |      2       |       4       |       2       |       4        |
+| failed tests                   |      0       |       2       |       0       |       0        |
+| method names start with test   |      no      |      no       |      no       |       no       |
+| private variables used         |      no      |      yes      |      yes      |       no       |
+| tokens used                    |    2,135     |    12,563     |     1,128     |     12,187     |
+| tokens per decision coverage % |     107      |      503      |      45       |      222       |
+This file wasn't large. Nevertheless, all models failed to reach good coverage. There were many nested branches, especially the only way to access private method *isReflective* which was also checking something complicated. GPT-OSS single did noticeably better than other agents.
+
+### MapTypeAdapterFactory
+This file has 403 statements and 46 decisions.
+#### Gemma Group
+The Generated file contained 5 errors:
+- wrong import path for *TypeToken*.
+- Typo in importing *JsonReader*.
+- utility class *SimpleConstructorConstructor* is implementing *ConstructorConstructor* final class. It was removed and replaced with an alternative.
+- in adapter_read_handlesNull(), there was a misspelling with *MapTypeAdapterFactory*.
+- in almost all tests, *factory.create()* had the wrong argument.
+
+After fixing all errors, all 8 tests passed.
+
+list of tests:
+1. factory returns null for non map type
+2. factory returns adapter for map type
+3. adapter read handles null
+4. adapter read handles object format
+5. adapter read handles array format
+6. adapter read throws on duplicate key
+7. adapter write handles null
+8. adapter write handles simple keys
+
+Missing coverage:
+- Adapter.read(JsonReader), Adapter.write(JsonWriter, Map), and getKeyAdapter(Gson, Type) have missing branches.
+- Adapter.keyToString(JsonElement) is not tested at all.
+
+#### Gemma Single
+The Generated file contained 2 errors:
+- factoryComplex was not initialized correctly. Since it was unused, It was removed.
+- the token adapter for map was not initialized correctly across methods. I replaced it with an alternative.
+
+After fixing all errors, 2 tests passed and 7 tests failed. These tests failed because *factorySimple* variable should not be initialized with *null* as arguments. The first argument which is a *ConstructorConstructor* at least shouldn't be null. Fix it by passing a correctly initialized *ConstructorConstructor*. After this, all tests passed.
+
+list of tests:
+1. Should return null for non-map types
+2. Should return Adapter for Map types
+3. Should return null when JSON is null
+4. Should read Map from JSON object
+5. Should read Map from JSON array (complex keys enabled)
+6. Should write null as null
+7. Should write Map as object for simple keys
+8. Should throw error on duplicate keys in object
+9. Should handle boolean keys as strings (special case in getKeyAdapter)
+
+I don't know have Gemma4 covered less in single mode.
+
+Missing coverage:
+- Adapter.read(JsonReader), Adapter.write(JsonWriter, Map), and getKeyAdapter(Gson, Type) have missing branches.
+- Adapter.keyToString(JsonElement) are not tested at all.
+
+#### GPT-OSS Group
+The Generated file contained 3 errors:
+- missing import for *com.google.gson.JsonSyntaxException*.
+- private variable *factory* was initialized incorrectly. Since it didn't have any use, I just removed it.
+- in complexKeyMapSerializesToArray(), variable *complexFactory* was instantiated incorrectly. It also had no use.
+
+After fixing all errors, a test passed and two tests failed. Failed tests are:
+- in complexKeyMapSerializesToArray(), a map is converted into a *JsonTree*, then it was expected to be a JsonArray!
+- in duplicateKeysThrowException(), an exception is expected to be thrown, but it doesn't.
+
+list of tests:
+1. simple key map serialize to object
+2. complex key map serialize to array
+3. duplicate keys throw exception
+
+Utility class *Point* was created.  
+It looks like *Gson* was being tested rather than *MapTypeAdapterFactory*.
+
+Missing coverage:
+- Adapter.write(JsonWriter, Map), getKeyAdapter(Gson, Type), and create(Gson, Type Token) have missing branches.
+- Adapter.keyToString(JsonElement) and Adapter.read(JsonReader) are not tested at all.
+
+#### GPT-OSS Single
+The Generated file contained 2 errors:
+- missing package statement.
+- in utility method *gson*, *ctor* variable is not initialized correctly. Only one argument is given.
+
+After fixing all errors, all 7 tests passed.
+
+list of tests:
+1. serialize null map to JSON null
+2. serialize empty map to JSON object
+3. serialize map with primitive boolean keys using BOOLEAN_AS_STRING
+4. write map with complex keys as array when flag true
+5. read duplicate key in array throws JsonSyntaxException
+6. read duplicate key in object throws JsonSyntaxException
+7. read map from object JSON works
+
+Utility method *gson* was generated to instantiate Gson.
+
+Missing coverage:
+- read(JsonReader), write(JsonWriter, Map), and getKeyAdapter(Gson, Type) have missing branches.
+- Adapter.keyToString(JsonElement) is not tested at all.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      5       |       2       |       3       |       2        |
+| Statement coverage             |     57%      |      50%      |      34%      |      78%       |
+| Decision coverage              |     43%      |      37%      |      15%      |      54%       |
+| total tests                    |      8       |       9       |       3       |       7        |
+| failed tests                   |      0       |       2       |       2       |       0        |
+| method names start with test   |      no      |      no       |      no       |       no       |
+| private variables used         |      no      |      yes      |      yes      |       no       |
+| tokens used                    |    5,750     |    16,810     |     3,037     |     13,961     |
+| tokens per decision coverage % |     134      |      454      |      202      |      259       |
+All agents did terrible. GPT-OSS in group was not really this unit. Gemma4 in group mode performed better. GPT-OSS had at least somewhat of a good statement coverage. Private method *Adapter.keyToString(JsonElement)* was not tested by agents. It was hard to access. Simple branches like a null map check at first of a function was missed by the best model. This proves that local models with around 20 billion parameters can't handle testing even medium complex units like this well.
+
+### CollectionTypeAdapterFactory
+This file has 119 statements and 10 decisions.
+#### Gemma Group
+The Generated file contained 4 errors:
+- wrong import path for *com.google.gson.reflect.TypeToken*.
+- typo in import path of *com.google.gson.stream.JsonWriter*.
+- many methods had an error in instantiating *adapter* variable.
+- utility class *SimpleConstructorConstructor* is implementing *ConstructorConstructor* final class. It was removed and replaced with an alternative.
+
+After fixing all errors, all 6 tests passed.
+
+list of tests:
+1. factory returns null for non collection type
+2. factory returns adapter for collection type
+3. adapter read handles null
+4. adapter read handles array
+5. adapter write handles null
+6. adapter write handles array
+
+Missing coverage:
+- write(JsonWriter, Collection) is missing a single branch.
+
+#### Gemma Single
+The Generated file contained an error.
+- Utility class *TestConstructorConstructor* was trying to inherit from final class *ConstructorConstructor*. I used an alternative way to initialize *ConstructorConstructor*, so this and *TestObjectConstructor* utility classes were removed.
+
+After fixing the error, all 6 tests passed.
+
+list of tests:
+1. create non collection returns null
+2. adapter read null token
+3. adapter read empty array
+4. adapter read populated array
+5. adapter write null collection
+6. adapter write populated collection
+
+Full statement and decision coverage obtained.
+
+#### GPT-OSS Group
+The Generated file contained __ errors:
+- variable *factory* is initiated incorrectly. Since it was not used, I simply removed it.
+
+After fixing the error, all 3 tests passed.
+
+list of tests:
+1. read null produces null
+2. write empty list
+3. write non-empty list
+
+With only two assertions, a 40% decision coverage attained somehow.
+
+Missing coverage:
+- Adapter.write(JsonWriter, Collection) and create(Gson, TypeToken) have missing branches.
+- Adapter.read(JsonReader) is not tested at all.
+
+#### GPT-OSS Single
+The Generated file contained 2 errors:
+- missing package statement.
+- private variable *factory* was initiated wrongly.
+
+After fixing all errors, all 6 tests passed.
+
+list of tests:
+1. create returns null for non-collection types
+2. create returns non-null for collection types
+3. Adapter read returns null for JSON null token
+4. Adapter read parses array of integers
+5. Adapter write outputs null for null collection
+6. Adapter write outputs array for collection
+
+Full statement and decision coverage achieved.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      4       |       1       |       1       |       2        |
+| Statement coverage             |     97%      |     100%      |      68%      |      100%      |
+| Decision coverage              |     90%      |     100%      |      40%      |      100%      |
+| total tests                    |      6       |       6       |       3       |       6        |
+| failed tests                   |      0       |       0       |       0       |       0        |
+| method names start with test   |      no      |      yes      |      no       |       no       |
+| private variables used         |      no      |      no       |      yes      |      yes       |
+| tokens used                    |    2,514     |    18,398     |     1,328     |     11,273     |
+| tokens per decision coverage % |      28      |      184      |      33       |      113       |
+Other than GPT-OSS group, all models did great. Gemma4 in group mode achieved near full coverage while using much less token. This file should be given along with other small files to generate test for.
+
+### TreeTypeAdapter
+This file has 271 statements and 36 decisions.
+#### Gemma Group
+The Generated file contained 3 errors:
+- incorrect import path for *com.google.gson.reflect.TypeToken*.
+- across all tests, *skipPast* was not instantiated correctly. Assigning it to null will fix the issue.
+- in write_withSerializer_handlesValue(), serializer was incorrectly instantiated, but removed duo to being unused.
+
+After fixing all errors, all 3 tests passed.
+
+list of tests:
+1. read() with deserializer handles json element
+2. write() with serializer handles value
+3. read() without deserializer calls delegate
+
+This file is somewhat large. Three tests won't cover too much of it.
+
+Missing coverage:
+- read(JsonReader), and write(JsonWriter, Object) have missing branches.
+- GsonContextImpl.deserialize(JsonElement, Type), GsonContextImpl.serialize(Object), GsonContextImpl.serialize(Object, Type), SingleTypeFactory(Object, Type Token, boolean, Class), TreeTypeAdapter(JsonSerializer, JsonDeserializer, Gson, Type Token, TypeAdapterFactory), delegate(), getSerializationDelegate(), newFactory(TypeToken, Object), newFactoryWithMatchRawType(Type Token, Object), newTypeHierarchyFactory(Class, Object), and SingleTypeFactory.create(Gson, Type Token) are not tested at all.
+
+#### Gemma Single
+The Generated file contained 4 errors:
+- An unused import with wrong path.
+- in seven methods, *deserializer* initialized had a bad lambda return statement.
+- in write_serializerPresent_writesSerializedValue(), a text error occurred.
+- Utility class *TreeTypeParsingAdapter* inherited from final class TreeTypeAdapter. It wasn't really even needed.
+
+After fixing all errors,  10 tests passed and a test failed. In read_deserializerPresent_returnsDeserializedValue(), the last assertion was expecting an incorrect value.
+
+list of tests:
+1. read: when deserializer is not null, handles non-null value
+2. read: when deserializer is not null, handles null value with nullSafe=true
+3. read: when deserializer is not null, handles null value with nullSafe=false
+4. write: when serializer is not null, handles non-null value
+5. write: when serializer is not null, handles null value with nullSafe=true
+6. write: when serializer is not null, handles null value with nullSafe=false
+7. getSerializationDelegate: returns this when serializer is present
+8. SingleTypeFactory: creates adapter when exact type matches
+9. SingleTypeFactory: does not create an adapter when exact type does not match
+10. SingleTypeFactory: handles hierarchy type match
+11. SingleTypeFactory: constructor throws exception if no serializer or deserializer
+
+Missing coverage:
+- SingleTypeFactory(Object, TypeToken, boolean, Class), getSerializationDelegate(), read(JsonReader), write(JsonWriter, Object), and SingleTypeFactory.create(Gson, Type Token) have missing branches.
+- GsonContextImpl.deserialize(JsonElement, Type), GsonContextImpl.serialize(Object), GsonContextImpl.serialize(Object, Type), newFactoryWithMatchRawType(TypeToken, Object), and delegate() are not tested at all.
+
+#### GPT-OSS Group
+The Generated file contained 4 errors:
+- missing import for *com.google.gson.JsonSerializer*.
+- missing import for *com.google.gson.JsonElement*.
+- missing import for *com.google.gson.JsonSerializer*.
+- in customSerializerWritesTree(), customDeserializerReturnsValue(), and nullSafeDeserialization() *adapter* initialized incorrectly.
+
+After fixing all errors, a test passed and 2 tests failed. Failed tests are:
+- in customSerializerWritesTree(), a string with value "value" was expected to be "null". After a change, the string is "null".
+- in customDeserializerReturnsValue(), the last assertion was wrong.
+
+list of tests:
+1. custom serializer writes tree
+2. custom deserializer returns value
+3. null safe deserialization
+
+Missing coverage:
+- SingleTypeFactory(Object, TypeToken, boolean, Class), newFactoryWithMatchRawType(TypeToken, Object), and SingleTypeFactory.create(Gson, Type Token) have missing branches.
+- delegate(), getSerializationDelegate(), GsonContextImpl.deserialize(JsonElement, Type), GsonContextImpl.serialize(Object), GsonContextImpl.serialize(Object, Type), newFactory(Type Token, Object), newTypeHierarchyFactory(Class, Object), read(JsonReader), and write(JsonWriter, Object) are not tested at all.
+
+#### GPT-OSS Single
+The Generated file contained 5 errors:
+- missing package statement.
+- missing import for *java.util.List*.
+- instantiation of non-accessible *TreeTypeAdapter.SingleTypeFactory* in three methods.
+- usage of inaccessible *TreeTypeAdapter.delegate()*.
+- in testNewFactoryWithMatchRawType(), *notMatch* must be a *TypeAdapter<String>* type.
+
+After fixing all errors, 7 tests passed and 4 tests failed. Failed tests are:
+- in testReadDelegateCalled(), testWriteDelegateCalled(), testGetSerializationDelegateWithSerializer(), and testGetSerializationDelegateWithoutSerializer(), *skipPast* as a *adapter* constructor argument must not be null.
+- in testGetSerializationDelegateWithSerializer(), equals assertion between two different types was happening.
+
+list of tests:
+1. read(): delegate read called when deserializer is null
+2. read(): null value returns null when nullSafe and deserializer not null
+3. read(): non-null value deserialized correctly
+4. write(): delegate write called when serializer is null
+5. write(): null value writes JSON null when nullSafe is true
+6. write(): serializer returns expected JSON tree
+7. getSerializationDelegate() returns this when serializer is present
+8. getSerializationDelegate() returns delegate when serializer null
+9. newFactory creates adapter only for exact type
+10. newFactoryWithMatchRawType matches raw type when appropriate
+11. newTypeHierarchyFactory matches assignable types
+
+Missing coverage:
+- SingleTypeFactory(Object, TypeToken, boolean, Class), SingleTypeFactory.create(Gson, TypeToken), getSerializationDelegate(), newFactoryWithMatchRawType(Type Token, Object), read(JsonReader), and write(JsonWriter, Object) have missing branches.
+- GsonContextImpl.serialize(Object), GsonContextImpl.serialize(Object, Type), and GsonContextImpl.deserialize(JsonElement, Type) are not tested at all.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      3       |       4       |       4       |       5        |
+| Statement coverage             |     28%      |      72%      |      44%      |      85%       |
+| Decision coverage              |     17%      |      67%      |      31%      |      72%       |
+| total tests                    |      3       |      11       |       3       |       11       |
+| failed tests                   |      0       |       1       |       2       |       4        |
+| method names start with test   |      no      |      no       |      no       |      yes       |
+| private variables used         |      no      |      yes      |      yes      |      yes       |
+| tokens used                    |    5,062     |    17,505     |     2,673     |     12,853     |
+| tokens per decision coverage % |     298      |      261      |      86       |      179       |
+Both models in group mode performed terribly. GPT-OSS was better in both modes, even with lower token usage. Private class GsonContextImpl was poorly tested in all models. If there was a way to test these private classes, methods, etc. it wouldn't been great.
+
+## Group 6: Specialized/reflective adapters
+# TODO:
+Had to give a "continue" prompt to Gemini Group after it thought about 34.2 seconds. It was also a second attempt. Don't remember why...
+Gemma-Single NumberTypeAdapter stopped and was given a "continue".  
+OSS group only generated test for ReflectiveTypeAdapterFactory and asked me to proceed, which I did.
+### ReflectiveTypeAdapterFactory
+This file has 989 statements and 94 decisions.
+#### Gemma Group
+The Generated file contained 5 errors:
+- wrong import path for *com.google.gson.internal.ObjectConstructor*.
+- wrong import path for *com.google.gson.reflect.TypeToken*.
+- *StubConstructorConstructor* inherits from final class *ConstructorConstructor*. It was supplanted with an alternative.
+- *StubExcluder* implemented from final class *Excluder*.
+- in setUp(), unused variable *constructor* initialized incorrectly. The agent also realized it but didn't remove it.
+
+After fixing all errors, all 3 tests failed! I couldn't figure out to fix the JsonIOException thrown. Assertion are converted to *assertThrows*.
+
+list of tests:
+1. create returns null for primitive types
+2. create returns adapter for complex types
+3. serialization and deserialization of TestObject
+
+Despite being mentioned not to involve integration, stubs such as *StubFieldNamingStrategy* were created. An utility class *TestObject* was created.
+
+Coverages:
+- create(Gson, Type Token) getFieldNames(Field) getBoundFields(Gson, TypeToken, Class, boolean, boolean) createBoundField(Gson, Field, Method, String, Type Token, boolean, boolean) have missing branches.
+- Reflective TypeAdapterFactory(ConstructorConstructor, FieldNamingStrategy, Excluder, JsonAdapterAnnotationTypeAdapterFactory, List). includeField(Field, boolean) are completely covered.
+
+#### Gemma Single
+The Generated file contained 9 errors:
+- five missing imports.
+- two incorrect import paths.
+- overriding final class *constructorConstructor*.
+- overriding final class *Excluder*.
+
+After fixing all errors, 2 tests passed and 2 tests failed. Failed tests are:
+- in testPrimitiveTypes(), if I replace *Integer.class*, with *int.class*, I will get away with the exception.
+- testSerializedName() had a wrong assertion.
+
+list of tests:
+1. Should return null for primitive types (not Object.class)
+2. Should handle SerializedName annotation
+3. Should handle duplicate field names and throw exception
+4. Should handle interfaces by returning empty FieldsData (no adapters)
+
+Utility classes *TestClass*, *AnnotatedClass*, *InterfaceTest*, and *DuplicateFieldClass* are generated.  
+Four tests for such a large file is extremely inadequate.
+
+Missing coverage:
+- BoundField.write(JsonWriter, Object), Adapter.write(JsonWriter, Object), create(Gson, Type Token), createBoundField(Gson, Field, Method, String, Type Token, boolean, boolean), getBoundFields(Gson, Type Token, Class, boolean, boolean), and includeField(Field, boolean) have missing branches.
+- ReflectiveTypeAdapterFactory.RecordAdapter, ReflectiveTypeAdapterFactory.new TypeAdapter() {...}, BoundField.readIntoArray(JsonReader, int, Object[]), BoundField.readIntoField(JsonReader, Object), FieldReflectionAdapter createAccumulator(), FieldReflectionAdapter.finalize(Object), FieldReflectionAdapter.readField(Object, JsonReader, ReflectiveTypeAdapterFactory.BoundField), Adapter.read(JsonReader), and checkAccessible(Object, AccessibleObject) are not tested at all.
+
+#### GPT-OSS Group
+The Generated file contained 3 errors:
+- missing package statement.
+- wrong instantiation of *ConstructorConstructor*.
+- missing argument for *JsonAdapterAnnotationTypeAdapterFactory* constructor.
+
+After fixing all errors, all 2 tests failed.
+- in testCreate_withPrimitiveClass_returnsNull(), the same problem happened. Changed the used *int.class* to get away with it.
+- in testGetFieldNames_singleName(), *IllegalAccessException* is thrown, but with the same reason.
+
+list of tests:
+1. create with primitive class returns null
+2. get field names single name
+
+Coverage:
+- create(Gson, TypeToken), getBoundFields(Gson, TypeToken, Class, boolean, boolean), and includeField(Field, boolean) have missing branches.
+- ReflectiveTypeAdapterFactory(ConstructorConstructor, FieldNamingStrategy, Excluder, JsonAdapterAnnotationTypeAdapterFactory, List) is completely covered.
+
+#### GPT-OSS Single
+The Generated file contained 6 errors:
+- wrong import path for *com.google.gson.internal.Excluder*
+- wrong import path for unused *Nullable*.
+- in utility method *ReflectiveTypeAdapterFactory* and some other methods, *Excluder.DEFAULT* was being accessed incorrectly.
+- in includeFieldExclusion, the code was trying to access private method *includeField*. This test is commented since I couldn't fix it.
+- in createAnonymousClassAdapter, *type* was instantiated incorrectly.
+- in createAnonymousClassAdapter, *adapter* had the wrong type.
+
+After fixing all errors, 1 test passed and 3 tests failed. Firstly, all instances of *ConstructorConstructor* were null and had to instantiate them correctly. Failed tests are:
+- in createAnonymousClassAdapter(), the last assertion was wrong.
+- getFieldNamesWithAnnotation() and getFieldNamesWithoutAnnotation would throw *IllegalAccessException*.
+
+list of tests:
+1. getFieldNames respects @SerializedName
+2. getFieldNames uses field naming strategy when no annotation
+3. create returns null for primitive types
+4. create for anonymous class returns adapter that writes null
+
+Helper *ReflectiveTypeAdapterFactory* method and *DummyClass* class were generated.
+
+Coverage:
+- Adapter.write(JsonWriter, Object), getBoundFields(Gson, TypeToken, Class, boolean, boolean), and create(Gson, Type Token) have missing branches.
+- ReflectiveTypeAdapterFactory(ConstructorConstructor, FieldNamingStrategy, Excluder, JsonAdapterAnnotationTypeAdapterFactory, List), Adapter.ReflectiveTypeAdapterFactory.Adapter(ReflectiveTypeAdapterFactory.FieldsData), FieldReflectionAdapter.ReflectiveTypeAdapterFactory.FieldReflectionAdapter(ObjectConstructor, ReflectiveTypeAdapterFactory.FieldsData), and ReflectiveTypeAdapterFactory.FieldsData are covered fully.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      5       |       9       |       3       |       6        |
+| Statement coverage             |     21%      |      45%      |      13%      |      14%       |
+| Decision coverage              |     20%      |      35%      |      12%      |       9%       |
+| total tests                    |      3       |       4       |       2       |       4        |
+| failed tests                   |      3       |       2       |       2       |       3        |
+| method names start with test   |      no      |      yes      |      yes      |       no       |
+| private variables used         |     yes      |      yes      |      no       |       no       |
+| tokens used                    |    12,743    |    27,236     |     9,088     |     17,569     |
+| tokens per decision coverage % |     637      |      778      |      757      |     1,952      |
+Coverage across all models are terrible. This can be accounted for having few tests. This was a large file including many subclasses and it required over 20 tests to achieve a reasonable coverage. As we have seen before, small models can't generate test with a good coverage for large files. This was a complicated file as well. I admit that not being able to solve some of the tests fails can credit to lower coverage but not that much.
+
+### EnumTypeAdapter
+This file has 227 statements and 22 decisions.
+#### Gemma Group
+The Generated file contained an error:
+- in deserializationUnknownReturnsNull, *typeToken* had undefined type *TestToken*.
+
+After fixing all errors, 3 tests passed and a test failed. In factoryReturnsAdapterForEnum, the last assertion is wrong.
+
+list of tests:
+1. Factory returns adapter for enum types
+2. Serialization and deserialization of Enum with default names
+3. Serialization and deserialization of Enum with @SerializedName
+4. Deserialization of unknown enum constant returns null
+
+Utility Enum *TestEnum* was generated.
+
+Missing coverage:
+- FACTORY.create(Gson, TypeToken), read(JsonReader), write(JsonWriter, Enum), and EnumTypeAdapter(Class) have missing branches.
+
+#### Gemma Single
+The Generated file contained 3 errors:
+- utility class *AnonymousEnum* was trying to inherit from an Enum which is not possible in java. Removed the test associated with it as well.
+- in returnsNullForEnumClass, undefined class *EnumTypeTokenFactoryProxy* was used.
+- in readAlternateNames, *reader2* is instantiated incorrectly.
+
+After fixing all errors, all 12 tests passed.
+
+list of tests:
+1. Returns null for non-enum types
+2. Returns null for Enum.class itself
+3. Works for standard enums
+4. Write: writes the serialized name (or custom name)
+5. Write: writes the default name for standard enum
+6. Read: reads the primary serialized name
+7. Read: reads from alternate names
+8. Read: reads the default name
+9. Read: handles null tokens
+10. Read: returns null for unknown names (if not in toString)
+11. Read: uses toString() mapping if name match fails
+12. Write: writes null when value is null
+
+Utility Enum *TestEnum* was created.
+
+Missing coverage:
+- FACTORY.create(Gson, TypeToken) and EnumTypeAdapter(Class) have missing branches.
+
+#### GPT-OSS Group
+The Generated file contained 5 errors:
+- missing package statement.
+- there was an annotation in the utility enum.
+- in readAndWrite_simpleEnum, variable *readAndWrite_simpleEnum* was initialized with a private constructor.
+- I had to add IOException to readAndWrite_simpleEnum signature.
+
+After fixing all errors, the single generated test passed.
+
+list of tests:
+1. read and write for simple Enum
+
+Only one test was generated.
+
+Missing coverage:
+- EnumTypeAdapter(Class), read(JsonReader), write(JsonWriter, Enum), and FACTORY.create(Gson, TypeToken) have missing branches.
+
+#### GPT-OSS Single
+The Generated file contained an error. in many methods, variable *adapter* was initialized with a private constructor.
+
+After fixing all errors, all 6 tests passed.
+
+list of tests:
+1. read null returns null
+2. read using name constant returns correct enum
+3. read using serialized name returns correct enum
+4. read using string to constant when name missing returns constant
+5. write with null writes null
+6. write with non-null writes appropriate name
+
+Utility Enum *TestEnum* and method *readerOf* were generated.
+
+Missing coverage:
+- EnumTypeAdapter(Class), and FACTORY.create(Gson, TypeToken) have missing branches.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      1       |       3       |       5       |       1        |
+| Statement coverage             |     88%      |      96%      |      78%      |      90%       |
+| Decision coverage              |     77%      |      95%      |      59%      |      82%       |
+| total tests                    |      4       |      12       |       1       |       6        |
+| failed tests                   |      1       |       0       |       0       |       0        |
+| method names start with test   |      no      |      no       |      no       |       no       |
+| private variables used         |      no      |      no       |      no       |       no       |
+| tokens used                    |    2,221     |    13,987     |     1,584     |     11,937     |
+| tokens per decision coverage % |      29      |      147      |      27       |      146       |
+Gemma4 performed noticeably better with the same token cost per coverage percent. The question is will you pay 5 times more to increase coverage from 80% to 95% or not. This was a small file, so it was expected that models obtain high coverage.
