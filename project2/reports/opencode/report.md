@@ -3633,3 +3633,1281 @@ Missing coverage:
 | tokens used                    |    2,221     |    13,987     |     1,584     |     11,937     |
 | tokens per decision coverage % |      29      |      147      |      27       |      146       |
 Gemma4 performed noticeably better with the same token cost per coverage percent. The question is will you pay 5 times more to increase coverage from 80% to 95% or not. This was a small file, so it was expected that models obtain high coverage.
+
+### NumberTypeAdapter
+This file has 73 statements and 7 decisions.
+#### Gemma Group
+The Generated file contained an error. It was a wrong import path for *TypeToken*.
+
+After fixing the error, 2 tests passed and a test failed. In factoryReturnsAdapterForNumber, the last assertion was wrong.
+
+list of tests:
+1. Factory returns adapter for Number types
+2. Serialization and deserialization of Number
+3. Deserialization of null returns null
+
+Missing coverage:
+- getFactory(ToNumberStrategy) and read(JsonReader) have missing branches.
+- write(JsonWriter, Number) was not tested at all.
+
+
+#### Gemma Single
+The Generated file contained no error.
+
+All 7 tests passed.
+
+list of tests:
+1. getFactory() returns a factory for LAZILY_PARSED_NUMBER
+2. getFactory() returns a factory for other strategies
+3. read() returns null when token is NULL
+4. read() returns number when token is NUMBER
+5. read() returns number when token is STRING
+6. read() throws JsonSyntaxException when token is invalid
+7. write() writes the number value correctly
+
+Missing coverage:
+- adapter.create(Gson, TypeToken) is missing a branch.
+
+#### GPT-OSS Group
+The Generated file contained 2 errors:
+- missing package statement.
+- in both tests, *adapter* initialized using an inaccessible constructor.
+
+After fixing all errors, all 2 tests passed.
+
+list of tests:
+1. read number from json
+2. write number to json
+
+Missing coverage:
+- getFactory(ToNumberStrategy), read(JsonReader), and adapter.create(Gson, TypeToken) have missing branches.
+
+#### GPT-OSS Single
+The Generated file contained 4 errors:
+- missing package statement.
+- wrong import path for *com.google.gson.ToNumberPolicy*.
+- wrong import path for unused import *ToNumberStrategy*.
+- missing import for *TypeAdapterFactory*.
+
+After fixing all errors, all 4 tests passed.
+
+list of tests:
+1. read null returns null
+2. read numeric literal returns number
+3. read string number returns number
+4. read non‑numeric token throws JsonSyntaxException
+
+utility method *read* was created.
+
+Missing coverage:
+- getFactory(ToNumberStrategy) and adapter.create(Gson, TypeToken) have missing branches.
+- write(JsonWriter, Number) is not tested at all.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      1       |       0       |       2       |       4        |
+| Statement coverage             |     78%      |      99%      |      78%      |      88%       |
+| Decision coverage              |     71%      |      86%      |      43%      |      71%       |
+| total tests                    |      3       |       7       |       2       |       4        |
+| failed tests                   |      1       |       0       |       0       |       0        |
+| method names start with test   |      no      |      yes      |      no       |      yes       |
+| private variables used         |      no      |      yes      |      no       |      yes       |
+| tokens used                    |    1,413     |    20,978     |     1,008     |     11,735     |
+| tokens per decision coverage % |      20      |      244      |      23       |      165       |
+Gemma4 performed better here, especially in decision coverage. In group mode, Gemma4 is definitely the go-to option. On the other hand, it used about twice tokens compared to GPT-OSS in single mode. This was a tiny file, yet no model attained full coverage.
+
+### DefaultDateTypeAdapter
+This file has 260 statements and 16 decisions.
+#### Gemma Group
+The Generated file contained an error.It was a wrong import path for unused import *TypeToken*.
+
+After fixing the error, a test passed and 2 tests failed. Failed tests are:
+- in factoryReturnsAdapterForDate, the second assertion was wrong.
+- in serializationDeserializationDefault, *gson* was receiving the wrong date format.
+
+list of tests:
+1. Factory returns adapter for Date
+2. Serialization and deserialization of Date using default style
+3. Deserialization of null returns null
+
+Missing coverage:
+- DefaultDateTypeAdapter(DefaultDate TypeAdapter.Date Type, String), DefaultDateTypeAdapter(DefaultDate TypeAdapter.Date Type, int, int), deserializeToDate(JsonReader), and write(JsonWriter, Date) have missing branches.
+- DateType.createAdapterFactory(int, int), toString(), and DEFAULT_STYLE_FACTORY.toString() are not tested at all.
+
+#### Gemma Single
+The Generated file contained 3 errors:
+- wrong import path for *com.google.gson.reflect.TypeToken*.
+- in utility method *tearDown*, an undefined variable was passed to a method.
+- in write_handlesNull and write_formatsDate, undefined method *writer.endDocument* was called. Since it wasn't important, it was commented.
+
+After fixing all errors, 9 tests passed and a test failed. In read_parsesValidDate, json text was changed to be compatible with *DEFAULT_STYLE_FACTORY*.
+
+list of tests:
+1. DEFAULT_STYLE_FACTORY should create adapter for Date class
+2. DEFAULT_STYLE_FACTORY should return null for non-Date class
+3. write should handle null value
+4. write should format date correctly
+5. read should handle null token
+6. read should parse valid date string
+7. read should throw JsonSyntaxException for invalid date string
+8. toString should return SimpleDateFormat pattern if applicable
+9. toString should return class name if not SimpleDateFormat
+10. Constructor should include US locale format when default locale is not US
+
+Missing coverage:
+- DefaultDateTypeAdapter(DefaultDateTypeAdapter.Date Type, int, int), toString(), and deserializeToDate(JsonReader) have missing branches.
+- DateType.createAdapterFactory(int, int) and DEFAULT_STYLE_FACTORY.toString() are not tested at all.
+
+#### GPT-OSS Group
+The Generated file contained 2 errors:
+- missing package statement.
+- in the test, *DefaultDateTypeAdapter* instantiated with a private constructor.
+
+After fixing all errors, the test passed.
+
+list of tests:
+1. serialize and deserialize patterns
+
+One test for a file with 260 statements is only generated. Completely inadequate.
+
+Missing coverage:
+- DefaultDateTypeAdapter(DefaultDate TypeAdapter.Date Type, String), deserializeToDate(JsonReader), read(JsonReader), and write(JsonWriter, Date) have missing branches.
+- DateType.createAdapterFactory(int, int), DefaultDateTypeAdapter(DefaultDate TypeAdapter.Date Type, int, int), deserializeToDate(JsonReader), DEFAULT_STYLE_FACTORY.create(Gson, TypeToken), and DEFAULT_STYLE_FACTORY.toString() are not tested at all.
+
+#### GPT-OSS Single
+The Generated file contained 2 errors:
+- missing package statement.
+- instantiation of *DefaultDateTypeAdapter* with a private constructor across many methods.
+
+After fixing all errors, 3 tests passed and 3 tests failed. Failed tests are:
+- in writeDate, the last assertion was expecting the wrong string.
+- in readWithPattern and readIsoFallback, since *JsonReader* is reading a malformed json, it must be set to lenient strictness.
+- in readIsoFallback, is expected for read() to fall back to another date format, but an exception is thrown.
+
+list of tests:
+1. write() should output null for null value
+2. write() should serialize date using first pattern
+3. read() should return null for JSON null
+4. read() should parse date with custom pattern
+5. read() should fallback to ISO8601 parsing
+6. toString() should reflect date pattern of first formatter
+
+Missing coverage:
+- DefaultDateTypeAdapter(DefaultDate TypeAdapter.Date Type, String), toString(), and deserializeToDate(JsonReader) have missing branches.
+- DEFAULT_STYLE_FACTORY.create(Gson, TypeToken), DEFAULT_STYLE_FACTORY.toString(), DateType.createAdapterFactory(int, int), and DefaultDateTypeAdapter(DefaultDateTypeAdapter.DateType, int, int) are not tested at all.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      1       |       3       |       2       |       2        |
+| Statement coverage             |     72%      |      88%      |      53%      |      67%       |
+| Decision coverage              |     56%      |      81%      |      28%      |      50%       |
+| total tests                    |      3       |      10       |       1       |       6        |
+| failed tests                   |      2       |       1       |       0       |       3        |
+| method names start with test   |      no      |      no       |      no       |       no       |
+| private variables used         |      no      |      yes      |      no       |       no       |
+| tokens used                    |    3,406     |    15,664     |     2,429     |     13,227     |
+| tokens per decision coverage % |      61      |      193      |      87       |      265       |
+Gemma4 had much more coverage in both modes. If GPT-OSS generated more tests, it would have had better coverage. Only Gemma4 single performance is acceptable. For 25% more coverage, is it worth to pay 4.5x tokens?
+
+### JavaTimeTypeAdapters
+This file has 1051 statements and 66 decisions.
+#### Gemma Group
+The Generated file contained 3 errors:
+- wrong path for unused import *TypeToken*.
+- text generation fault in factoryReturnsCorrectAdapters
+- misspell of *JavaTimeTypeAdapters* in localDateTest
+
+After fixing all errors, all 3 tests passed.
+
+list of tests:
+1. Factory returns correct adapters for java.time types
+2. Serialization and deserialization of Duration
+3. Serialization and deserialization of LocalDate
+
+Missing coverage:
+- JAVA_TIME_FACTORY has missing branches.
+- offsetTime(Gson), offsetDate Time(Gson), and requireNonNullField(Object, String, JsonReader) are not tested at all.
+- From defined TypeAdapter, these are partially tested:
+    - localDateTime
+    - ZONE_ID
+    - zonedDateTime
+- From defined IntegerTypeAdapters, these are partially tested:
+    - INSTANT
+    - LOCAL_TIME
+    - MONTH
+    - PERIOD
+    - YEAR
+    - YEAR_MONTH
+- From defined TypeAdapter, these are not tested at all:
+    - offsetDateTime
+    - offsetTime
+
+#### Gemma Single
+The Generated file contained 4 errors:
+- in testLocalTime, a variable of undefined *LocalKeyTime* type was created. The variable was not used, so I just removed it.
+- in testZoneIdOffset, *getAdapter* must have *ZoneId.class* as argument.
+- in testZonedDateTime, there was an error with *writeAdapter* argument types.
+- at the last line, there was an *EOF* text.
+
+After fixing all errors, 16 tests passed and a test failed. In testZoneIdException, wrong exception type was excepted.
+
+list of tests:
+1. Duration adapter
+2. Instant adapter
+3. LocalDate adapter
+4. LocalTime adapter
+5. LocalDateTime adapter
+6. MonthDay adapter
+7. OffsetDateTime adapter
+8. OffsetTime adapter
+9. Period adapter
+10. Year adapter
+11. YearMonth adapter
+12. ZoneId adapter (ZoneId)
+13. ZoneId adapter (ZoneOffset)
+14. ZoneId exception for missing fields
+15. ZonedDateTime adapter
+16. factory returns null for non-java.time types
+17. factory returns adapter for java.time types
+
+Utility methods *getAdapter*, *writeAdapter*, and *readAdapter* are generated. A dummy class was also generated for helping a cast which caused another error.  
+After seeing the coverage in group mode, I was surprised to see that single mode managed to cover the majority of this large file.
+
+Missing coverage:
+- offsetDateTime.read(JsonReader), offsetTime.localDateTime(JsonReader), offsetTime.read(JsonReader), zonedDateTime.read(JsonReader), zonedDateTime.write(JsonWriter, ZonedDateTime), and requireNonNullField(Object, String, JsonReader) have missing branches.
+
+#### GPT-OSS Group
+The Generated file contained 3 errors:
+- missing package statement.
+- missing import for *com.google.gson.reflect.TypeToken*.
+- unnecessary text for type of *TypeAdapterFactory* variable.
+
+After fixing all errors, the single generated test passed.
+
+list of tests:
+1. local date time round trip.
+
+A single test for this large file is extremely insufficient.
+
+Missing coverage:
+- requireNonNullField(Object, String, JsonReader) have missing branches.
+- JAVA_TIME_FACTORY has missing branches.
+- offsetTime(Gson), offsetDateTime(Gson), and zonedDateTime(Gson) are not tested at all.
+- From defined TypeAdapter, these are partially tested:
+    - localDateTime
+    - ZONE_ID
+- From defined IntegerTypeAdapters, these are partially tested:
+    - DURATION
+    - INSTANT
+    - MONTH_DAY
+    - PERIOD
+    - YEAR
+    - YEAR_MONTH
+- From defined TypeAdapter, these are not tested at all:
+    - offsetDateTime
+    - offsetTime
+    - zonedDateTime
+
+#### GPT-OSS Single
+The Generated file contained no error.
+
+8 tests passed and a test failed. In zoneIdWithId, I ran into the reflection error where gson cannot access fields in *java.time.ZoneRegion*. Since the class is package private, there is nothing I could do other than just asserting a throw.
+
+list of tests:
+1. duration round trip
+2. instant deserialization
+3. local date time missing field_throws
+4. offset date time round trip
+5. zone id with id
+6. zone id with total seconds
+7. zone id missing fields_throws
+8. month day serialization
+9. zoned date time_null value
+
+Helper method *javaTimeGson* was created.
+
+Missing coverage:
+- offsetTime(Gson) was not tested at all.
+- JAVA_TIME_FACTORY has missing branches.
+- From defined TypeAdapter, these are partially tested:
+    - localDateTime
+    - offsetDateTime
+    - ZONE_ID
+    - zonedDateTime
+- From defined IntegerTypeAdapters, these are partially tested:
+    - INSTANT
+    - MONTH_DAY
+    - PERIOD
+    - YEAR
+    - YEAR_MONTH
+- From defined TypeAdapter, offsetTime was not tested at all.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      3       |       4       |       3       |       0        |
+| Statement coverage             |     39%      |      98%      |      38%      |      67%       |
+| Decision coverage              |     38%      |      89%      |      20%      |      65%       |
+| total tests                    |      3       |      17       |       1       |       9        |
+| failed tests                   |      0       |       1       |       0       |       1        |
+| method names start with test   |      no      |      yes      |      no       |       no       |
+| private variables used         |      no      |      yes      |      no       |       no       |
+| tokens used                    |    9,765     |    31,193     |     6,964     |     14,382     |
+| tokens per decision coverage % |     257      |      350      |      348      |      221       |
+Gemma4 in recent file has been dominating GPT-OSS, but with higher token usage. Only gemma4 single achieved over 80 coverage. This is a large file, so it's better to generate test for this file without other files alongside in the session with a local model.
+
+### JsonAdapterAnnotationTypeAdapterFactory
+This file has 235 statements and 34 decisions.
+#### Gemma Group
+The Generated file contained 3 errors:
+- wrong import path for unused class *ConstructorConstructor*.
+- wrong import path for *com.google.gson.reflect.TypeToken*.
+- utility class *DummyAdapter* was implementing class *TypeAdapter* instead of extending it.
+
+After fixing all errors, all 2 tests passed.
+
+list of tests:
+1. Factory returns null if no annotation is present
+2. Factory returns adapter for TypeAdapter annotation
+
+Utility classes *DummyAdapter*, *AdapterFactory*, *AnnotatedClass*, and *FactoryAnnotatedClass* were generated.  
+The second test didn't have a body.  
+This test covered no decision point.
+
+Missing coverage:
+- create(Gson, TypeToken) has missing branches.
+- areSameFactories(TypeAdapterFactory, TypeAdapterFactory), createAdapter(ConstructorConstructor, Class), getTypeAdapter(ConstructorConstructor, Gson, TypeToken, JsonAdapter, boolean), isClassJsonAdapterFactory(Type Token, TypeAdapterFactory), putFactoryAndGetCurrent(Class, TypeAdapterFactory), and DummyTypeAdapterFactory.create(Gson, TypeToken) are not tested at all.
+
+
+#### Gemma Single
+The Generated file contained 4 errors:
+- in utility class *TestTypeAdapter*, final method *nullSafe* was overridden.
+- Utility class *SimpleConstructorConstructor* was inheriting from final class *ConstructorConstructor*.
+- in create_ReturnsTypeAdapter_WhenAnnotationIsTypeAdapter, couldn't compare instance of *adapter* to *TestTypeAdapter*.
+- isClassJsonAdapterFactory_ReturnsFalse_WhenNoAnnotation and isClassJsonAdapterFactory_ReturnsTrue_WhenFactoryMatches, had initialized *TypeAdapterFactory* wrongly.
+
+After fixing all errors, all 9 tests passed.
+
+list of tests:
+1. create returns null when no annotation is present
+2. create returns TypeAdapter when @JsonAdapter is TypeAdapter
+3. create returns TypeAdapter from factory when @JsonAdapter is TypeAdapterFactory
+4. create returns TreeTypeAdapter when @JsonAdapter is JsonSerializer
+5. create returns TreeTypeAdapter when @JsonAdapter is JsonDeserializer
+6. create throws IllegalArgumentException when @JsonAdapter is invalid type
+7. getTypeAdapter handles isClassAnnotation=false (field annotation)
+8. isClassJsonAdapterFactory returns false when no annotation exists
+9. isClassJsonAdapterFactory returns true when factory matches existing factory
+
+Utility classes *AnnotatedWithAdapter*, *AnnotatedWithFactory*, *AnnotatedWithSerializer*, *AnnotatedWithDeserializer*, *AnnotatedWithInvalidAdapter*, *AnnotatedWithFactoryAndNullSafe*, *TestTypeAdapter*, *TestTypeAdapterFactory*, *TestTypeBooleanAdapter*, *TestJsonSerializer*, and *TestJsonDeserializer* were generated.
+
+Missing coverage:
+- areSameFactories(TypeAdapterFactory, TypeAdapterFactory), isClassJsonAdapterFactory(Type Token, TypeAdapterFactory), putFactoryAndGetCurrent(Class, TypeAdapterFactory), and getTypeAdapter(ConstructorConstructor, Gson, TypeToken, JsonAdapter, boolean) have missing branches.
+- DummyTypeAdapterFactory.create(Gson, TypeToken) is not tested at all.
+
+#### GPT-OSS Group
+The Generated file contained 5 errors:
+- missing package statement.
+- missing import statement for *com.google.gson.internal.ConstructorConstructor*.
+- missing import statement for *com.google.gson.reflect.TypeToken*.
+- in utility class *MyAdapter*, *write* and *read* methods access can only be public which weren't.
+- in the test, *ConstructorConstructor* was instantiated incorrectly.
+
+After fixing all errors, the single test failed. The assertion was incorrect.
+
+list of tests:
+1. factory provides adapter
+
+Utility classes *TestClass* and *MyAdapter* were generated.  
+A single test for this file is inadequate.
+
+Coverage:
+- create(Gson, TypeToken) has missing branches.
+- getAnnotation(Class) and JsonAdapterAnnotationTypeAdapterFactory(ConstructorConstructor) are thoroughly covered.
+
+#### GPT-OSS Single
+The Generated file contained 4 errors:
+- missing package statement.
+- wrong instantiation of private variable *CONSTRUCTOR_CONSTRUCTOR*.
+- Five methods had the wrong type for *adapter* variable.
+- the last assertion in testCreateWithTypeAdapterAnnotation had error.
+
+After fixing all errors, 5 tests passed and a tests failed. in testCreateWithInvalidAdapterClassThrows, no exception is thrown.
+
+
+list of tests:
+1. create with type adapter annotation
+2. create with factory annotation
+3. create with serializer annotation
+4. create with deserializer annotation
+5. create with invalid adapter class throws
+6. create without annotation returns null
+
+Utility classes *DummyAdapter*, *DummyTypeAdapterClass*, *DummyFactoryClass*, *DummySerializer*, *DummyDeserializer*, *DummySerializerClass*, *DummyDeserializerClass*, and *NoAnnotationClass* are generated.
+
+Missing coverage:
+- getTypeAdapter(ConstructorConstructor, Gson, TypeToken, JsonAdapter, boolean) and putFactoryAndGetCurrent(Class, TypeAdapterFactory) have missing branches.
+- isClassJsonAdapterFactory(TypeToken, TypeAdapterFactory), and DummyTypeAdapterFactory areSameFactories(TypeAdapterFactory, TypeAdapterFactory) are not tested at all.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      3       |       4       |       5       |       4        |
+| Statement coverage             |     16%      |      85%      |      16%      |      65%       |
+| Decision coverage              |      0%      |      73%      |      3%       |      56%       |
+| total tests                    |      2       |       9       |       1       |       6        |
+| failed tests                   |      0       |       0       |       1       |       1        |
+| method names start with test   |      no      |      no       |      no       |      yes       |
+| private variables used         |      no      |      yes      |      no       |      yes       |
+| tokens used                    |    3,230     |    18,927     |     2,303     |     13,279     |
+| tokens per decision coverage % |   INFINITE   |      259      |      768      |      237       |
+Group models did terrible. Singe model, however, did much better. Gemma wins again. One main reason why Gemma has been winning could be generating more tests. Cost per percent is slightly higher, but it's probably worth it for 20% more coverage in both statement and decision.
+
+### JsonElementTypeAdapter
+This file has 268 statements and 46 decisions.
+#### Gemma Group
+The Generated file contained 6 errors:
+- usage '/' instead of '.' in an import statement.
+- importing unused and non-existing *JsonStringWriter*
+- missing import for *java.util.stream.Stream*.
+- in writeJsonNull, an unused and non-existing variable of *StringCRenderer* is initialized.
+- in readNumber, an unused and non-existing variable of *JsonTokenReader* is initialized.
+- in readArray, non-defined variable array was passed to a method.
+
+After fixing all errors, all 14 tests passed.
+
+list of tests:
+1. write: null value writes null
+2. write: JsonNull writes null
+3. [parametrized] write: primitives (string, number, boolean) (3 tests)
+4. write: JsonArray writes array elements
+5. write: JsonObject writes object members
+6. read: read string
+7. read: read number
+8. read: read boolean
+9. read: read null
+10. read: read nested object
+11. read: read nested array
+12. read: unexpected token throws IllegalStateException
+
+The last test doesn't have any assertion.
+
+Missing coverage:
+- read(JsonReader), readTerminal(JsonReader, JsonToken), and write(JsonWriter, JsonElement) have missing branches.
+
+#### Gemma Single
+The Generated file contained no error.
+
+All 4 tests passed.
+
+list of tests:
+1. Serialization and deserialization of JsonPrimitive (String)
+2. Serialization and deserialization of JsonArray
+3. Serialization and deserialization of JsonObject
+4. Serialization and deserialization of JsonNull
+
+Somehow fewer tests are generated in single mode; Coverage has been reduced.
+
+Missing coverage:
+- read(JsonReader), readTerminal(JsonReader, JsonToken), and write(JsonWriter, JsonElement) have missing branches.
+
+#### GPT-OSS Group
+The Generated file contained an error which was missing package statement.
+
+After the error, the single test passed.
+
+list of tests:
+1. read and write simple
+
+Generation of a single test consequently made the coverage low.
+
+Missing coverage:
+- read(JsonReader), readTerminal(JsonReader, Json Token), tryBeginNesting(JsonReader, JsonToken), and write(JsonWriter, JsonElement) have missing branches.
+
+#### GPT-OSS Single
+The Generated file contained no error.
+
+11 tests passed and 2 tests failed. Failed tests are:
+- in readTerminalNumber, the model compared a *BifDecimal* with a *Number*.
+- in readDeepNestedObject, there were two roots before inner.
+
+list of tests:
+1. read() → terminal STRING returns JsonPrimitive with that value
+2. read() → terminal NUMBER returns JsonPrimitive with LazilyParsedNumber
+3. read() → terminal BOOLEAN returns JsonPrimitive with that value
+4. read() → terminal NULL returns JsonNull
+5. read() → simple array of primitives
+6. read() → nested array within object
+7. read() → fully nested object
+8. write() → JsonNull outputs 'null'
+9. write() → primitive number outputs numeric literal
+10. write() → primitive boolean outputs true/false
+11. write() → primitive string outputs JSON string
+12. write() → array serializes elements recursively
+13. write() → object serializes properties recursively
+
+Utility methods *readViaAdapter* and *writeViaAdapter* were generated.
+
+Missing coverage:
+- read(JsonReader), readTerminal(JsonReader, Json Token), and write(JsonWriter, JsonElement) have missing branches.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      6       |       0       |       1       |       0        |
+| Statement coverage             |     89%      |      84%      |      60%      |      93%       |
+| Decision coverage              |     84%      |      78%      |      50%      |      91%       |
+| total tests                    |      14      |       4       |       1       |       13       |
+| failed tests                   |      0       |       0       |       0       |       2        |
+| method names start with test   |      no      |      no       |      no       |       no       |
+| private variables used         |     yes      |      no       |      no       |       no       |
+| tokens used                    |    3,104     |    13,142     |     2,213     |     11,628     |
+| tokens per decision coverage % |      37      |      168      |      44       |      128       |
+This was not a large file, so it was easy to obtain a high coverage even with few tests. Gemma4 in group mode did great. It was better than itself in single mode somehow. In single mode, obviously GPT-OSS was better. I would prefer to generate tests for this file along with some other small files using Gemma4.
+
+### TypeAdapters
+This file has 1890 statements and 177 decisions.
+#### Gemma Group
+The Generated file contained 3 errors:
+- wrong path for unused import *TypeToken*.
+- in many methods, there was a typo in *TypeAdapters*
+- in local test, *writtenJson* name was not completely generated in a usage of it.
+
+After fixing all errors, all 6 tests passed.
+
+list of tests:
+1. BitSet serialization and deserialization
+2. Boolean serialization and deserialization
+3. Byte serialization and deserialization
+4. Short serialization and deserialization
+5. Integer serialization and deserialization
+6. Locale serialization and deserialization
+
+Six tests for such a large file is not even close to enough.
+
+Missing coverage:
+- atomicLongArrayAdapter(TypeAdapter), javaTimeTypeAdapterFactory(), and newTypeHierarchyFactory(Class, TypeAdapter) have missing branches.
+- TypeAdapters(), BOOLEAN_FACTORY, checkValidFloatingPoint(double), newFactory(Type Token, TypeAdapter), and toIntExact(long) are not tested at all.
+- TypeAdapters below are not fully covered:
+    - CLASS
+    - BitSet
+    - BOOLEAN
+    - BOOLEAN_AS_STRING
+    - SHORT
+    - INTEGER
+    - ATOMIC_INTEGER
+    - atomicLongAdapter
+    - ATOMIC_BOOLEAN
+    - ATOMIC_INTEGER_ARRAY
+    - LONG
+    - LONG_AS_STRING
+    - FloatAdapter
+    - DoubleAdapter
+    - CHARACTER
+    - STRING
+    - BIG_DECIMAL
+    - BIG_INTEGER
+    - LAZILY_PARSED_NUMBER
+    - STRING_BUILDER
+    - STRING_BUFFER
+    - URI
+    - INET_ADDRESS
+    - CURRENCY
+    - IntegerFieldsTypeAdapter
+    - CALENDAR
+    - LOCALE
+
+#### Gemma Single
+The Generated file contained 4 errors:
+- wrong import path for *com.google.gson.stream.JsonReader*.
+- wrong import path for *com.google.gson.stream.JsonWriter*.
+- in the majority of tests, some parts of the code needed to be surrounded by try-catch block.
+- in bigDecimalAdapter_works, there is a text generation error.
+
+After fixing all errors, 17 tests passed and 5 tests failed. Failed tests are:
+- in bitSetAdapter_works, ending and array with writer was redundant and caused exception. Furthermore, the last assertion was wrong.
+- in bigDecimalAdapter_works, the first assertion was wrong.
+- in bigIntegerAdapter_works, two assertions were wrong.
+- in urlAdapter_works, the first assertion was wrong, then a *JsonReader* had to be set into *Lenient* mode to read a malformed json.
+- in uuidAdapter_works, the expected string was wrong.
+
+list of tests:
+1. CLASS adapter throws exception on write and read
+2. BIT_SET adapter read and write
+3. [parametrized] BOOLEAN adapter read and write (4 tests)
+4. BOOLEAN_AS_STRING adapter read and write
+5. BYTE adapter read and write
+6. SHORT adapter read and write
+7. INTEGER adapter read and write
+8. ATOMIC_INTEGER adapter read and write
+9. ATOMIC_BOOLEAN adapter read and write
+10. ATOMIC_INTEGER_ARRAY adapter read and write
+11. LONG adapter read and write
+12. FLOAT adapter read and write
+13. DOUBLE adapter read and write
+14. CHARACTER adapter read and write
+15. STRING adapter read and write
+16. BigDecimal adapter read and write
+17. BigInteger adapter read and write
+18. URL adapter read and write
+19. UUID adapter read and write
+
+Utility methods *createReader*, *writeToString*, *readSD*, and *TypeAdapters_BIG_INTEGER_read_STUB* were generated.
+
+Missing coverage:
+- TypeAdapters(), atomicLongAdapter(TypeAdapter), atomicLongArrayAdapter(TypeAdapter), BOOLEAN_FACTORY, checkValidFloatingPoint(double), javaTimeTypeAdapterFactory(), newFactory(Type Token, TypeAdapter), newFactoryForMultipleTypes(Class, Class, TypeAdapter), newTypeHierarchyFactory(Class, TypeAdapter), toIntExact(long), and toString() are not tested at all.
+- TypeAdapters below are not fully covered:
+    - BitSet
+    - BOOLEAN
+    - BOOLEAN_AS_STRING
+    - SHORT
+    - INTEGER
+    - ATOMIC_INTEGER
+    - ATOMIC_INTEGER_ARRAY
+    - LONG
+    - LONG_AS_STRING
+    - FloatAdapter
+    - DoubleAdapter
+    - CHARACTER
+    - BIG_DECIMAL
+    - BIG_INTEGER
+    - LAZILY_PARSED_NUMBER
+    - STRING_BUILDER
+    - STRING_BUFFER
+    - URI
+    - INET_ADDRESS
+    - CURRENCY
+    - IntegerFieldsTypeAdapter
+    - CALENDAR
+    - LOCALE
+- TypeAdapterFactories below are not fully covered:
+    - BOOLEAN_FACTORY
+
+#### GPT-OSS Group
+The Generated file contained an error which was missing package statement.
+
+After fixing all errors, the single test passed.
+
+list of tests:
+1. string adapter reads and writes
+
+One single test for a large file like this is ridiculous.
+
+Missing coverage:
+- TypeAdapters(), atomicLongAdapter(TypeAdapter), atomicLongArrayAdapter(TypeAdapter), BOOLEAN_FACTORY, checkValidFloatingPoint(double), javaTimeTypeAdapterFactory(), newFactory(Type Token, TypeAdapter), newFactoryForMultipleTypes(Class, Class, TypeAdapter), newTypeHierarchyFactory(Class, TypeAdapter), toIntExact(long), and toString() are not tested at all.
+- TypeAdapters below are not fully covered:
+    - CLASS
+    - BitSet
+    - BOOLEAN
+    - BOOLEAN_AS_STRING
+    - BYTE
+    - SHORT
+    - INTEGER
+    - ATOMIC_INTEGER
+    - ATOMIC_BOOLEAN
+    - ATOMIC_INTEGER_ARRAY
+    - LONG
+    - LONG_AS_STRING
+    - FloatAdapter
+    - DoubleAdapter
+    - CHARACTER
+    - STRING
+    - BIG_DECIMAL
+    - BIG_INTEGER
+    - LAZILY_PARSED_NUMBER
+    - STRING_BUILDER
+    - STRING_BUFFER
+    - URI
+    - INET_ADDRESS
+    - CURRENCY
+    - IntegerFieldsTypeAdapter
+    - CALENDAR
+    - LOCALE
+
+#### GPT-OSS Single
+The Generated file contained 2 errors:
+- missing package statement.
+- in testByteAdapter, IOException must be added to method signature.
+
+After fixing all errors, all 6 tests passed.
+
+list of tests:
+1. BitSet adapter reads valid values
+2. BitSet adapter throws on invalid integer
+3. BitSet adapter throws on invalid type
+4. BitSet adapter writes correctly
+5. Boolean adapter handles null, string, and boolean values
+6. Byte adapter respects bounds and throws on overflow
+
+That only six tests are generated for one of the largest files in the project is very surprising. Low coverage can be blamed on it.
+
+Missing coverage:
+- TypeAdapters(), atomicLongAdapter(TypeAdapter), atomicLongArrayAdapter(TypeAdapter), BOOLEAN_FACTORY, checkValidFloatingPoint(double), javaTimeTypeAdapterFactory(), newFactory(Type Token, TypeAdapter), newFactoryForMultipleTypes(Class, Class, TypeAdapter), newTypeHierarchyFactory(Class, TypeAdapter), and tIntExact(long) are not tested at all.
+- TypeAdapters below are not fully covered:
+    - CLASS
+    - BOOLEAN
+    - BOOLEAN_AS_STRING
+    - BYTE
+    - SHORT
+    - INTEGER
+    - ATOMIC_INTEGER
+    - ATOMIC_BOOLEAN
+    - ATOMIC_INTEGER_ARRAY
+    - LONG
+    - LONG_AS_STRING
+    - FloatAdapter
+    - DoubleAdapter
+    - CHARACTER
+    - STRING
+    - BIG_DECIMAL
+    - BIG_INTEGER
+    - LAZILY_PARSED_NUMBER
+    - STRING_BUILDER
+    - STRING_BUFFER
+    - URI
+    - INET_ADDRESS
+    - UUID
+    - CURRENCY
+    - IntegerFieldsTypeAdapter
+    - CALENDAR
+    - LOCALE
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      3       |       4       |       1       |       2        |
+| Statement coverage             |     39%      |      53%      |      24%      |      31%       |
+| Decision coverage              |     20%      |      40%      |      1%       |      14%       |
+| total tests                    |      6       |      22       |       1       |       6        |
+| failed tests                   |      0       |       5       |       0       |       0        |
+| method names start with test   |      no      |      no       |      no       |      yes       |
+| private variables used         |      no      |      no       |      no       |       no       |
+| tokens used                    |    23,719    |    31,257     |    16,916     |     18,447     |
+| tokens per decision coverage % |    1,186     |      781      |    16,916     |     1,317      |
+All models performed terrible. We have seen before that these local models cannot generate tests with high coverage for large files. Gemma4 performed better, but the coverage is very low in both modes.
+
+## Group 7: Internal utilities/data structures
+# TODO
+Gemini Group didn't generate UnsafeAllocatorTest in the first prompt and had to prompt it again.
+OSS Group didn't generate tests for Streams and UnsafeAllocator and was given a prompt, then stopped and was given "continue".  
+Gemma4 single placed StreamsTest at test\com\google\gson\internal\StreamsTest.java instead of src\test\com\google\gson\internal\StreamsTest.java  
+Gemini single
+### LinkedTreeMap
+This file has 1149 statements and 180 decisions.
+#### Gemma Group
+The Generated file contained an errors. In remove, there was a text generation fault.
+
+After fixing the error, 8 tests passed and a test failed. In nodeOperations, the last assertion was expecting wrong value.
+
+list of tests:
+1. Natural order constructor and basic operations
+2. Constructor with comparator
+3. Constructor with allowNullValues = false
+4. Put returns previous value
+5. Remove operation
+6. Clear operation
+7. Null key throws exception
+8. Concurrent modification detection
+9. Node.setValue and Node.getKey
+
+Missing coverage:
+- LinkedTreeMapIterator.nextNode(), Node.setValue(Object), find(Object, boolean), findByObject(Object), rebalance(LinkedTreeMap.Node, boolean), remove(Object), removeInternal(LinkedTreeMap.Node, boolean), replaceInParent(LinkedTreeMap.Node, LinkedTreeMap.Node), and rotateLeft(LinkedTreeMap.Node) have missing branches.
+- EntrySet.clear(), EntrySet.contains(Object), EntrySet.remove(Object), EntrySet.size(), KeySet.clear(), KeySet.contains(Object), KeySet.remove(Object), KeySet.size(), LinkedTreeMapIterator.hasNext(), LinkedTreeMapIterator.remove(), equal(Object, Object), findByEntry(Map.Entry), readObject(ObjectInputStream), rotateRight(LinkedTreeMap.Node), and writeReplace() are not tested at all.
+
+
+#### Gemma Single
+The Generated file contained 2 errors:
+- wrong import path for *java.util.ConcurrentModificationException*.
+- text generation error in putNullKeyThrowsNPE and iteratorConcurrentModification.
+
+After fixing all errors, 22 tests passed and 3 tests failed. Failed tests are:
+- in defaultConstructor, the first assertion was wrong. It also looks like the model failed to fully generate this test. Also, putting null as key will throw exception.
+- in customComparator, the order of assertions was wrong.
+- in testReadObjectThrows, initializing a *ObjectInputStream* throws an exception. I was not able to fix this and the last assertion was removed.
+
+list of tests:
+1. Default constructor creates natural order map allowing null values
+2. Constructor with allowNullValues=false prevents null values
+3. Constructor with custom comparator
+4. Put throws NPE if key is null
+5. Put throws NPE if value is null and null values not allowed
+6. Put updates value for existing key and return old value
+7. Get returns null for non-existent key
+8. ContainsKey returns true for existing key
+9. Trigger Left Rotation (Right-Right Case)
+10. Trigger Right Rotation (Left-Left Case)
+11. Trigger Left-Right Rotation
+12. Trigger Right-Left Rotation
+13. Remove existing key
+14. Remove non-existent key returns null
+15. Remove key that triggers complex node restructuring
+16. KeySet iterator works correctly
+17. Iterator throws NoSuchElementException when empty
+18. Iterator throws ConcurrentModificationException on modification
+19. Iterator.remove works correctly
+20. Clear empties the map
+21. writeReplace returns LinkedHashMap
+22. readObject throws InvalidObjectException
+23. Node setValue updates value and returns old value
+24. Node equals and hashCode
+25. Node first and last traversal
+
+Missing coverage:
+- replaceInParent(LinkedTreeMap.Node, LinkedTreeMap.Node), LinkedTreeMapIterator.remove(), Node.equals(Object), Node.last(), Node.setValue(Object), find(Object, boolean), findByObject(Object), rebalance(LinkedTreeMap.Node, boolean), removeInternal(LinkedTreeMap.Node, boolean), rotateLeft(LinkedTreeMap.Node), and rotateRight(LinkedTreeMap.Node) have missing branches.
+- EntrySet.clear(), EntrySet.contains(Object), EntrySet.remove(Object), EntrySet.size(), KeySet.clear(), KeySet.contains(Object), KeySet.remove(Object), KeySet.size(), Node.first(), Node.hashCode(), Node.toString(), equal(Object, Object), findByEntry(Map.Entry), and readObject(ObjectInputStream) are not tested at all.
+
+#### GPT-OSS Group
+The Generated file contained no error.
+
+8 tests passed and a test failed. in nullValueNotAllowed, the assertion is wrong.
+
+list of tests:
+1. put, get and size
+2. duplicate key updates value and returns old value
+3. containsKey and remove
+4. insertion order preserved in entrySet
+5. insertion order preserved in keySet
+6. null key throws NullPointerException
+7. null value is not allowed when constructor flag is false
+8. null value allowed when allowNullValues is true
+9. clear empties the map
+
+Missing coverage:
+- LinkedTreeMapIterator.nextNode(), find(Object, boolean), findByObject(Object), get(Object), put(Object, Object), rebalance(LinkedTreeMap.Node, boolean), removeInternal(LinkedTreeMap.Node, boolean), replaceInParent(LinkedTreeMap.Node, LinkedTreeMap.Node), rotateLeft(LinkedTreeMap.Node), and rotateRight(LinkedTreeMap.Node) have missing branches.
+- EntrySet.clear(), EntrySet.contains(Object), EntrySet.remove(Object), EntrySet.size(), KeySet.clear(), KeySet.contains(Object), KeySet.remove(Object), KeySet.size(), LinkedTreeMapIterator.hasNext(), LinkedTreeMapIterator.remove(), Node.equals(Object), Node.first(), Node.getValue(), Node.hashCode(), Node.last(), Node.setValue(Object), Node.toString(), equal(Object, Object), findByEntry(Map.Entry), readObject(ObjectInputStream), and writeReplace() are not tested at all.
+
+#### GPT-OSS Single
+The Generated file contained an error, which was missing package statement.
+
+After fixing the error, 10 tests passed and 4 tests failed. Failed tests are:
+- in putNullValueWhenNotAllowed_ShouldThrowNPE, no exception is thrown.
+- in writeReplace_ShouldReturnLinkedHashMapEquivalent, the agent tried to access a private method.
+- in findWithNullComparatorAndNonComparableKey_ShouldThrowCce, no exception is thrown.
+- in findWithCustomComparator_ShouldRespectOrder, the assertions order was wrong.
+
+list of tests:
+1. put and get should store and return values
+2. put null key should throw NPE
+3. put null value when not allowed should throw NPE
+4. put null value allowed should accept null
+5. put existing key should replace value
+6. remove existing key should return value and decrement size
+7. remove non-existing key should return null
+8. clear should reset size and iteration
+9. iteration order should reflect insertion order
+10. entry set contains works with matching entry
+11. key set contains key
+12. write replace should return linked hash map equivalent
+13. find with null comparator and non-comparable key should throw cce
+14. find with custom comparator should respect order
+
+Missing coverage:
+- EntrySet.contains(Object), LinkedTreeMapIterator.hasNext(), LinkedTreeMapIterator.nextNode(), find(Object, boolean), findByObject(Object), put(Object, Object), rebalance(LinkedTreeMap.Node, boolean), removeInternal(LinkedTreeMap.Node, boolean), replaceInParent(LinkedTreeMap.Node, LinkedTreeMap.Node), and rotateLeft(LinkedTreeMap.Node) have missing branches.
+- EntrySet.clear(), EntrySet.remove(Object), KeySet.clear(), KeySet.remove(Object), KeySet.size(), LinkedTreeMapIterator.remove(), equals(Object), first(), hashCode(), last(), readObject(ObjectInputStream), rotateRight(LinkedTreeMap.Node), setValue(Object), toString(), and writeReplace() are not tested at all.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      1       |       2       |       0       |       1        |
+| Statement coverage             |     56%      |      81%      |      60%      |      57%       |
+| Decision coverage              |     38%      |      64%      |      42%      |      41%       |
+| total tests                    |      9       |      25       |       9       |       14       |
+| failed tests                   |      1       |       3       |       1       |       4        |
+| method names start with test   |      no      |      yes      |      no       |       no       |
+| private variables used         |      no      |      no       |      no       |      yes       |
+| tokens used                    |    17,434    |    22,008     |    15,686     |     16,337     |
+| tokens per decision coverage % |     459      |      344      |      373      |      398       |
+As we can see, the difference between token usage is not much. It can be credited to this file being very large in contrast to other files in its group. Still, the difference between single and group mode is evident with Gemma4. GPT-OSS somehow performed worst in single mode. Gemma4 Single is definitely the best option for this file, although the coverage isn't satisfactory.
+
+### ISO8601Utils
+This file has 658 statements and 91 decisions.
+#### Gemma Group
+The Generated file contained 2 errors:
+- wring package statement.
+- in formatDateUTC, misspell of *ISO8601Utils*.
+
+After fixing all errors, 5 tests passed and a test failed. It looks like in parseValidDate, the assertion is expecting a wrong value.
+
+list of tests:
+1. Format date without millis and UTC
+2. Format date with millis and custom timezone
+3. Parse valid ISO8601 string
+4. Parse date with offset
+5. Parse throws exception on invalid format
+6. Parse throws exception on missing timezone
+
+Missing coverage:
+- format(Date, boolean, TimeZone), parse(String, ParsePosition), and parseInt(String, int, int) have missing branches.
+- indexOfNonDigit(String, int) and format(Date, boolean) are not tested at all.
+
+#### Gemma Single
+The Generated file contained 2 errors:
+- in parseLeapSeconds, *cal.set* had an extra argument.
+- text generation error in parseMissingTimezoneIndicator.
+
+
+After fixing all errors, 15 tests passed and 2 tests failed. Failed tests are:
+- in parseLeapSeconds, in an assertEquals both objects had the same toString() values, but the assertion was incorrect.
+- in parseSimpleDate, the assertion was wrong. It could be duo to time zone.
+
+list of tests:
+1. format(Date) should use UTC and no millis
+2. format(Date, boolean) with millis true
+3. format(Date, boolean, TimeZone) with positive offset
+4. format(Date, boolean, TimeZone) with negative offset
+5. [parametrized] parse() should correctly parse various ISO8601 formats (7 tests)
+6. parse() should handle seconds truncation (leap seconds)
+7. parse() should throw exception for invalid timezone indicator
+8. parse() should throw exception for missing timezone indicator
+9. parse() handles +00:00 and +0000 as UTC
+10. parse() should handle simple date format (no time component)
+11. parse() handles different millisecond digit counts
+
+notes
+
+Missing coverage:
+- indexOfNonDigit(String, int), parse(String, ParsePosition), and parseInt(String, int, int) have missing branches.
+
+#### GPT-OSS Group
+The Generated file contained 2 errors:
+- wrong package statement.
+- missing import for *java.text.ParsePosition*.
+
+After fixing all errors, 6 tests passed and a test failed. In formatWithTimeZone, a test failed potentially caused by timezone.
+
+list of tests:
+1. parse a simple date
+2. parse date with millisecond precision
+3. parse date with offset
+4. format defaults to UTC without milliseconds
+5. format with milliseconds
+6. format with non‑UTC time zone
+7. invalid format throws ParseException
+
+an unused utility method *assertDatesEqual* was generated.
+
+Missing coverage:
+- format(Date, boolean, TimeZone), indexOfNonDigit(String, int), parse(String, ParsePosition), and parseInt(String, int, int) have missing branches.
+- format(Date, boolean) is not tested at all.
+
+#### GPT-OSS Single
+The Generated file contained 2 errors:
+- missing package statement.
+- missing import for *java.text.ParsePosition*.
+
+After fixing all errors, 4 tests passed and 2 tests failed. Failed tests are:
+- in parseWithPositiveTimezoneOffset, the test was failing with a difference less than a second. By setting calendar milliseconds to 0, it was fixed.
+- in parseWithNegativeTimezoneOffsetNoMinutes, the same thing as above happened.
+
+list of tests:
+1. parse date only without time
+2. parse date time with millis and utc
+3. parse leap second truncates
+4. parse with positive timezone offset
+5. parse with negative timezone offset no minutes
+6. parse missing timezone throws
+
+Missing coverage:
+- indexOfNonDigit(String, int), parse(String, ParsePosition), and parseInt(String, int, int) have missing branches.
+- format(Date), format(Date, boolean), format(Date, boolean, TimeZone), and padInt(StringBuilder, int, int) are not tested at all.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      2       |       2       |       2       |       2        |
+| Statement coverage             |     77%      |      92%      |      87%      |      60%       |
+| Decision coverage              |     52%      |      71%      |      60%      |      54%       |
+| total tests                    |      6       |      17       |       7       |       6        |
+| failed tests                   |      1       |       2       |       1       |       2        |
+| method names start with test   |      no      |      no       |      no       |       no       |
+| private variables used         |      no      |      no       |      no       |       no       |
+| tokens used                    |    7,777     |    22,459     |     6,943     |     14,496     |
+| tokens per decision coverage % |     150      |      316      |      116      |      268       |
+In Group mode, GPT-OSS performed better. In single mode, Gemma4 was winner. GPT-OSS performed worse in single mode again. This was somewhat a medium-sized file. However, the logic looks straight forward  and there aren't dependencies. Therefore, I was expecting to see a higher coverage.
+
+### Streams
+This file has 180 statements and 10 decisions.
+#### Gemma Group
+The Generated file contained no error.
+
+All 4 tests passed.
+
+list of tests:
+1. Parse empty JSON returns JsonNull
+2. Parse valid JSON object
+3. Parse invalid JSON throws JsonSyntaxException
+4. Write JSON element to writer
+
+Utility class *JsonElementReader* was created.
+
+Missing coverage:
+- private subclasses *AppendableWriter* and *AppendableWriter.CurrentWrite* are not tested at all.
+- Streams() and writerForAppendable(Appendable) are not tested at all.
+
+#### Gemma Single
+The Generated file contained 3 errors:
+- wrong import path for *com.google.gson.stream.JsonWriter*.
+- wrong import path for *java.lang.Appendable*.
+- in writerForAppendable_returnsAppendableWriterIfInputIsAppendable, test needed to have *IOException* in its signature.
+
+After fixing all errors, all 10 tests passed.
+
+list of tests:
+1. parse(JsonReader) - Empty document returns JsonNull
+2. parse(JsonReader) - Valid JSON string
+3. parse(JsonReader) - Throws JsonSyntaxException on MalformedJsonException
+4. parse(JsonReader) - Throws JsonSyntaxException on EOFException when not empty
+5. write(JsonElement, JsonWriter) - Writes JsonNull
+6. write(JsonElement, JsonWriter) - Writes JsonPrimitive (String)
+7. writerForAppendable - Returns Writer if input is Writer
+8. writerForAppendable - Returns AppendableWriter if input is Appendable
+9. AppendableWriter - Closeable behavior
+10. AppendableWriter - Flushable behavior
+
+Utility classes *MockCloseable* and *MockFlushable* are created.
+
+Missing coverage:
+- private subclass *AppendableWriter.CurrentWrite* is not tested at all.
+- AppendableWriter.close(), AppendableWriter.flush(), and parse(JsonReader) have missing branches.
+- AppendableWriter.append(CharSequence, int, int), AppendableWriter.write(String, int, int), AppendableWriter.write(char[], int, int), AppendableWriter.write(int), and Streams() are not tested at all.
+
+#### GPT-OSS Group
+The Generated file contained no error.
+
+All 5 tests passed.
+
+list of tests:
+1. parse(empty) returns JsonNull
+2. parse(invalid) throws JsonSyntaxException
+3. parse(number) returns JsonPrimitive with numeric value
+4. write(JsonElement) produces valid JSON string
+5. writerForAppendable accepts Writer and Appendable
+
+Missing coverage:
+- private subclass *AppendableWriter.CurrentWrite* is not tested at all.
+- AppendableWriter.flush(), and parse(JsonReader) have missing branches.
+- AppendableWriter.append(CharSequence, int, int), AppendableWriter.close(), AppendableWriter.write(char[], int, int), and Streams() are not tested at all.
+
+#### GPT-OSS Single
+The Generated file contained 2 errors:
+- missing import for *java.io.Writer*.
+- in many strings throughout the file, two backslashes were used for '\\"'.
+
+After fixing all errors, 7 tests passed and 2 tests failed. Failed tests are:
+- in parseMalformedJsonException, no exception is thrown.
+- in wrapsAppendable, wrong string was expected.
+
+list of tests:
+1. parses valid JSON object
+2. returns JsonNull for empty input
+3. throws JsonSyntaxException for early EOF
+4. wraps MalformedJsonException as JsonSyntaxException
+5. write(JsonElement, JsonWriter) writes correctly
+6. returns same Writer if appendable is Writer
+7. wraps Appendable into AppendableWriter
+8. flush delegates to Flushable appendable
+9. close delegates to Closeable appendable
+
+Utility classes *TestFlushableAppendable* and *TestCloseableAppendable* were generated.
+
+Missing coverage:
+- private subclass *AppendableWriter.CurrentWrite* is not tested at all.
+- AppendableWriter.close(), and parse(JsonReader) have missing branches.
+- AppendableWriter.append(CharSequence), AppendableWriter.append(CharSequence, int, int), AppendableWriter.write(char[], int, int), and Streams() are not tested at all.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      0       |       3       |       0       |       2        |
+| Statement coverage             |     14%      |      64%      |      45%      |      48%       |
+| Decision coverage              |     40%      |      40%      |      40%      |      70%       |
+| total tests                    |      4       |      10       |       5       |       9        |
+| failed tests                   |      0       |       0       |       0       |       2        |
+| method names start with test   |      no      |      no       |      no       |       no       |
+| private variables used         |      no      |      no       |      no       |       no       |
+| tokens used                    |    4,216     |    19,342     |     3,793     |     14,054     |
+| tokens per decision coverage % |     105      |      484      |      95       |      201       |
+GPT-OSS performed better in group mode. Interestingly, GPT-OSS achieved higher decision coverage in single mode but lower statement coverage. Considering the costs, GPT-OSS is probably winner here. Private subclass *AppendableWriter.CurrentWrite* was not tested at all between all methods. This reduced statement coverage by 22%.
+
+### LazilyParsedNumber
+This file has 82 statements and 4 decisions.
+#### Gemma Group
+The Generated file contained an error. in testCompareTo, there was a text generation error.
+
+After fixing the error, all 6 tests passed.
+
+list of tests:
+1. intValue from various string formats
+2. long Value from various string formats
+3. floatValue and doubleValue
+4. toString returns the original value
+5. equals and hashCode
+6. compareTo uses lexicographical comparison
+
+Missing coverage:
+- equals(Object), intValue(), and longValue() have missing branches.
+- asBigDecimal(), readObject(ObjectInputStream), and writeReplace() are not tested at all.
+
+
+#### Gemma Single
+The Generated file contained an error which was a text generation error in intValue_largeInteger.
+
+After fixing the errors, all 18 tests passed.
+
+list of tests:
+1. [parametrized] intValue returns correct value for simple integers (3 tests)
+2. intValue handles large integers via Long parsing
+3. intValue handles even larger values via BigDecimal parsing
+4. [parametrized] longValue returns correct value for valid longs (2 tests)
+5. longValue handles values exceeding Long.MAX_VALUE via BigDecimal
+6. [parametrized] floatValue returns correct float value (3 tests)
+7. [parametrized] doubleValue returns correct double value (4 tests)
+8. toString returns the original string value
+9. equals and hashCode work correctly
+10. compareTo performs lexicographical comparison of string values
+
+Missing coverage:
+- equals(Object) have a missing branch.
+- readObject(ObjectInputStream) and writeReplace() are not tested at all.
+
+#### GPT-OSS Group
+The Generated file contained no error.
+
+5 tests passed and 2 tests failed. Failed tests are:
+- in intValueOverflow, the assertion is wrong.
+- in compareTo, the assertion is wrong.
+
+list of tests:
+1. intValue parses integer
+2. intValue delegates to BigDecimal for long overflow
+3. longValue from string
+4. floatValue parses correctly
+5. doubleValue parses correctly
+6. compareTo lexicographic
+7. equals and hashCode
+
+Missing coverage:
+- equals(Object), intValue(), and longValue() have missing branches.
+- readObject(ObjectInputStream), toString(), and writeReplace() are not tested at all.
+
+#### GPT-OSS Single
+The Generated file contained an error. In writeReplaceReturnsBigDecimal, the agent tried to access *LazilyParsedNumber.writeReplace* private method.
+
+After fixing the error, 15 tests passed and 2 tests failed. Failed tests are:
+- in intValueFallbackToLong, the assertion is wrong.
+- in readObjectThrows, no exception is thrown.
+
+list of tests:
+1. returns parsed int when value is within int range
+2. falls back to long parsing when int parsing throws NumberFormatException
+3. falls back to BigDecimal when both int and long parsing fail
+4. returns parsed long when value is a valid long
+5. falls back to BigDecimal when long parsing fails
+6. floatValue parses correctly
+7. doubleValue parses correctly
+8. floatValue throws NumberFormatException for invalid value
+9. doubleValue throws NumberFormatException for invalid value
+10. returns the original string value
+11. compareTo uses lexical ordering of the string value
+12. equals returns true for the same instance
+13. equals returns true for different instance with the same value
+14. equals returns false for different value
+15. equals returns false for non‑LazilyParsedNumber
+16. hashCode is derived from the string value
+17. readObject throws InvalidObjectException to disallow direct deserialization
+
+Considering that there is no way to access readObject(ObjectInputStream), these tests obtained full coverage.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      1       |       1       |       0       |       1        |
+| Statement coverage             |     60%      |      87%      |      69%      |      93%       |
+| Decision coverage              |     50%      |      75%      |      50%      |      100%      |
+| total tests                    |      6       |      18       |       7       |       17       |
+| failed tests                   |      0       |       0       |       2       |       2        |
+| method names start with test   |     yes      |      no       |      no       |       no       |
+| private variables used         |      no      |      no       |      no       |       no       |
+| tokens used                    |    2,572     |    13,507     |     2,314     |     11,408     |
+| tokens per decision coverage % |      51      |      180      |      46       |      114       |
+After a while, an agent managed to achieve full coverage (the missing statements for GPT-OSS Single can't be accessed since it's a private method without any usage). GPT-OSS performed better in both modes with less token cost. Duo to low coverage in group mode, Single mode should be chosen to generate tests for this file.
+
+### NumberLimits
+This file has 43 statements and 4 decisions.
+#### Gemma Group
+The Generated file contained no error.
+
+All 5 tests passed.
+
+list of tests:
+1. parseBigDecimal valid strings
+2. parseBigDecimal invalid scale
+3. parseBigDecimal string too long
+4. parseBigInteger valid strings
+5. parseBigInteger string too long
+
+Missing coverage:
+- parseBigDecimal(String) has a missing branch.
+
+#### Gemma Single
+The Generated file contained no error.
+
+All 10 tests passed.
+
+list of tests:
+1. [parametrized] parseBigDecimal: valid inputs (4 tests)
+2. parseBigDecimal: string length exceeds limit
+3. parseBigDecimal: scale exceeds limit
+4. [parametrized] parseBigInteger: valid inputs (3 tests)
+5. parseBigInteger: string length exceeds limit
+
+Missing coverage:
+- parseBigDecimal(String) has a missing branch.
+
+#### GPT-OSS Group
+The Generated file contained no error.
+
+All 5 tests passed.
+
+list of tests:
+1. parseBigDecimal normal
+2. parseBigDecimal too long string throws
+3. parseBigDecimal scale too large throws
+4. parseBigInteger normal
+5. parseBigInteger too long string throws
+
+Missing coverage:
+- parseBigDecimal(String) has a missing branch.
+
+#### GPT-OSS Single
+The Generated file contained an error which was missing package statement.
+
+After fixing the error6 tests passed and a test failed. In parseBigDecimal_TooLargeScale, the assertion was wrong.
+
+list of tests:
+1. parseBigDecimal with valid number returns BigDecimal
+2. parseBigDecimal throws when number string is too long
+3. parseBigDecimal throws when the scale is too large
+4. parseBigDecimal throws on invalid format
+5. parseBigInteger with valid number returns BigInteger
+6. parseBigInteger throws when number string is too long
+7. parseBigInteger throws on invalid format
+
+Missing coverage:
+- parseBigDecimal(String) has a missing branch.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      0       |       0       |       0       |       1        |
+| Statement coverage             |     86%      |      86%      |      86%      |      86%       |
+| Decision coverage              |     75%      |      75%      |      75%      |      75%       |
+| total tests                    |      5       |      10       |       5       |       7        |
+| failed tests                   |      0       |       0       |       0       |       1        |
+| method names start with test   |      no      |      no       |      no       |       no       |
+| private variables used         |      no      |      yes      |      no       |       no       |
+| tokens used                    |     857      |    10,582     |      771      |     10,337     |
+| tokens per decision coverage % |      11      |      141      |      10       |      138       |
+All agents performed exactly the same. They missed a branch in *parseBigDecimal(String)* which requires the scale of the big decimal to be over 10,000. It was actually really easy to cause it to. Between two local models, neither wins. However, since this was a small file, tests should be generated for it along with other small files in order to keep the costs low.
