@@ -3273,7 +3273,7 @@ list of tests:
 Full statement and decision coverage obtained.
 
 #### GPT-OSS Group
-The Generated file contained __ errors:
+The Generated file contained one error:
 - variable *factory* is initiated incorrectly. Since it was not used, I simply removed it.
 
 After fixing the error, all 3 tests passed.
@@ -4911,3 +4911,945 @@ Missing coverage:
 | tokens used                    |     857      |    10,582     |      771      |     10,337     |
 | tokens per decision coverage % |      11      |      141      |      10       |      138       |
 All agents performed exactly the same. They missed a branch in *parseBigDecimal(String)* which requires the scale of the big decimal to be over 10,000. It was actually really easy to cause it to. Between two local models, neither wins. However, since this was a small file, tests should be generated for it along with other small files in order to keep the costs low.
+
+### NonNullElementWrapperList
+This file has 99 statements and 2 decisions.
+#### Gemma Group
+The Generated file contained no error.
+
+All 5 tests passed.
+
+list of tests:
+1. Basic list operations and null prevention
+2. Prevent null on add
+3. Prevent null on set
+4. Contains and other delegate methods
+5. Clear and removeAll
+
+Missing coverage:
+- equals(Object), hashCode(), lastIndexOf(Object), remove(Object), retainAll(Collection), toArray(), and toArray(Object[]) are not tested at all.
+
+#### Gemma Single
+The Generated file contained no error.
+
+All 19 tests passed.
+
+list of tests:
+1. Constructor should throw NullPointerException if a delegate is null
+2. get should return the element at the specified index
+3. size should return the correct size of the delegate
+4. set should update element when not null
+5. set should throw NullPointerException when an element is null
+6. add should add element when not null
+7. add should throw NullPointerException when an element is null
+8. remove(int) should remove element at index
+9. remove(Object) should remove specific object
+10. clear should remove all elements
+11. removeAll should remove all elements in the collection
+12. retainAll should keep only elements in the collection
+13. contains should return true if element exists
+14. indexOf should return correct index
+15. lastIndexOf should return the correct last index
+16. toArray should return array containing elements
+17. toArray(T[]) should return typed array
+18. equals should compare content
+19. hashCode should be consistent with delegate
+
+Full statement and decision coverage attained.
+
+#### GPT-OSS Group
+The Generated file contained an error. In setNull, variable list must have been a *NonNullElementWrapperList<String> Type.
+
+After fixing all errors, all 7 tests passed.
+
+list of tests:
+1. constructor rejects null delegate
+2. add permits non‑null but rejects null
+3. set throws when value is null
+4. remove by index works
+5. remove by object delegates
+6. contains, indexOf, and iterator behave as expected
+7. clear empties underlying collection
+
+Missing coverage:
+- equals(Object), hashCode(), removeAll(Collection retainAll(Collection), set(int, Object), toArray(), and toArray(Object[]) are not tested at all.
+
+#### GPT-OSS Single
+The Generated file contained no error.
+
+All 16 tests passed.
+
+list of tests:
+1. constructor requires non‑null delegate
+2. get returns value
+3. size returns count
+4. indexOf and lastIndexOf work
+5. contains and toArray
+6. toArrayWithType
+7. setAccepts non-null
+8. setThrows on null
+9. add at index accepts non-null
+10. add at index throws on null
+11. remove by index returns element
+12. remove by object returns true if present
+13. remove all and retain all work
+14. clear removes all elements
+15. equals and hash code delegate to internal list
+16. to string matches backing to string
+
+Missing coverage:
+- equals(Object) is not tested at all.
+
+#### Comparison
+| Title                        | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-----------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                 |      0       |       0       |       1       |       0        |
+| Statement coverage           |     66%      |     100%      |      63%      |      94%       |
+| Decision coverage            |     100%     |     100%      |     100%      |      100%      |
+| total tests                  |      5       |      19       |       7       |       16       |
+| failed tests                 |      0       |       0       |       0       |       0        |
+| method names start with test |     yes      |      no       |      no       |       no       |
+| private variables used       |      no      |      yes      |      no       |      yes       |
+| tokens used                  |    3,307     |    13,375     |     2,732     |     10,764     |
+| tokens per stmt coverage %   |      50      |      134      |      43       |      115       |
+Since there are only two branches, all agents readily achieved full decision coverage. That is also why statement coverage is used for cost. Gemma4 slightly performed better. It's surprising that in group mode, full coverage is not obtained for this straight forward file.
+
+### UnsafeAllocator
+This file has 208 statements and 2 decisions.
+#### Gemma Group
+The Generated file contained no error.
+
+The single test passed.
+
+list of tests:
+1. new instance with possible success
+
+A single test for this file is insufficient.
+
+Missing coverage:
+- assertInstantiable(Class) and create() have missing branches.
+
+
+#### Gemma Single
+The Generated file contained an error. In newInstance_success_unsafe, it was not possible to cast *java.lang.Exception* to *java.lang.AssertionError*.
+
+After fixing the error, all 4 tests passed.
+
+list of tests:
+1. newInstance: successful allocation using sun.misc.Unsafe (if available)
+2. newInstance: throws AssertionError for interface
+3. newInstance: throws AssertionError for abstract class
+4. newInstance: throws UnsupportedOperationException if all allocation methods fail
+
+Utility classes *ConcreteClass*, *AbstractClass*, and *NoNoArgsConstructor* were generated. In addition, helper interface *TestInterface* was generated.
+
+Missing coverage:
+- create() has missing branches.
+
+#### GPT-OSS Group
+The Generated file contained no error.
+
+a test passed and a test failed. In newInstanceInterface, wrong exception was expected.
+
+list of tests:
+1. INSTANCE is non‑null
+2. newInstance on interface throws AssertionError or UnsupportedOperationException
+
+Missing coverage:
+- assertInstantiable(Class) and create() have missing branches.
+
+#### GPT-OSS Single
+The Generated file contained an error which was missing package statement.
+
+After fixing the error, all 2 tests passed.
+
+list of tests:
+1. INSTANCE should be available
+2. Allocating a non-instantiable type throws AssertionError
+
+Missing coverage:
+- assertInstantiable(Class) and create() have missing branches.
+
+#### Comparison
+| Title                        | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-----------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                 |      0       |       1       |       0       |       1        |
+| Statement coverage           |     31%      |      34%      |      27%      |      27%       |
+| Decision coverage            |     50%      |     100%      |      50%      |      50%       |
+| total tests                  |      1       |       4       |       2       |       2        |
+| failed tests                 |      0       |       0       |       1       |       0        |
+| method names start with test |     yes      |      no       |      no       |       no       |
+| private variables used       |      no      |      no       |      no       |       no       |
+| tokens used                  |    2,715     |    21,301     |     2,443     |     10,584     |
+| tokens per stmt coverage %   |      88      |      627      |      90       |      392       |
+There were only two branches, so statement coverage is used for calculation of cost. Gemma4 performed slightly better than GPT-OSS. Surprisingly, in single mode, Gemma4 used quite many tokens. Anyway, all models had a poor statement coverage. Method create() which has the least coverage is the reason why coverage is low. The author said that this class does sneaky things to allocate objects without invoking their constructors. Looks like conditions to run these sneaky things are elusive.
+
+## Group 8: SQL
+### SqlTypesSupport
+This file has 80 statements and 2 decisions.
+#### Gemma Group
+The Generated file contained an error. The agent tried to access undefined *SqlTypesSupport.SQL_TYPE_features* variable.
+
+After fixing the error, the single test passed.
+
+list of tests:
+1. Check if SUPPORTS_SQL_TYPES and factories are initialized correctly
+
+Missing coverage:
+- static{...} have missing branches.
+
+
+#### Gemma Single
+The Generated file contained 1 error:
+- in testSqlTypesSupportConstants, there was a text generation error.
+
+After fixing the error, the single tests passed.
+
+list of tests:
+1. Verify SQL types support constants based on environment
+
+Missing coverage:
+- static {...} has missing branches.
+
+#### GPT-OSS Group
+The Generated file contained 3 errors:
+- in testDateTypeDeserialization, variable *adapter* is initialized incorrectly.
+- in testDateTypeDeserialization, needed to add IOException to method signature.
+- in testDateTypeDeserialization, had to use *read* method since there was no way to set strictness in order to read the malformed json.
+
+After fixing all errors, all 4 tests passed.
+
+list of tests:
+1. SUPPORTS_SQL_TYPES reflects presence in java.sql package
+2. Factories are non‑null when SQL types are supported
+3. Factories are null and list empty when SQL types are unsupported
+4. DateType deserializers preserve SQL type
+
+Missing coverage:
+- static {...} has missing branches.
+
+#### GPT-OSS Single
+The Generated file contained an error which was missing package statement.
+
+After fixing the error, a test passed and a test failed. Since the test environment supports SQL, test whenSqlMissing_thenConstantsAreNull is going to fail.
+
+list of tests:
+1. Static initialization succeeds when java.sql is available
+2. Static initialization when java.sql is missing
+
+
+Missing coverage:
+- static {...} has missing branches.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      1       |       1       |       1       |       1        |
+| Statement coverage             |     66%      |      66%      |      66%      |      66%       |
+| Decision coverage              |     50%      |      50%      |      50%      |      50%       |
+| total tests                    |      1       |       1       |       4       |       2        |
+| failed tests                   |      0       |       0       |       0       |       1        |
+| method names start with test   |      no      |      yes      |      yes      |       no       |
+| private variables used         |      no      |      no       |      no       |       no       |
+| tokens used                    |    5,059     |    12,519     |     4,228     |     11,511     |
+| tokens per decision coverage % |     101      |      250      |      85       |      230       |
+All this class has is a static initialization which is based on whether SQL is supported or not. It is not possible to achieve full coverage in this file. This is a small file to it's better to generate tests along with other small files. Since GPT-OSS consumes fewer tokens, it is the winner.
+
+### SqlDateTypeAdapter
+This file has 98 statements and 6 decisions.
+#### Gemma Group
+The Generated file contained 2 errors:
+- wrong import path for *org.junit.jupiter.api.Assertions.assertNotNull*.
+- initialization of private variable *adapter* with a private constructor.
+
+After fixing all errors, 4 tests passed and 2 tests failed. Failed tests are:
+- in parametrized testRead, because there was comma in a value in CSV source, test was failing even though the value with the comma was surrounded with double quotation. I replaced the CSV source with method source.
+
+list of tests:
+1. writing Date to JSON
+2. writing null Date to JSON
+3. [parametrized] Test reading Date from JSON (2 tests)
+4. reading null from JSON
+5. reading invalid format throws JsonSyntaxException
+
+Missing coverage:
+- SqlDateTypeAdapter.create(Gson, TypeToken) is missing a single branch.
+
+#### Gemma Single
+The Generated file contained 2 errors:
+- in setUp, there was a typo.
+- in writeNull and writeValidDate, non-existing and unnecessary *JsonWriter.endDocument()* was called.
+
+After fixing all errors, 4 tests passed and 2 tests failed. In parametrized readValidDate, CSV source is used to pass date that contains comma in them, and this time, the date is not wrapped around double quotation which doesn't change anything. Did the same thing as previous time.
+
+list of tests:
+1. Factory returns adapter for java.sql.Date
+2. Factory returns null for other types
+3. read returns null when input is JSON NULL
+4. [parametrized] read parses valid date strings (2 tests)
+5. read throws JsonSyntaxException for invalid date format
+6. write writes null as JSON NULL
+7. write parses valid java.sql.Date to string
+
+Full statement and decision coverage obtained.
+
+#### GPT-OSS Group
+The Generated file contained 2 errors:
+- missing import for *com.google.gson.JsonSyntaxException*.
+- instantiation of private variable *adapter* with a private constructor.
+
+After fixing all errors, all 5 tests passed.
+
+list of tests:
+1. write() emits formatted date string
+2. write() writes JSON null for null value
+3. read() constructs java.sql.Date from formatted string
+4. read() returns null for JSON null
+5. read() throws JsonSyntaxException on malformed date
+
+Missing coverage:
+- TypeAdapterFactory.create(Gson, TypeToken) is missing a branch.
+
+#### GPT-OSS Single
+The Generated file contained 2 errors:
+- The agent tried to alias *java.sql.Date* which isn't possible in java.
+- instantiation of private variable *adapter* with a private constructor.
+
+After fixing all errors, all 5 tests passed.
+
+list of tests:
+1. reads null token
+2. reads valid date string
+3. parses with original tz restored after exception
+4. writes null value
+5. writes non‑null SqlDate
+
+Missing coverage:
+- TypeAdapterFactory.create(Gson, TypeToken) is missing a branch.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      2       |       2       |       2       |       2        |
+| Statement coverage             |     99%      |     100%      |      99%      |      99%       |
+| Decision coverage              |     83%      |     100%      |      83%      |      83%       |
+| total tests                    |      6       |       8       |       5       |       5        |
+| failed tests                   |      2       |       2       |       0       |       0        |
+| method names start with test   |     yes      |      yes      |      yes      |       no       |
+| private variables used         |     yes      |      yes      |      yes      |      yes       |
+| tokens used                    |    5,408     |    12,240     |     4,520     |     10,521     |
+| tokens per decision coverage % |      65      |      122      |      54       |      127       |
+Only Gemma4 single mode managed to achieve full coverage. All other agents were missing a single branch. This was a small file, so group mode should be preferred for it since almost the same coverage is achieved with half of token usage.
+
+### SqlTimestampTypeAdapter
+This file has 51 statements and 4 decisions.
+#### Gemma Group
+The Generated file contained 2 errors:
+- wrong import path for *org.junit.jupiter.api.BeforeEach*.
+- invalid text generation in *testWrite*.
+
+After fixing all errors, 4 tests passed and a test failed. In testRead, the agent had the wrong assumption about date format.
+
+list of tests:
+1. factory returns null for non-Timestamp types
+2. factory returns adapter for Timestamp type
+3. writing Timestamp to JSON
+4. reading Timestamp from JSON
+5. reading null from JSON
+
+Missing coverage:
+Full statement and decision coverage attained.
+
+#### Gemma Single
+The Generated file contained 2 errors:
+- missing import for *com.google.gson.TypeAdapter*.
+- a typo in *read_ValidDate_ReturnsTimestamp*.
+
+After fixing all errors, 3 tests passed and 2 tests failed. Failed tests are:
+- in read_ValidDate_ReturnsTimestamp, *Date* variable *originalDate* was initialized with the current time, which resulted in considering hours, minutes, and seconds. The assertion was wrong for that.
+- in write_ValidTimestamp_WritesCorrectJson, milliseconds had to be removed in order for assertion to work correctly.
+
+list of tests:
+1. factory returns adapter for timestamp
+2. factory returns null for other types
+3. read valid date returns timestamp
+4. read null returns null
+5. write valid timestamp writes correct json
+
+Full statement and decision coverage obtained.
+
+#### GPT-OSS Group
+The Generated file contained 2 errors:
+- private variable *dateAdapter* was initialized incorrectly.
+- private variable *adapter* was initialized with a private constructor.
+
+After fixing all errors, 2 tests passed and 1 test failed. In testReadNotNull, the time zone most likely caused an assertion to fail.
+
+list of tests:
+1. read() converts Date to Timestamp
+2. read() returns null for JSON null
+3. write() delegates to underlying DateTypeAdapter
+
+Missing coverage:
+- TypeAdapterFactory.create(Gson, TypeToken) is missing a branch.
+
+#### GPT-OSS Single
+The Generated file contained 2 errors:
+- in write_roundTrip, there was a semicolon after an annotation
+- utility class *TimestampAdapter* was inheriting from final class *SqlTimestampTypeAdapter*.
+
+After fixing all errors, 2 tests passed and 2 tests failed. Failed tests are:
+- in write_roundTrip, time with a wrong format was expected.
+- in read_nonNullNumber, *json* string had a wrong format, and the assertion was wrong.
+
+list of tests:
+1. read() returns Timestamp when JSON contains a number
+2. read() returns null when JSON is null
+3. write() serializes a Timestamp to its epoch milliseconds
+4. Factory returns adapter for Timestamp.class and null otherwise
+
+Utility method *gsonFactoryInstance()* was generated to create a gson instance.
+
+Full statement and decision coverage attained.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      2       |       2       |       2       |       2        |
+| Statement coverage             |     100%     |     100%      |      96%      |      100%      |
+| Decision coverage              |     100%     |     100%      |      75%      |      100%      |
+| total tests                    |      5       |       5       |       3       |       4        |
+| failed tests                   |      1       |       2       |       1       |       2        |
+| method names start with test   |      no      |      no       |      yes      |       no       |
+| private variables used         |     yes      |      yes      |      yes      |       no       |
+| tokens used                    |    3,402     |    14,895     |     2,843     |     10,762     |
+| tokens per decision coverage % |      34      |      149      |      38       |      108       |
+Only GPT-OSS Group didn't achieve full coverage since it missed a single branch. Therefore, Gemma4 performed better here, however, GPT-OSS used fewer tokens. Generating tests with other small files along with this is preferred then.
+
+### SqlTimeTypeAdapter
+This file has 98 statements and 6 decisions.
+#### Gemma Group
+The Generated file contained an error:
+- missing import org.junit.jupiter.api.Assertions.*
+
+After fixing the error, all 6 tests passed.
+
+list of tests:
+1. factory returns null for non-Time types
+2. factory returns adapter for Time type
+3. writing Time to JSON
+4. reading Time from JSON
+5. reading null from JSON
+6. reading invalid format throws JsonSyntaxException
+
+Missing coverage:
+- write(JsonWriter, Time) is missing a branch.
+
+
+#### Gemma Single
+The Generated file contained 3 errors:
+- wrong instantiation for private variable *SqlTimeTypeAdapter*.
+- usage of undefined variable *SqlTime* in factoryCreate_returnsAdapterForTimeClass and factoryCreate_returnsNullForOtherClasses.
+- in read_parsesValidTimeStrings parameters, a double quotation was missing.
+
+After fixing all errors, 6 tests passed and 3 tests failed. Failed tests are:
+- in read_parsesValidTimeStrings the quotations were not needed and the expected times were wrong.
+
+list of tests:
+1. FACTORY.create returns adapter for Time.class
+2. FACTORY.create returns null for other classes
+3. [parametrized] read returns null when input is JSON NULL (3 tests)
+4. read returns null when input is JSON NULL
+5. read throws JsonSyntaxException for invalid time strings
+6. write writes null as JSON NULL
+7. write writes valid Time as formatted string
+
+Full statement and decision coverage obtained.
+
+#### GPT-OSS Group
+The Generated file contained 2 errors:
+- missing import for *com.google.gson.JsonSyntaxException*.
+- incorrect instantiation of private variable *adapter*.
+
+After fixing all errors, all 5 tests passed.
+
+list of tests:
+1. write() formats Time as 'hh:mm:ss AM/PM'
+2. write() writes JSON null for null value
+3. read() parses formatted time string
+4. read() returns null for JSON null
+5. read() throws JsonSyntaxException on malformed time
+
+Missing coverage:
+- TypeAdapterFactory.create(Gson, TypeToken) is missing a branch.
+
+#### GPT-OSS Single
+The Generated file contained 2 errors:
+- missing package statement.
+- wrong instantiation of private variable *adapter*.
+
+After fixing all errors, all 5 tests passed.
+
+list of tests:
+1. read returns null when JSON value is null
+2. read parses valid 12‑hour time string
+3. read throws JsonSyntaxException for invalid format
+4. write outputs null when value is null
+5. write formats Time object to 12‑hour string
+
+Missing coverage:
+- TypeAdapterFactory.create(Gson, TypeToken) is missing a branch.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      1       |       3       |       2       |       2        |
+| Statement coverage             |     96%      |     100%      |      99%      |      99%       |
+| Decision coverage              |     83%      |     100%      |      83%      |      83%       |
+| total tests                    |      6       |       9       |       5       |       5        |
+| failed tests                   |      0       |       3       |       0       |       0        |
+| method names start with test   |     yes      |      no       |      yes      |      yes       |
+| private variables used         |     yes      |      yes      |      yes      |       no       |
+| tokens used                    |    5,495     |    12,311     |     4,592     |     10,855     |
+| tokens per decision coverage % |      66      |      123      |      55       |      131       |
+This was close between two models. In single mode, Gemma4 achieved complete coverage while GPT-OSS missed a single branch. In group mode, however, GPT-OSS group performed exactly the same but covered slightly more statement than Gemma4. Group mode is preferred for this small file.
+
+## Group 9: Facade/configuration and Miscellaneous
+# TODO
+Gemini Group didn't generate GsonTest in the first prompt and had to prompt it.  
+GPT Group didn't use skill. tried it three times!
+### GsonBuilder
+This file has 1047 statements and 74 decisions.
+#### Gemma Group
+The Generated file contained 4 errors:
+- text generation error in setLongSerializationSerializationPolicy_setsPolicy.
+- usage of non-existing enum *LongSerializationPolicy.OFFSET_LENGTH* in setLongSerializationSerializationPolicy_setsPolicy. Replaced with *DEFAULT*.
+- text generation error in serializeSpecialFloatingPointValues_setsFlag.
+- in addReflectionAccessFilter_addsFilter, the instantiated *ReflectionAccessFilter*, need to override *check(Class) method and the unused method accepts was not overriding something.
+
+After fixing all errors, all 36 tests passed.
+
+list of tests:
+1. setVersion should set the version and return this
+2. setVersion should throw IllegalArgumentException for negative version
+3. setVersion should throw IllegalArgumentException for NaN version
+4. excludeFieldsWithModifiers should set modifiers and return this
+5. generateNonExecutableJson should set the flag and return this
+6. excludeFieldsWithoutExposeAnnotation should set excluder and return this
+7. serializeNulls should set flag and return this
+8. enableComplexMapKeySerialization should set the flag and return this
+9. disableInnerClassSerialization should set excluder and return this
+10. setLongSerializationPolicy should set policy and return this
+11. setFieldNamingPolicy should set policy and return this
+12. setFieldNamingStrategy should set strategy and return this
+13. setObjectToNumberStrategy should set strategy and return this
+14. setNumberToNumberStrategy should set strategy and return this
+15. setExclusionStrategies should set strategies and return this
+16. addSerializationExclusionStrategy should add strategy and return this
+17. addDeserializationExclusionStrategy should add strategy and return this
+18. setPrettyPrinting should set formatting style and return this
+19. setFormattingStyle should set formatting style and return this
+20. setLenient should set strictness to LENIENT and return this
+21. setStrictness should set strictness and return this
+22. disableHtmlEscaping should disable HTML escaping and return this
+23. setDateFormat should set date pattern and return this
+24. setDateFormat should throw IllegalArgumentException for invalid pattern
+25. setDateFormat should set date style and return this
+26. setDateFormat should set date and time style and return this
+27. setDateFormat should throw IllegalArgumentException for invalid date style
+28. registerTypeAdapter should register type adapter and return this
+29. registerTypeAdapter should throw IllegalArgumentException if type adapter is not supported
+30. registerTypeAdapter should throw IllegalArgumentException if attempting to override built-in adapter for Object class
+31. registerTypeAdapterFactory should register factory and return this
+32. registerTypeHierarchyAdapter should register hierarchy adapter and return this
+33. serializeSpecialFloatingPointValues should set flag and return this
+34. disableJdkUnsafe should set flag and return this
+35. addReflectionAccessFilter should add filter and return this
+36. create should return a Gson instance
+
+Helper method *tokenVerify* was generated.
+
+Missing coverage:
+- addDateTypeAdapters(List), addUserDefinedAdapters(List), checkDateFormatStyle(int), createFactories(ConstructorConstructor, JsonAdapterAnnotationTypeAdapterFactory), newImmutableList(Collection), registerTypeAdapter(Type, Object), registerTypeHierarchyAdapter(Class, Object), and setDateFormat(String) have missing branches.
+- GsonBuilder(Gson) is not tested at all.
+
+#### Gemma Single
+The Generated file contained 10 errors:
+- wrong import path for *com.google.gson.TypeAdapterFactory*.
+- in serializeNulls_returnsThis and addSerializationExclusionStrategy_returnsThis, it was not possible to cast the second argument in the first assertion to boolean.
+- across three tests, variable *strategy* must also override *shouldSkipField(FieldAttributes)*, not *shouldSkipField(TypeToken, ExclusionCriteria)*.
+- in setLongSerializationPolicy_returnsThis, undefined enum *LongSerializationPolicy.MAX_VALUE* is used. It was replaced with *DEFAULT*.
+- text generation error before test *setFieldNamingStrategy_null()*.
+- in setDateFormat_null, *Object.toString()* and utility method *toString(GsonBuilder)* were conflicting. Renamed the latter to *toStringUtility*.
+- in registerTypeAdapter_nullType, in the instantiated *TypeAdapter*, read(JsonReader) must be overridden, not read(JsonParsingException).
+- in registerTypeAdapterFactory_returnsThis, variable *factory* must override create(Gson, TypeToken), not create(Type, TypeAdapterContext).
+- in addReflectionAccessFilter_returnsThis, *filter* must override check(Class).
+- in addReflectionAccessFilter_returnsThis, *filter* was overriding non-existing isAllowed(Class, Class, Field, Method)
+
+After fixing all errors, all 53 tests passed.
+
+list of tests:
+1. setVersion with valid version returns this
+2. [parametrized] setVersion with invalid version throws exception (3 tests)
+3. excludeFieldsWithModifiers with valid modifiers returns this
+4. excludeFieldsWithModifiers with null throws exception
+5. generateNonExecutableJson returns this
+6. serializeNulls returns this
+7. enableComplexMapKeySerialization returns this
+8. disableInnerClassSerialization returns this
+9. setPrettyPrinting returns this
+10. disableHtmlEscaping returns this
+11. excludeFieldsWithoutExposeAnnotation returns this
+12. setExclusionStrategies with valid strategies returns this
+13. setExclusionStrategies with null throws exception
+14. addSerializationExclusionStrategy returns this
+15. addDeserializationExclusionStrategy returns this
+16. setLongSerializationPolicy returns this
+17. setLongSerializationPolicy with null throws exception
+18. setFieldNamingPolicy returns this
+19. setFieldNamingPolicy with null throws exception
+20. setFieldNamingStrategy returns this
+21. setFieldNamingStrategy with null throws exception
+22. setObjectToNumberStrategy returns this
+23. setObjectToNumberStrategy with null throws exception
+24. setNumberToNumberStrategy returns this
+25. setNumberToNumberStrategy with null throws exception
+26. setDateFormat with valid pattern returns this
+27. setDateFormat with null pattern does nothing and returns this
+28. setDateFormat with invalid pattern throws exception
+29. setDateFormat with style returns this
+30. setDateFormat with two styles returns this
+31. [parametrized] setDateFormat with invalid style throws exception (3 tests)
+32. registerTypeAdapter with valid adapter returns this
+33. registerTypeAdapter with invalid adapter throws exception
+34. registerTypeAdapter with null type throws exception
+35. registerTypeAdapter with null adapter throws exception
+36. registerTypeAdapter with non-overridable type throws exception
+37. registerTypeAdapterFactory returns this
+38. registerTypeAdapterFactory with null throws exception
+39. registerTypeHierarchyAdapter with valid adapter returns this
+40. registerTypeHierarchyAdapter with invalid adapter throws exception
+41. setStrictness returns this
+42. setStrictness with null throws exception
+43. setLenient returns this
+44. setFormattingStyle returns this
+45. setFormattingStyle with null throws exception
+46. disableJdkUnsafe returns this
+47. serializeSpecialFloatingPointValues returns this
+48. addReflectionAccessFilter returns this
+49. create returns a Gson instance
+
+Utility method *toStringUtility(GsonBuilder)* is generated.
+
+Missing coverage:
+- addDateTypeAdapters(List), addUserDefinedAdapters(List), createFactories(ConstructorConstructor, JsonAdapterAnnotationTypeAdapterFactory), doubleAdapter(), floatAdapter(), newImmutableList(Collection), registerTypeAdapter(Type, Object), and registerTypeHierarchyAdapter(Class, Object) have missing branches.
+- GsonBuilder(Gson) is not tested at all.
+
+#### GPT-OSS Group
+The Generated file contained 5 errors:
+- wrong import path for *com.google.gson.FieldNamingPolicy*.
+- wrong import path for *com.google.gson.LongSerializationPolicy*.
+- wrong import path for *com.google.gson.ToNumberPolicy*.
+- missing import *java.text.DateFormat*.
+- in defaultBuilderCreatesGsonWithDefaults, the last assertion was calling variable *Gson.generateNonExecutableJson* with parenthesis at the end.
+
+After fixing all errors, all 19 tests passed.
+
+list of tests:
+1. setVersion() valid
+2. setVersion() invalid
+3. excludeFieldsWithModifiers() null
+4. generateNonExecutableJson() flag
+5. serializeNulls flag
+6. complexMapKeySerialization flag
+7. setDateFormat() string null
+8. setDateFormat() string valid
+9. setDateFormat() string invalid
+10. setDateFormat() int style
+11. setDateFormat() int style invalid
+12. setDateFormat() int style time style
+13. setStrictness() null
+14. setFieldNamingPolicy()
+15. setLongSerializationPolicy()
+16. setObjectToNumberStrategy()
+17. setNumberToNumberStrategy()
+18. default builder creates gson with defaults
+19. custom builder propagates settings
+
+Missing coverage:
+- addDateTypeAdapters(List), addUserDefinedAdapters(List), checkDateFormatStyle(int), createFactories(ConstructorConstructor, JsonAdapterAnnotationTypeAdapterFactory), doubleAdapter(), floatAdapter(), and newImmutableList(Collection) have missing branches.
+- GsonBuilder(Gson), addDeserializationExclusionStrategy(ExclusionStrategy), addReflectionAccessFilter(ReflectionAccessFilter), addSerializationExclusionStrategy(ExclusionStrategy), disableHtmlEscaping(), disableInnerClassSerialization(), disableJdkUnsafe(), excludeFieldsWithModifiers(int[]), hasNonOverridableAdapter(Type), registerTypeAdapter(Type, Object), registerTypeAdapterFactory(TypeAdapterFactory), registerTypeHierarchyAdapter(Class, Object), serializeSpecialFloatingPointValues(), setExclusionStrategies(ExclusionStrategy[]), setFormattingStyle(FormattingStyle), setLenient(), and setPrettyPrinting() are not tested at all.
+
+#### GPT-OSS Single
+The Generated file contained 2 errors:
+- missing import for *com.google.gson.internal.Excluder*.
+- missing import for *java.text.DateFormat*.
+
+After fixing all errors, all 12 tests passed.
+
+list of tests:
+1. setVersion() accepts valid positive double
+2. setVersion() throws for NaN and negative values
+3. setDateFormat(String) accepts valid pattern and rejects invalid one
+4. setDateFormat(int) accepts valid constants, throws for invalid style
+5. setDateFormat(int,int) accepts valid styles and throws for invalid one
+6. enableComplexMapKeySerialization() sets flag correctly
+7. excludeFieldsWithModifiers() handles null and applies modifiers
+8. serializeSpecialFloatingPointValues() sets flag correctly
+9. disableHtmlEscaping() sets flag correctly
+10. setStrictness accepts() non‑null values
+11. setFieldNamingStrategy() updates policy
+12. setLongSerializationPolicy() updates policy
+
+Missing coverage:
+- addDateTypeAdapters(List), addUserDefinedAdapters(List), checkDateFormatStyle(int), createFactories(ConstructorConstructor, JsonAdapterAnnotation TypeAdapterFactory), doubleAdapter(), floatAdapter(), and newImmutableList(Collection) have missing branches.
+- GsonBuilder(Gson), addDeserializationExclusionStrategy(ExclusionStrategy), addReflectionAccessFilter(ReflectionAccessFilter), addSerializationExclusionStrategy(ExclusionStrategy), disableJdkUnsafe(), disableInnerClassSerialization(), excludeFieldsWithoutExposeAnnotation(), generateNonExecutableJson(), hasNonOverridableAdapter(Type), registerTypeAdapter(Type, Object), registerTypeAdapterFactory(TypeAdapterFactory), registerTypeHierarchyAdapter(Class, Object), serializeNulls(), setExclusionStrategies(ExclusionStrategy[]), setFieldNamingPolicy(FieldNamingPolicy), setFormattingStyle(FormattingStyle), setLenient(), setNumberToNumberStrategy(ToNumberStrategy), setObjectToNumberStrategy(ToNumberStrategy), and setPrettyPrinting() are not tested at all.
+
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      4       |      10       |       5       |       2        |
+| Statement coverage             |     80%      |      71%      |      49%      |      48%       |
+| Decision coverage              |     68%      |      55%      |      24%      |      24%       |
+| total tests                    |      36      |      53       |      19       |       12       |
+| failed tests                   |      0       |       0       |       0       |       0        |
+| method names start with test   |      no      |      no       |      no       |       no       |
+| private variables used         |      no      |      yes      |      no       |       no       |
+| tokens used                    |    37,290    |    31,939     |    19,016     |     24,634     |
+| tokens per decision coverage % |     548      |      581      |      792      |      1026      |
+Gemma4 did much better than GPT-OSS. Somehow, both group mode covered more of  the file. We can see that Gemma4 in group mode actually used more tokens.
+
+### Gson
+This file has 869 statements and 74 decisions.
+#### Gemma Group
+The Generated file contained no error.
+
+All 18 tests passed.
+
+list of tests:
+1. newBuilder() should return a new GsonBuilder
+2. toJson() should serialize string correctly
+3. fromJson() should deserialize string correctly
+4. toJson() should serialize integer correctly
+5. fromJson() should deserialize integer correctly
+6. serializeNulls() should return false by default
+7. htmlSafe() should return true by default
+8. toJsonTree() should return JsonElement
+9. fromJson() with TypeToken should work
+10. newJsonWriter() should return JsonWriter
+11. newJsonReader() should return JsonReader
+12. fromJson() with Reader and Class should work
+13. toJson() with Appendable should work
+14. toJson() with Type and Appendable should work
+15. fromJson() with null should return null
+16. toJson() with null should return JSON null
+17. fromJson(JsonReader, TypeToken) should work
+18. toJson(JsonElement, JsonWriter) should work
+
+Utility class *TestClass* was created.
+
+Missing coverage:
+- excluder() is not tested at all, however, it is a deprecated method.
+- FutureTypeAdapter.setDelegate(TypeAdapter), Gson(GsonBuilder), assertFullConsumption(Object, JsonReader), fromJson(JsonReader, Type Token), getAdapter(TypeToken), newJsonReader(Reader), newJsonWriter(Writer), toJson(JsonElement, Appendable), toJson(JsonElement, JsonWriter), toJson(Object), toJson(Object, Appendable), toJson(Object, Type, Appendable), toJson(Object, Type, JsonWriter), and toJsonTree(Object) have missing branches.
+- FutureTypeAdapter.delegate(), FutureTypeAdapter.getSerializationDelegate(), FutureTypeAdapter.read(JsonReader), FutureTypeAdapter.write(JsonWriter, Object), fieldNamingStrategy(), fromJson(JsonElement, Class), fromJson(JsonElement, Type), fromJson(JsonElement, Type Token), fromJson(Reader, Type), getAdapter(Class), getDelegateAdapter(TypeAdapterFactory, Type Token), and toString() are not tested at all.
+
+
+#### Gemma Single
+The Generated file contained 4 errors:
+- missing import for *java.io.StringWriter*.
+- missing import for *com.google.gson.stream.JsonWriter*.
+- missing import for *java.io.Reader*.
+- missing import for *java. io. Writer*.
+
+After fixing all errors, all 27 tests passed.
+
+list of tests:
+1. toJson(Object) - handles null source
+2. toJson(Object, Type) - serializes simple type
+3. toJson(Object, Appendable) - writes to appendable
+4. toJson(Object, Type, Appendable) - writes to appendable with type
+5. toJson(Object, Type, JsonWriter) - writes to JsonWriter
+6. toJson(JsonElement) - serializes JsonElement
+7. toJson(JsonElement, Appendable) - writes JsonElement to appendable
+8. toJson(JsonElement, JsonWriter) - writes JsonElement to JsonWriter
+9. fromJson(String, Class) - deserializes simple class
+10. fromJson(String, Type) - deserializes parameterized type
+11. fromJson(String, TypeToken) - deserializes with TypeToken
+12. fromJson(String, TypeToken) - handles null input
+13. fromJson(Reader, Class) - deserializes from Reader
+14. fromJson(Reader, Type) - deserializes from Reader with Type
+15. fromJson(Reader, TypeToken) - deserializes from Reader with TypeToken and checks consumption
+16. fromJson(JsonElement, Class) - deserializes from JsonElement
+17. fromJson(JsonElement, Type) - deserializes from JsonElement with Type
+18. fromJson(JsonElement, TypeToken) - deserializes from JsonElement with TypeToken
+19. fromJson(JsonReader, Type) - deserializes from JsonReader
+20. fromJson(JsonReader, TypeToken) - deserializes from JsonReader with TypeToken
+21. newJsonWriter(JsonWriter) - applies configuration
+22. newJsonReader(JsonReader) - applies configuration
+23. getAdapter(Class) - works for Class
+24. getAdapter(TypeToken) - works for TypeToken
+25. getDelegateAdapter() - basic functionality check
+26. newBuilder() - returns new builder
+27. toString() - returns class info
+
+Helper class *TestClass* was generated.
+
+Missing coverage:
+- excluder() is not tested at all, however, it is a deprecated method.
+- FutureTypeAdapter.setDelegate(TypeAdapter), Gson(GsonBuilder), assertFullConsumption(Object, JsonReader), fromJson(JsonElement, Type Token), fromJson(JsonReader, Type Token), getAdapter(TypeToken), newJsonReader(Reader), newJsonWriter(Writer), toJson(JsonElement, Appendable), toJson(JsonElement, JsonWriter), toJson(Object, Appendable), toJson(Object, Type, Appendable), and toJson(Object, Type, JsonWriter) have missing branches.
+- FutureTypeAdapter.getSerializationDelegate(), FutureTypeAdapter.read(JsonReader), FutureTypeAdapter.write(JsonWriter, Object) fieldNamingStrategy(), fromJson(JsonElement, Type), getDelegateAdapter(TypeAdapterFactory, TypeToken), htmlSafe(), serializeNulls(), toJson(Object), toJsonTree(Object), and toJsonTree(Object, Type) are not tested at all.
+
+#### GPT-OSS Group
+The Generated file contained 5 errors:
+- missing import for *java.text.DateFormat*.
+- missing import for *com.google.gson.stream.JsonWriter*.
+- missing import for *java.io.StringReader*.
+- in toJsonWithFormatting, the second argument of the first assertion had error.
+- in newJsonWriterProperties, the agent tried to access undefined *Gson.JSON_NON_EXECUTABLE_PREFIX*. The assertion using it was commented.
+
+After fixing all errors, all 11 tests passed.
+
+list of tests:
+1. toJson() null
+2. toJson() empty string
+3. toJson() map
+4. toJson() with formatting
+5. newJsonWriter() properties
+6. fromJson() null string
+7. fromJson() empty string
+8. fromJson() valid
+9. fromJson() invalid number
+10. fromJson() with reader and full consumption
+11. fromJson() with trailing data
+
+Helper class *SimplePojo* was created.
+
+Missing coverage:
+- excluder() is not tested at all. However, it is a deprecated method.
+- FutureTypeAdapter.setDelegate(TypeAdapter), Gson(GsonBuilder), assertFullConsumption(Object, JsonReader), fromJson(JsonReader, Type Token), getAdapter(TypeToken), newJsonReader(Reader), newJsonWriter(Writer), toJson(JsonElement, Appendable), toJson(JsonElement, JsonWriter), toJson(Object, Type, Appendable), and toJson(Object, Type, JsonWriter) have missing branches.
+- FutureTypeAdapter.delegate(), FutureTypeAdapter.getSerializationDelegate(), FutureTypeAdapter.read(JsonReader), FutureTypeAdapter.write(JsonWriter, Object), Gson(), JsonElement, Class), fieldNamingStrategy(), fromJson fromJson(JsonElement, Type), fromJson(JsonElement, Type Token), fromJson(JsonReader, Type), fromJson(Reader, Type), fromJson(String, Type), getAdapter(Class), getDelegateAdapter(TypeAdapterFactory, Type Token), htmlSafe(), newBuilder(), serializeNulls(), toJson(Object, Appendable), toJsonTree(Object), toJsonTree(Object, Type), and toString() are not tested at all.
+
+#### GPT-OSS Single
+The Generated file contained 2 errors:
+- in utility class *FooTypeAdapter*, method *read* wouldn't throw *IOException*; therefore, the try catch block is removed.
+- in gson.jsonAdapterFactory, *gson.jsonAdapterFactory* is undefined. I couldn't fix this, so the test is removed.
+
+After fixing all errors, 11 tests passed and a test failed. In defaultConstructor_initializesFields, the third assertion was wrong.
+
+list of tests:
+1. default constructor should create a fully initialized Gson instance
+2. getAdapter with null should throw NullPointerException
+3. getAdapter for a simple type should return a non‑null adapter
+4. toJson null should return the string \"null\"
+5. toJson non‑null simple object serializes fields correctly
+6. toJson with serializeNulls flag includes null fields
+7. fromJson with null string returns null
+8. fromJson with empty string returns null
+9. fromJson with whitespace returns null
+10. fromJson generic type (List<Person>) returns the correct list
+11. fromJson with malformed JSON throws JsonSyntaxException
+12. getAdapter should cache adapters after first creation
+
+Utility classes *Foo* and *Person* were created.
+
+Missing coverage:
+- excluder() is not tested at all. However, it is a deprecated method.
+- FutureTypeAdapter.setDelegate(TypeAdapter), assertFullConsumption(Object, JsonReader), fromJson(JsonReader, Type Token), getAdapter(TypeToken), newJsonReader(Reader), newJsonWriter(Writer), toJson(JsonElement, Appendable), toJson(JsonElement, JsonWriter), toJson(Object), toJson(Object, Type, Appendable), and toJson(Object, Type, JsonWriter) have missing branches.
+- FutureTypeAdapter.delegate(), FutureTypeAdapter.getSerializationDelegate(), FutureTypeAdapter.read(JsonReader), FutureTypeAdapter.write(JsonWriter, Object), fieldNamingStrategy(), fromJson(JsonElement, Class), fromJson(JsonElement, Type), fromJson(JsonElement, Type Token), fromJson(JsonReader, Type), fromJson(Reader, Class), fromJson(Reader, Type), getAdapter(Class), getDelegateAdapter(TypeAdapterFactory, TypeToken), newBuilder(), toJson(Object, Appendable), toJsonTree(Object), toJsonTree(Object, Type), and toString() are not tested at all.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      0       |       4       |       5       |       2        |
+| Statement coverage             |     63%      |      64%      |      61%      |      63%       |
+| Decision coverage              |     43%      |      42%      |      46%      |      46%       |
+| total tests                    |      18      |      27       |      11       |       12       |
+| failed tests                   |      0       |       0       |       0       |       1        |
+| method names start with test   |      no      |      no       |      no       |       no       |
+| private variables used         |     yes      |      yes      |      yes      |       no       |
+| tokens used                    |    36,308    |    33,434     |    18,516     |     25,553     |
+| tokens per decision coverage % |     844      |      796      |      403      |      556       |
+All generated tests achieved about the same coverage. However, with much less token usage, GPT-OSS wins here. Still, the tests did not cover a good portion of the code. This was a large file, and I was anticipating this.
+
+### PreJava9DateFormatProvider
+This file has 42 statements and 9 decisions.
+#### Gemma Group
+The Generated file contained 2 errors:
+- wrong package statement.
+- a typo in getUsDateTimeFormat_validStyles_returnsCorrectFormat
+
+After fixing all errors, all 5 tests passed.
+
+list of tests:
+1. getUsDateTimeFormat() with valid styles should return correct DateFormat
+2. getUsDateTimeFormat() with different styles should return valid DateFormat
+3. getUsDateTimeFormat() with invalid dateStyle should throw IllegalArgumentException
+4. getUsDateTimeFormat() with invalid timeStyle should throw IllegalArgumentException
+5. getUsDateTimeFormat() with extreme invalid style should throw IllegalArgumentException
+
+Full statement and decision coverage obtained.
+
+#### Gemma Single
+The Generated file contained an error:
+- in testValidStyles, undefined method *SimpleDateFormat.getLocale()* is called.
+
+After fixing the error, 3 tests passed and 7 tests failed. Failed tests are:
+- in testValidStyles, 5 of the tests were expecting the wrong value.
+- in testValidStyles, tests with *dateStyle* = 4 would cause an exception.
+
+list of tests:
+1. [parametrized] Test valid DateFormat style combinations (8 tests)
+2. invalid dateStyle throws exception
+3. invalid timeStyle throws exception
+
+Missing coverage:
+- getDatePartOfDateTimePattern(int) is missing a branch.
+
+#### GPT-OSS Group
+The Generated file contained an error:
+- undefined call to method *DateFormat.toPattern()* in three tests. Fixed by casting *DateFormat* to *SimpleDateFormat* which has *toPatter()* method.
+
+After fixing all errors, all 7 tests passed.
+
+list of tests:
+1. short short pattern
+2. medium full pattern
+3. long full pattern
+4. unknown date style
+5. unknown time style
+6. date part invalid style
+7. time part invalid style
+
+Missing coverage:
+- getDatePartOfDateTimePattern(int) and getTimePartOfDateTimePattern(int) have missing branches.
+
+#### GPT-OSS Single
+The Generated file contained an error which was missing package statement.
+
+After fixing all errors, 6 tests passed and 12 tests failed. Failed tests are:
+- all tests of parametrized test testPatternConstruction failed since it didn't encase expecting strings with quotations since they have comma in them.
+
+list of tests:
+1. [parametrized] pattern construction (16 tests)
+2. unknown date style throws
+3. unknown time style throws
+
+Full statement and decision coverage achieved.
+
+#### Comparison
+| Title                          | Gemma4 Group | Gemma4 Single | GPT-OSS Group | GPT-OSS Single |
+|:-------------------------------|:------------:|:-------------:|:-------------:|:--------------:|
+| Errors count                   |      2       |       1       |      11       |       1        |
+| Statement coverage             |     100%     |      95%      |      90%      |      100%      |
+| Decision coverage              |     100%     |      88%      |      77%      |      100%      |
+| total tests                    |      5       |      10       |       7       |       18       |
+| failed tests                   |      0       |       7       |       0       |       12       |
+| method names start with test   |      no      |      yes      |      no       |       no       |
+| private variables used         |      no      |      no       |      no       |      yes       |
+| tokens used                    |    3,189     |    12,343     |     1,626     |     10,724     |
+| tokens per decision coverage % |      32      |      140      |      21       |      107       |
+Somehow, Gemma4 in group mode performed better than single mode. It is the chosen option. The logic of this small file wasn't complicated; In fact, it was quite easy. I was expecting that all models attain full coverage.
+
+## Complete Summary
+# TODO
