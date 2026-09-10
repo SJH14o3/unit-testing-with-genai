@@ -1,0 +1,90 @@
+package com.google.gson.internal.sql;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jenkins.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.sql.Date;
+import java.util.Calendar;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+class SqlDateTypeAdapterTest {
+
+  private SqlDateTypeAdapter adapter;
+
+  @BeforeEach
+  void setUp() {
+    adapter = new SqlDateTypeAdapter();
+  }
+
+  @Test
+  @DisplayName("Test writing Date to JSON")
+  void testWrite() throws Exception {
+    Calendar cal = Calendar.getInstance();
+    cal.set(2023, Calendar.OCTOBER, 25);
+    Date date = new Date(cal.getTimeInMillis());
+
+    StringWriter sw = new StringWriter();
+    JsonWriter jw = new JsonWriter(sw);
+    adapter.write(jw, date);
+    jw.close();
+
+    assertEquals("\"Oct 25, 2023\"", sw.toString());
+  }
+
+  @Test
+  @DisplayName("Test writing null Date to JSON")
+  void testWriteNull() throws Exception {
+    StringWriter sw = new StringWriter();
+    JsonWriter jw = new JsonWriter(sw);
+    adapter.write(jw, null);
+    jw.close();
+
+    assertEquals("null", sw.toString());
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+      "\"Oct 25, 2023\", 2023, 10, 25",
+      "\"Jan 01, 2000\", 2000, 1, 1"
+  })
+  @DisplayName("Test reading Date from JSON")
+  void testRead(String json, int year, int month, int day) throws Exception {
+    JsonReader jr = new JsonReader(new StringReader(json));
+    Date result = adapter.read(jr);
+    assertNotNull(result);
+    
+    Calendar calResult = Calendar.getInstance();
+    calResult.setTime(result);
+    
+    assertEquals(year, calResult.get(Calendar.YEAR));
+    assertEquals(month, calResult.get(Calendar.MONTH) + 1);
+    assertEquals(day, calResult.get(Calendar.DAY_OF_MONTH));
+  }
+
+  @Test
+  @DisplayName("Test reading null from JSON")
+  void testReadNull() throws Exception {
+    JsonReader jr = new JsonReader(new StringReader("null"));
+    Date result = adapter.read(jr);
+    assertNull(result);
+  }
+
+  @Test
+  @DisplayName("Test reading invalid format throws JsonSyntaxException")
+  void testReadInvalidFormat() throws Exception {
+    JsonReader jr = new JsonReader(new StringReader("\"2023-10-25\""));
+    assertThrows(JsonSyntaxException.class, () -> adapter.read(jr));
+  }
+}

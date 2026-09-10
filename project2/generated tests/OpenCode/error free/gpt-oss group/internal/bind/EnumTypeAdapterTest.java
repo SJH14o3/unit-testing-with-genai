@@ -1,0 +1,26 @@
+package com.google.gson.internal.bind;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.io.IOException;
+import java.util.*;
+
+class EnumTypeAdapterTest {
+
+    enum Color { RED, GREEN , BLUE }
+
+    @Test
+    void readAndWrite_simpleEnum() throws IOException {
+        Gson gson = new Gson();
+        var adapter = gson.getAdapter(Color.class);
+        String json = "\"RED\"";
+        Color color = adapter.read(new com.google.gson.stream.JsonReader(new java.io.StringReader(json)));
+        assertEquals(Color.RED, color);
+        java.io.StringWriter writer = new java.io.StringWriter();
+        adapter.write(new com.google.gson.stream.JsonWriter(writer), Color.BLUE);
+        assertEquals("\"BLUE\"", writer.toString());
+    }
+}

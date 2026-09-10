@@ -1,5 +1,3 @@
-TODO: explain tests generation with three types of giving files
-
 ## The Medium Project
 This is Gson, a Java library used to convert Java Objects into an equivalent JSON and vice versa.  
 Repository link: https://github.com/google/gson  
@@ -92,7 +90,8 @@ Here are the files that are going to be tested. They are grouped according to ro
     - com/google/gson/Gson.java
     - com/google/gson/internal/PreJava9DateFormatProvider.java
 
-It should be mentioned that many of the files are excluded from behavioral unit testing because they contain no meaningful executable decision logic. These files include:
+It should be mentioned that many of the files are excluded from behavioral unit testing
+because they contain no meaningful executable decision logic. These files include:
 - module and package information files
 - annotation-only declarations
 - marker interfaces
