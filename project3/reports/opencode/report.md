@@ -237,7 +237,7 @@ I decided to ditch this session and start a new session.
 > The implementation will be done in multiple stages (max 5 stages), so plan these stages as well.
 
 I forced the agent to have at most five stages. It did choose 5. I believe five is a reasonable number.
-In the end, the agent generated a test file with about 350 lines. Removing LSP was a right thing.
+In the end, the agent generated a test file with about 350 lines. Removing LSP was the right thing.
 
 I have been wanting to try using MCP severs for a while. I looked up some MCP servers suitable for this project.
 In the next attempt, all three MCP servers I have introduced will be used.
@@ -250,7 +250,7 @@ In the next attempt, all three MCP servers I have introduced will be used.
 > The implementation will be done in five stages, so plan these stages as well.
 > The repository has been indexed with codebase-memory.
 
-The agent ask for some clarifications:
+The agent asked for some clarifications:
 - Where the testing concentration is.
 - Should mockito be used for all dependencies? Can we use lightweight stubs?
 - Are there any specific scenarios?
@@ -276,8 +276,9 @@ Furthermore, the output is more structured. `context7-mcp` skill and `codebase-m
 
 I prompted the agent to build the test files. In the end, 27 tests were generated.
 It isn't many, but it is much better than the time only 2 tests were generated.
-The more test generations is credited to each stage having its own separate test file.
+The more test generation is credited to each stage having its own separate test file.
 For these models, it is easier to generate something from scratch rather than editing something previously.
+This does increase token usage for sure, but I believe it is worth it.
 
 ##### Fourteenth Attempt: Mock Only When Needed.
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
@@ -470,7 +471,7 @@ These tests were missed from the plan:
 - From Remaining Getters/Setters, `getFlowPath()` is not entered.
 
 ##### Final Coverage
-OpenClover coverage is 60.8%, and decision coverage is 56.5%.
+OpenClover coverage is 60.9%, and decision coverage is 56.5%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_AuthenticationProcessor_round2.md`.
 
@@ -608,11 +609,313 @@ This model plan to improve coverage was too large for a two-stage plan. It neede
 |:---------------------------------|:------:|:-------:|
 | Initial OpenClover Coverage      | 37.6%  |  28.9%  |
 | Initial Decision Coverage        | 25.0%  |  28.0%  |
-| Final OpenClover Coverage        | 60.8%  |  46.2%  |
+| Final OpenClover Coverage        | 60.9%  |  46.2%  |
 | Final Decision Coverage          | 56.5%  |  38.7%  |
 | total tests                      |   69   |   53    |
-| Tokens used                      | 55,611 | 66,687  |
-| Tokens per OpenClover Coverage % |  915   |  1,443  |
+| Context Window Usage             | 55,611 | 66,687  |
 
-Clearly Gemma4 is winner. Not only it used fewer tokens, but also it achieved much higher coverage. It is surprising
-that Gemma4 used fewer tokens. This wasn't the case in the previous project.
+Clearly Gemma4 is winner.
+Not only it used fewer tokens (at least in terms of context window),
+but also it achieved much higher coverage.
+
+### AuthorizationEndpoint
+This file has 474 LOC, 14 methods, 210 statements, and 60 branches.
+
+#### Gemma4
+##### Initial Implementation Plan
+###### Stage 1: Entry Points, Client Validation, and Simple Actions
+Focus: Validating the initial request lifecycle and client security checks.
+- Test Scenarios:
+  - `buildGet()` and `buildPost()` basic invocation.
+  - `authorizeDevice()`: Feature enabled vs. disabled (via Profile.isFeatureEnabled).
+  - `checkClient()`:
+    - Success scenario.
+    - Missing `client_id` parameter.
+    - `Client` not found in realm.
+    - `Client` is disabled.
+    - `Client` is bearer-only.
+    - `Client` has incorrect protocol (not openid-connect).
+  - `register()`: Basic flow and organization permission check.
+  - `forgotCredentials()`: Basic flow and realm reset password permission check.
+
+###### Stage 2: Request Parsing and Initial Security Handshakes
+Focus: The beginning of the `process()` method and early `AuthorizationEndpointChecker` validation.
+- Test Scenarios:
+  - `ClientPolicyException`: Triggering `PreAuthorizationRequestContext` and
+    verifying error response/exception.
+  - `AuthorizationEndpointChecker` (Initial Checks):
+    - `checkRedirectUri()`: Success and failure (redirection to error page).
+    - `checkResponseType()`: Success, invalid type, and handling of `isInvalidResponseType`.
+    - `checkResponseMode()`: Success and fallback to QUERY mode.
+
+###### Stage 3: Advanced Authorization & DPoP/PAR Logic
+Focus: Deep validation of the OIDC request and PAR (Pushed Authorization Requests) integration.
+- Test Scenarios:
+  - `AuthorizationEndpointChecker` (Deep Checks):
+    - `checkParRequired()`, `checkInvalidRequestMessage()`, `checkAuthorizationDetails()`.
+    - `checkOIDCRequest()`, `checkValidScope()`, `checkValidResource()`.
+    - `checkOIDCParams()`, `checkPKCEParams()`, `checkProviderAddOns()`.
+  - Handling of `AuthorizationCheckException` for each check above.
+  - DPoP Support: Verifying that `dpop_jkt` from the session is correctly applied to the request.
+
+###### Stage 4: Session Management and ACR/LoA Compliance
+Focus: Ensuring the `AuthenticationSessionModel` is correctly populated and security levels (ACR) are
+enforced.
+- Test Scenarios:
+  - `AuthorizationRequestContext` policy trigger: Success and `ClientPolicyException` handling (including session removal).
+  - `updateAuthenticationSession()`:
+    - Verification of protocol, redirect URI, and standard client notes.
+    - ACR/LoA Logic:
+      - Successful ACR mapping.
+      - Handling of unknown ACR values (essential vs. non-essential).
+      - Enforcing minimum LoA.
+  - `AdditionalReqParams`: Verifying that extra parameters are prefixed and stored in notes.
+
+###### Stage 5: Action Dispatch and Parameter Utilities
+Focus: The final dispatching logic and static utility testing.
+- Test Scenarios:
+  - switch (action) logic:
+    - `Action.CODE`: Verifying the path to `buildAuthorizationCodeAuthorizationResponse()`.
+    - `Action.REGISTER`: Verifying the path to `buildRegister()` (including prompt=create).
+    - `Action.FORGOT_CREDENTIALS`: Verifying the path to `buildForgotCredential()`.
+  - `buildRegister()` / `buildForgotCredential()`: Verification of `AuthenticationProcessor` invocation.
+  - `performActionOnParameters()`: Static method testing for all supported OAuth2/OIDC parameters.
+
+##### Initial Implementation
+The generated test files did not end with Test. Maven was not identifying them as test files. I had to rename them.
+
+###### Stage 1
+The agent generated `AuthorizationEndpointTestStage1` with 10 tests.
+These tests were missed from the plan:
+- `buildPost()` and `buildForgotCredential()` are not covered.
+
+###### Stage 2
+The agent generated `AuthorizationEndpointTestStage2` with 4 tests.
+All the tests that were planned are implemented.
+
+###### Stage 3
+The agent generated `AuthorizationEndpointTestStage3` with 2 tests.
+All the tests that were planned are implemented.
+
+###### Stage 4
+The agent generated `AuthorizationEndpointTestStage4` with 6 tests.
+All the tests that were planned are implemented.
+
+###### Stage 5
+The agent generated `AuthorizationEndpointTestStage5` with 4 tests.
+These tests were missed from the plan:
+- `buildRegister()`
+- `buildForgotCredential()`
+
+Tests `action_REGISTER_Dispatch_CallsBuildRegister()` and
+`action_FORGOT_CREDENTIALS_Dispatch_CallsBuildForgotCredential()` were removed duo to attempt to access a private method.
+
+##### Initial Coverage
+OpenClover coverage is 81.7%, and decision coverage is 71.7%.
+
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gemma4_AuthorizationEndpoint_round1.md`.
+
+##### Improvement Phase
+The agent was given the missing coverage markdown file. It came up with this two-stage plan
+
+###### Stage 1: Method Entry and High-Level Decision Branches
+This stage focuses on entering previously unvisited methods and
+covering the primary logical branches in the request processing flow.
+- Targeted Methods: `buildPost()`, `register(String)`, `checkClient(String)`, and `process(...)`.
+- Scenarios:
+  - `buildPost()`: Basic entry test to ensure the method is reachable.
+  - `register(String)`:
+    - `Organization` feature enabled with a valid token and successful processing.
+    - `Organization` feature enabled with a token that triggers an error.
+    - Scenario where registration is disallowed by the realm.
+      - `checkClient(String)`: Scenario where a client has a null protocol, triggering the fallback to openid-connect.
+      - `process(...)`:
+    - Prompt Logic: Testing the prompt=create path (both when registration is allowed and disallowed).
+    - Action Fallback: Testing the scenario where action is null, ensuring it defaults to CODE.
+    - `ResponseType` Validation: Testing the branch where `isInvalidResponseType()` is true to cover line 178.
+
+###### Stage 2: Response Formatting and Deep Parameter Logic
+This stage targets the fine-grained branches within the error-handling and session-update logic.
+- Targeted Methods: `redirectErrorToClient(...)` and `updateAuthenticationSession()`.
+- Scenarios:
+  - `redirectErrorToClient(...)`:
+    - Redirecting without an `ERROR_DESCRIPTION` (covering the false branch of line 326).
+    - Redirecting without a state parameter (covering the false branch of line 330).
+    - Testing the configuration where the issuer is excluded from the auth response (covering the false branch of line 335).
+  - `updateAuthenticationSession()`:
+    - UI Locales: Verifying that ui_locales are correctly set in client notes when present (covering line 352).
+    - ACR/LoA Edge Cases: Handling the scenario where an ACR value is not a number, resulting in a null LoA (covering
+      the false branch of line 374).
+    - Additional Parameters:
+      - Verifying that `additional_request_params` are processed (covering line 391).
+      - Verifying that `AUTHORIZATION_DETAILS` from PAR are correctly stored (covering line 398).
+
+##### Improvement Implementation
+###### Stage 1
+The agent generated `AuthorizationEndpointCoverageTestStage1` with 8 tests.
+All the tests that were planned are implemented.
+
+Tests `process_PromptCreate_RegistrationAllowed_ReturnsBuildRegister()`, `process_ActionIsNull_DefaultsToCode()`, and
+`process_InvalidResponseType_Branch178()` were removed duo to attempt to access a private member.
+
+###### Stage 2
+The agent generated `AuthorizationEndpointCoverageTestStage2` with 7 tests.
+All the tests that were planned are implemented.
+
+##### Final Coverage
+OpenClover coverage is 89.4%, and decision coverage is 91.7%.
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gemma4_AuthorizationEndpoint_round2.md`.
+
+##### Verdict
+In total, 1,468,959 input tokens and 50,202 output tokens used. 258,240 tokens were cached.
+This is one of the least complex files for this report. However, it did require many mocks.
+
+The initial coverage was very good. OpenClover coverage was already satisfactory.
+Honestly, I wouldn't do the improvement phase if I was not doing this project and
+trying to achieve 80% decision coverage.
+
+The final coverage is superb. 90% coverage leaves no room for complain.
+Although I admit, 1.5M tokens were used.
+If you run this model on your own system smoothly, you will never worry about the token usage.
+
+#### GPT-OSS
+I was not able to generate tests with this model from the provider I was using during improvement phase,
+so I ran this model on my computer.
+I was not able to measure how many tokens were used for that phase.
+
+##### Initial Implementation Plan
+###### Stage 1: Basic routing & delegation
+Verify that `buildPost()` & `buildGet()` call the common `process(...)` with the right parameter source.
+
+###### Stage 2: Client‑validation & error handling
+All branches in `checkClient()`, the initial pre‑policy call,
+and the first `AuthorizationEndpointChecker` exception handling.
+
+###### Stage 3: Response‑type & mode logic
+`checker.checkResponseType()`, parsing of invalid response types, and `redirectErrorToClient()` path.
+
+###### Stage 4: Action flows & special prompts
+action handling (`REGISTER`, `FORGOT_CREDENTIALS`, `CODE`), prompt=create, `dpopJkt` override,
+`buildRegister()` / `buildForgotCredential()` delegation.
+
+###### Stage 5: Device flow & edge‑case coverage
+`authorizeDevice()`, `redirectErrorToClient()` with missing state, `updateAuthenticationSession()` acr/locale handling.
+
+##### Initial Implementation
+###### Stage 1
+The agent generated `AuthorizationEndpointRoutingTest` with 2 tests.
+All the tests that were planned are implemented.
+
+###### Stage 2
+The agent generated `AuthorizationEndpointClientCheckTest` with 6 tests.
+All tests were removed duo to attempt to access a private member.
+
+###### Stage 3
+The agent generated `AuthorizationEndpointResponseModeTest` with 4 tests.
+All the tests that were planned are implemented.
+
+`testRedirectErrorWithNoDescription()` and `testRedirectErrorToClientWithState()` were
+removed duo to attempt to access a private member.
+
+###### Stage 4
+The agent generated `AuthorizationEndpointActionTest` with 5 tests.
+All tests were removed duo to attempt to access a private member.
+
+###### Stage 5
+The agent generated `AuthorizationEndpointEdgeTest` with 4 tests.
+All the tests that were planned are implemented.
+
+`testRedirectErrorToClient_IncludesStateIfPresent()` was removed duo to attempt to access a private member.
+
+##### Initial Coverage
+OpenClover coverage is 41.2%, and decision coverage is 36.7%.
+Low coverage is credited to many tests removed because of inaccessible members.
+
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gpt-oss_AuthorizationEndpoint_round1.md`.
+
+##### Improvement Phase
+The agent was given the missing coverage markdown file. It came up with this two-stage plan
+
+###### Stage 1: New test classes for uncovered methods
+- `AuthorizationEndpointRegisterTest` test class for target method `register(String)`
+- `AuthorizationEndpointForgotCredentialsTest` test class for target method `forgotCredentials()`
+- `AuthorizationEndpointAuthorizationCodeResponseTest`  test class for target method
+  `buildAuthorizationCodeAuthorizationResponse(String)`
+- `AuthorizationEndpointBuildRegisterTest`  test class for target method `buildRegister() `
+- `AuthorizationEndpointBuildForgotTest`  test class for target method `buildForgotCredential()`
+- `AuthorizationEndpointClientCheckDetailedTest`  test class for target method `checkClient(String)`
+
+###### Stage 2: Tests for partially covered process branches
+- `checker.isInvalidResponseType(ex)` true/false: Test with a custom `AuthorizationEndpointChecker` that returns
+  a thrown `AuthorizationCheckException` and stubs `isInvalidResponseType` accordingly.
+- `checker.getParsedResponseMode() == null`: Simulate a checker that returns null for `getParsedResponseMode` and
+  verify that `OIDCResponseMode.QUERY` is used.
+- `action == null` true/false: Set `endpoint.action` to `null` and `non‑null` and ensure `ACTION` defaults
+  to `RESPONSE_TYPE = code`. Use reflection to trigger the code that sets the default action.
+- `dpopJkt` handling true/false: Supply a session attribute `PAR_DPOP_PROOF_JKT` and an empty one, respectively.
+- `prompt=create` true/false: Set `params.getFirst(OAuth2Constants.PROMPT)` to `create` and to something else,
+  then verify whether `buildRegister()` is returned or not.
+- `prompt` fallback to authentication session client note: Simulate `params` missing prompt and mock
+  `authenticationSession.getClientNote(...)`.
+
+##### Improvement Implementation
+###### Stage 1
+The agent generated `AuthorizationEndpointRegisterTest`, `AuthorizationEndpointForgotCredentialsTest`,
+`AuthorizationEndpointAuthorizationCodeResponseTest`, `AuthorizationEndpointBuildRegisterTest`,
+`AuthorizationEndpointBuildForgotTest`, and `AuthorizationEndpointClientCheckDetailedTest` with 8 tests.
+
+These tests were removed duo to attempt to access a private/protected member.
+- `testBuildForgotCredential()` from `AuthorizationEndpointBuildForgotTest`
+- `testParRequestRedirect()` from `AuthorizationEndpointAuthorizationCodeResponseTest`
+- `testMissingClientId()` from `AuthorizationEndpointClientCheckDetailedTest`
+- `testBuildRegister()` from `AuthorizationEndpointBuildRegisterTest`
+- `testForgotCredentialsAllowed()` from `AuthorizationEndpointForgotCredentialsTest`
+- `testRegisterAllowed()` from `AuthorizationEndpointRegisterTest`
+
+###### Stage 2
+The agent generated `AuthorizationEndpointProcessBranchTest` with 5 tests.
+The model did not generate any logic. In fact, all the tests were TODOs. They are removed.
+
+##### Final Coverage
+OpenClover coverage is 46.1%, and decision coverage is 41.7%.
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gpt-oss_AuthorizationEndpoint_round2.md`.
+
+Only two tests were qualified for this phase.
+Removing a test since it tried accessing private members might be harsh.
+But they are hard to fix through reflection or alternative routes.
+Moreover, the model should have either used reflection, or access that member through a legitimate way.
+Let's not forget that the model did not generate any logic for the second stage.
+
+##### Verdict
+It was very weird of this model to generate six test files for stage 1 of improvement phase.
+
+Before the improvement phase, 906,313 input tokens and 37,949 output tokens were consumed.
+
+Removing tests trying to access private member did a serious number for this model.
+The coverage is terrible. Gemma achieved an astonishing coverage.
+
+#### Comparison
+| Title                            |  Gemma4   | GPT-OSS |
+|:---------------------------------|:---------:|:-------:|
+| Initial OpenClover Coverage      |   81.7%   |  41.2%  |
+| Initial Decision Coverage        |   71.7%   |  36.7%  |
+| Final OpenClover Coverage        |   89.4%   |  46.1%  |
+| Final Decision Coverage          |   91.7%   |  41.7%  |
+| Total Tests                      |    35     |   11    |
+| Context Window Usage             |  67,865   | 54,790  |
+| Total Input Tokens               | 1,468,959 |    _    |
+| Total Cached Tokens              |  258,240  |    _    |
+| Total Output Tokens              |  50,202   |    _    |
+| Total Tokens used                | 1,260,921 |    _    |
+| Tokens per OpenClover Coverage % |  14,104   |    _    |
+
+Gemma4 wins here without any question. It was GPT-OSS fault to fail generating enough tests.
+Even with me removing some of the tests, still, it was not going to reach the same amount as gemma.
+Despite this being a small file, both models used a surprising amount of tokens.
+If we were using a high-end model, the cost would have been very high.
+Although, it's probably possible to generate tests with high coverage with those models in one go.
+Still, this made me think to find a way to reduce token usage. Luckily, 9router had some solutions.
