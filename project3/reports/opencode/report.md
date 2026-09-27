@@ -781,7 +781,7 @@ Although I admit, 1.5M tokens were used.
 If you run this model on your own system smoothly, you will never worry about the token usage.
 
 #### GPT-OSS
-I was not able to generate tests with this model from the provider I was using during improvement phase,
+I was not able to generate tests with this model from the provider I was using during the improvement phase,
 so I ran this model on my computer.
 I was not able to measure how many tokens were used for that phase.
 
@@ -887,7 +887,7 @@ Missed coverage markdown file is available at
 Only two tests were qualified for this phase.
 Removing a test since it tried accessing private members might be harsh.
 But they are hard to fix through reflection or alternative routes.
-Moreover, the model should have either used reflection, or access that member through a legitimate way.
+Moreover, the model should have either used reflection or access that member through a legitimate way.
 Let's not forget that the model did not generate any logic for the second stage.
 
 ##### Verdict
@@ -914,8 +914,1010 @@ The coverage is terrible. Gemma achieved an astonishing coverage.
 | Tokens per OpenClover Coverage % |  14,104   |    _    |
 
 Gemma4 wins here without any question. It was GPT-OSS fault to fail generating enough tests.
-Even with me removing some of the tests, still, it was not going to reach the same amount as gemma.
+Even with me removing some of the tests, it was not going to reach the same amount as gemma.
 Despite this being a small file, both models used a surprising amount of tokens.
 If we were using a high-end model, the cost would have been very high.
 Although, it's probably possible to generate tests with high coverage with those models in one go.
 Still, this made me think to find a way to reduce token usage. Luckily, 9router had some solutions.
+
+### JpaUserProvider
+This file has 1,402 LOC, 85 methods, 595 statements, and 158 branches.
+
+#### Gemma4
+##### Initial Implementation Plan
+###### Stage 1: Core User Management & Retrieval
+Scope:
+- User Lifecycle: `addUser()` (both variants), `removeUser()`.
+- Lookup: `getUserById()`, `getUserByUsername()`, `getUserByEmail()`.
+- Identity Retrieval: `getUserByFederatedIdentity()`, `getFederatedIdentity()`, `getFederatedIdentitiesStream()`,
+  `getServiceAccount()`.
+- Counting & Searching: All `getUsersCount()` variants, `getGroupMembersStream()`, `getRoleMembersStream()`,
+  `searchForUserStream()`, and `searchForUserByUserAttributeStream()`.
+- Key Challenges: Mocking the `CriteriaBuilder` logic for complex search predicates and
+  the different `getUsersCount()` implementations.
+
+###### Stage 2: Consent and Federated Identity Management
+Scope:
+- Federated Identity: `addFederatedIdentity()`, `updateFederatedIdentity()`, `removeFederatedIdentity()`.
+- Consent Management: `addConsent()`, `getConsentByClient()`, `getConsentsStream()`, `updateConsent()`,
+  `revokeConsentForClient()`.
+- Key Challenges: Simulating `StorageId` logic (local vs. external clients) to ensure correct query names and parameters are used.
+
+###### Stage 3: Verifiable Credentials (VCs)
+Scope:
+- User VCs: `addVerifiableCredential()`, `removeVerifiableCredential()`, `getVerifiableCredentialsByUser()`,
+  `getVerifiableCredentialById()`, `getVerifiableCredentialByClientScope()`, `updateVerifiableCredential()`.
+- Issued VCs: `addIssuedVerifiableCredential()`, `getIssuedVerifiableCredentialsStreamByUser()`,
+  `removeIssuedVerifiableCredential()`, `removeExpiredIssuedVerifiableCredentials()`.
+- Key Challenges: Handling JSON serialization/deserialization of user attributes and testing revision/expiry logic.
+
+###### Stage 4: Cleanup & Removal Lifecycle Hooks
+Scope:
+- Lifecycle Hooks: All `preRemove()` overloads (for `IdentityProviderModel`, `RealmModel`, `RoleModel`, `ClientModel`,
+  `ClientScopeModel`, `GroupModel`, and `ProtocolMapperModel`).
+- Cleanup Operations: `removeImportedUsers()`, `unlinkUsers()`, `removeConsentByClientStorageProvider()`.
+- Key Challenges: Verifying that the correct sequence of `NamedQueries` is executed with exact parameters during
+  cascading deletes.
+
+###### Stage 5: Credential Management & User Properties
+Scope:
+- Credential Lifecycle: `createCredential()`, `updateCredential()`, `removeStoredCredential()`, `getStoredCredentialById()`,
+  `getStoredCredentialsStream()`, `getStoredCredentialsByTypeStream()`, `getStoredCredentialByNameAndType()`,
+  `moveCredentialTo()`.
+- User Properties: `setNotBeforeForUser()`, `getNotBeforeOfUser()`, `grantToAllUsers()`, `getUserCredentialManager()`.
+- Key Challenges: Testing the delegation to `JpaUserCredentialStore` and ensuring user state changes (like
+  `notBefore()`) are correctly persisted.
+
+##### Initial Implementation
+The model decided to generate stages 3, 4, and 5 in one go despite me prompting it to generate stage 3.
+###### Stage 1
+The agent generated `JpaUserProviderStage1Test` with 20 tests.
+All the tests that were planned are implemented.
+
+###### Stage 2
+The agent generated `JpaUserProviderStage2Test` with 13 tests.
+All the tests that were planned are implemented.
+
+###### Stage 3
+The agent generated `JpaUserProviderStage3Test` with 11 tests.
+These tests were missed from the plan:
+- From User VCs, `getVerifiableCredentialByClientScope()` and `updateVerifiableCredential()` are not tested.
+- From Issued VCs, `getIssuedVerifiableCredentialsStreamByUser()` is not covered.
+
+###### Stage 4
+The agent generated `JpaUserProviderStage4Test` with 12 tests.
+From Lifecycle Hooks, `preRemove(ClientScopeModel)` overload is not tested.
+
+###### Stage 5
+The agent generated `JpaUserProviderStage5Test` with 14 tests.
+All the tests that were planned are implemented.
+
+##### Initial Coverage
+OpenClover coverage is 66.1%, and decision coverage is 53.1%. This is beyond my expectation for such a complex file.
+
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gemma4_JpaUserProvider_round1.md`.
+
+##### Improvement Phase
+The agent was given the missing coverage markdown file. It came up with this two-stage plan
+
+###### Stage 1: Deepening Branch Coverage for Complex Logic
+This stage focuses on the "Partially Covered Methods" identified in the report.
+These methods contain significant conditional logic (branches) that are currently missing coverage.
+- User & Consent Logic:
+  - `addUser()`: Test branches for null ID, batch mode (`isBatchMode()`), and the application of default roles/actions.
+  - `addConsent()` & `getConsent()`: Test the branch for external client storage providers.
+  - `toConsentModel()` & `updateGrantedConsentEntity()`: Test complex branches for client existence,
+    parameterization of client scopes, and handling of null/empty scopes.
+- Verifiable Credentials (VC) Logic:
+  - `addVerifiableCredential()`: Test branches for provided vs. generated revisions, null timestamps, and null user attributes.
+- Search & Filtering Engine:
+  - `predicates()` & `getSearchOptionPredicate()`: This is critical. Test the vast branching logic for
+    different attribute types (exact vs. fuzzy/like), search patterns (exact quoted vs. wildcard),
+    and various attribute keys (IDs, booleans, dates, etc.).
+- Security & Constraints:
+  - `ensureEmailConstraint()`: Test branches for duplicate email detection and realm-specific settings.
+
+###### Stage 2: Completing Unentered Methods & Final Edge Cases
+This stage focuses on the "Methods Not Entered" list and the remaining edge cases to reach the $\ge 80\%$ goal.
+- Unentered Methods:
+  - Convenience & Helpers: `addUser(RealmModel, String)`, `getSession()`, `getEntityManager()`,
+    and the `countQuery()` helper.
+  - Stream & Collection Methods: The parameterized `getGroupMembersStream()`, `getRoleMembersStream()`, and
+    `getIssuedVerifiableCredentialsStreamByUser()`.
+  - Lifecycle & Specialized Lookups: `preRemove(ClientScopeModel)`, `updateVerifiableCredential()`, and
+    `getVerifiableCredentialByClientScope()`.
+- Error & Edge State Scenarios:
+  - Multiple Results: Test scenarios where `getUserByEmail()`, `getUserByFederatedIdentity()`, or
+    `getServiceAccount()` return more than one result (triggering `IllegalStateException`).
+  - Null/NotFound States: Test `setNotBeforeForUser()`, `getNotBeforeOfUser()`, and `createCredential()` when
+    the user is not found or not in the persistence context.
+  - Role Logic: Test the `grantToAllUsers()` branch for client roles vs. realm roles.
+
+##### Improvement Implementation
+###### Stage 1
+The agent generated `JpaUserProviderCoverageStage1Test` with 16 tests.
+All the tests that were planned are implemented.
+
+
+###### Stage 2
+The agent generated `JpaUserProviderCoverageStage2Test` with 9 tests.
+None of the methods mentioned in Lifecycle & Specialized Lookups are covered.
+
+##### Final Coverage
+OpenClover coverage is 77.0%, and decision coverage is 71.3%.
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gemma4_JpaUserProvider_round2.md`.
+
+##### Verdict
+In total, 1,217,035 input tokens and 41,202 output tokens used. 167,936 tokens were cached.
+
+The initial coverage was excellent. Even though this file is more complex that `AuthenticationProcessor`,
+Gemma manages to cover more portion of the code. Generating stages 3 to 5 in one go didn't have negative effects.
+
+Compared to the last file, this file is much more complex.
+With the token saver enabled, the token usage in this file is actually lower than the previous file.
+
+The coverage improvement is medium.
+OpenClover coverage is almost satisfactory.
+Decision coverage was improved by 18%.
+318,110 Tokens in total were used for improvement phase.
+About 30% more token usage for this improvement might not be worth it. Perhaps doing improvement phase in a new session
+will reduce the token usage.
+
+#### GPT-OSS
+##### Initial Implementation Plan
+###### Stage 1: User Creation / Deletion
+What it covers:
+
+| Test Method                              | What it covers                                                           |
+|------------------------------------------|--------------------------------------------------------------------------|
+| `testAddUser_generatesIdWhenNull()`      | `id==null` branch → `KeycloakModelUtils.generateId()` is called          |
+| `testAddUser_assignsUsernameLowercase()` | `entity.setUsername(username.toLowerCase())`                             |
+| `testAddUser_defaultRolesAndGroups()`    | `addDefaultRoles==true` → `grantRole()` + `joinGroupImpl()`              |
+| `testAddUser_defaultRequiredActions()`   | `addDefaultRequiredActions==true` → iterate over enabled default actions |
+| `testRemoveUser_nonexistent()`           | `userEntity==null` → return `false`                                      |
+| `testRemoveUser_existent()`              | `userEntity!=null` → calls 6 named queries + `em.remove()`               |
+| `testAddFederatedIdentity_persist()`     | Straight‑forward persist                                                 |
+
+
+###### Stage 2: Federated Identity & Consent
+What it covers:
+
+| Test Method                              | What it covers                                                        |
+|------------------------------------------|-----------------------------------------------------------------------|
+| `testUpdateFederatedIdentity_notFound()` | `findFederatedIdentity()==null` → early return                        |
+| `testUpdateFederatedIdentity_found()`    | Update path → `setUserName()`, `setToken()`, `persist()`, `flush()`   |
+| `testRemoveFederatedIdentity_found()`    | Entity exists → remove + flush + return `true`                        |
+| `testRemoveFederatedIdentity_notFound()` | Entity null → return `false`                                          |
+| `testAddConsent_localClient()`           | `StorageId.isLocal()==true` → set `clientId`                          |
+| `testAddConsent_externalClient()`        | `isLocal()==false` → set `clientStorageProvider` & `externalClientId` |
+| `testUpdateConsent_notFound()`           | `getGrantedConsentEntity()==null` → throw `ModelException`            |
+| `testUpdateConsent_found()`              | Consent found → `updateGrantedConsentEntity()` + `flush()`            |
+| `testRevokeConsentForClient_notFound()`  | No entity → return `false`                                            |
+| `testRevokeConsentForClient_found()`     | Entity present → `remove()`, flush(), return `true`                   |
+
+###### Stage 3: Verifiable Credentials
+What it covers:
+
+| Test Method                                       | What it covers                                                        |
+|---------------------------------------------------|-----------------------------------------------------------------------|
+| `testAddVerifiableCredential_missingScope()`      | `clientScopeId==null` → throw                                         |
+| `testAddVerifiableCredential_withAttributes()`    | `verifCredentialModel.getUserAttributes()!=null` → serialize          |
+| `testAddVerifiableCredential_withoutAttributes()` | `verifCredentialModel.getUserAttributes()==null` → fetch user profile |
+| `testRemoveVerifiableCredential_notFound()`       | No matching VC → return `false`                                       |
+| `testRemoveVerifiableCredential_found()`          | VC found → delete issued VCs + remove + flush                         |
+| `testGetVerifiableCredentialsByUser_sorted()`     | Ensure sorting by `clientScopeId`                                     |
+| `testUpdateVerifiableCredential_userNotFound()`   | `em.find()` returns `null` → throw                                    |
+| `testUpdateVerifiableCredential_success()`        | Successful update + `merge()` + `flush()`                             |
+| `testUpdateVerifiableCredential_optimisticLock()` | `merge()` throws `OptimisticLockException` → wrap in `ModelException` |
+
+
+###### Stage 4: User Lookup & Counts
+What it covers:
+
+| Test Method                                  | What it covers                                        |
+|----------------------------------------------|-------------------------------------------------------|
+| `testGetUserById_existing()`                 | `em.find()` returns entity → returns adapter          |
+| `testGetUserById_nonexistent()`              | `find()` returns null → return null                   |
+| `testGetUserById_wrongRealm()`               | Entity found but realm mismatch → return null         |
+| `testGetUserByEmail_multipleResults()`       | `results.size()>1` → throw `IllegalStateException`    |
+| `testGetUserByEmail_noResults()`             | No results → return `null`                            |
+| `testGetUserByEmail_valid()`                 | Valid single result                                   |
+| `testGetServiceAccount_noResults()`          | `Query` empty → return `null`                         |
+| `testGetServiceAccount_multipleResults()`    | List `size>1` → exception                             |
+| `testGetServiceAccount_singleResult()`       | Exactly one → return adapter                          |
+| `testGrantToAllUsers_matchingContainer()`    | `realm.equals(role container)` → named query executed |
+| `testGrantToAllUsers_nonMatchingContainer()` | No query executed                                     |
+| `testSetNotBeforeForUser_nullEntity()`       | `em.getReference()` returns `null` → throw            |
+| `testSetNotBeforeForUser_success()`          | Normal path                                           |
+| `testGetNotBeforeOfUser_success()`           | `Entity` found → return value                         |
+| `testGetNotBeforeOfUser_nullEntity()`        | `Entity==null` → throw                                |
+| `testGetUsersCount_includeServiceAccount()`  | `includeServiceAccount==false` → predicate added      |
+| `testGetUsersCount_groupIdsEmpty()`          | `groupIds==null/empty` → return 0                     |
+| `testGetUsersCount_search()`                 | Search predicates added                               |
+
+
+###### Stage 5: Streams, Pre‑Remove & Misc.
+What it covers:
+
+| Test Method                                  | What it covers                                                             |
+|----------------------------------------------|----------------------------------------------------------------------------|
+| `testGetGroupMembersStream_noSearch()`       | Simple stream without search                                               |
+| `testGetGroupMembersStream_exactSearch()`    | `exact==true` branch                                                       |
+| `testGetGroupMembersStream_nonExactSearch()` | `exact==false` branch                                                      |
+| `testGetRoleMembersStream()`                 | Stream of role members                                                     |
+| `testSearchForUserStream_exact()`            | `exact==true` branch                                                       |
+| `testSearchForUserStream_nonExact()`         | `exact==false` branch                                                      |
+| `testPreRemove_identityProvider()`           | Named query executed                                                       |
+| `testPreRemove_role()`                       | `deleteUserRoleMappingsByRole()` executed                                  |
+| `testPreRemove_clientLocal()`                | Local client branch                                                        |
+| `testPreRemove_clientExternal()`             | External client branch                                                     |
+| `testPreRemove_clientScope()`                | Named queries for clientScope                                              |
+| `testPreRemove_component()`                  | `removeImportedUsers()` or `removeConsentByClientStorageProvider()` called |
+
+##### Initial Implementation
+###### Stage 1
+The agent generated `JpaUserProviderAddRemoveTest` with 1 test.  
+Only the first test was generated and other tests are not present.
+
+###### Stage 2
+The agent generated `JpaUserProviderIdentityConsentTest` with 6 tests.
+These tests were missed from the plan:
+- `testUpdateConsent_notFound()`
+- `testUpdateConsent_found()`
+- `testRevokeConsentForClient_notFound()`
+- `testRevokeConsentForClient_found()`
+
+`testUpdateFederatedIdentity_notFound()`, `testUpdateFederatedIdentity_found()`,
+`testRemoveFederatedIdentity_found()`, and `testRemoveFederatedIdentity_notFound()` are
+removed duo to attempt to access a private member.
+
+###### Stage 3
+The agent generated `JpaUserProviderVerifiableCredentialTest` with 7 tests.
+These tests were missed from the plan:
+- `testGetVerifiableCredentialsByUser_sorted()`
+- `testUpdateVerifiableCredential_userNotFound()`
+- `testUpdateVerifiableCredential_optimisticLock()`
+
+`testRemoveVerifiableCredential_notFound()`, `testRemoveVerifiableCredential_found()`,
+`testUpdateVerifiableCredential_userNotFound()`, and `testUpdateVerifiableCredential_success()`
+are removed duo to attempt to access a private member.
+
+###### Stage 4
+The agent generated `JpaUserProviderUserInfoTest` with 11 tests.
+These tests were missed from the plan:
+- `testGetUserById_existing()`
+- `testGetUserById_nonexistent()`
+- `testGetUserById_wrongRealm()`
+- `testGetUserByEmail_multipleResults()`
+- `testGetUserByEmail_noResults()`
+- `testGetUserByEmail_valid()`
+- `testGetUsersCount_includeServiceAccount()`
+- `testGetUsersCount_groupIdsEmpty()`
+- `testGetUsersCount_search()`
+
+Moreover, `testGetUsersCount_groupIdsNull_returnsZero()` and `testGetUsersCount_includesServiceAccountFalse()`
+were generated,  but they were not in the plan.
+
+###### Stage 5
+The agent generated `JpaUserProviderStreamsPreRemoveTest` with 7 tests.
+These tests were missed from the plan:
+- `testGetGroupMembersStream_noSearch()`
+- `testGetGroupMembersStream_exactSearch()`
+- `testGetGroupMembersStream_nonExactSearch()`
+- `testGetRoleMembersStream()`
+- `testSearchForUserStream_exact()`
+- `testSearchForUserStream_nonExact()`
+- `testPreRemove_component()`
+
+Moreover, `testPreRemove_componentTypeUserStorage()` and `testPreRemove_componentTypeClientStorage()`
+were generated which weren't in the plan.
+
+##### Initial Coverage
+OpenClover coverage is 23.3%, and decision coverage is 21.5%.
+
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gpt-oss_JpaUserProvider_round1.md`.
+
+##### Improvement Phase
+The agent was given the missing coverage markdown file. It came up with this two-stage plan
+
+###### Stage 1: “Not Entered” methods
+Purpose: Exercise every public method that the current test suite never invokes.  
+New test files:
+1. `JpaUserProviderAddMethodFalseBranchTest`
+2. `JpaUserProviderFederatedUserTest`
+3. `JpaUserProviderConsentBaseTest`
+4. `JpaUserProviderVerifiableCredentialBaseTest`
+5. `JpaUserProviderStreamAndRemoveTest`
+
+###### Stage 2: “Partially Covered” branches
+Purpose: Cover the `true` and `false` paths that were left, plus the specific snippets flagged in the report.  
+New test files:
+1. `JpaUserProviderCreateUserFalseBranchTest`
+2. `JpaUserProviderConsentEntityBranchTest`
+3. `JpaUserProviderCreateVerifiableCredentialFalseBranchTest`
+4. `JpaUserProviderExecutorGrantTest`
+5. `JpaUserProviderUserByIdAndCountTest`
+6. `JpaUserProviderUserCountFalseBranchTest`
+7. `JpaUserProviderToConsentModelTest`
+
+##### Improvement Implementation
+###### Stage 1
+The agent generated `JpaUserProviderNotEnteredTest` with 34 tests.
+Only one file was generated. Despite mentioning covering every public method,
+many tests called private methods.
+
+These are removed duo to attempt to access private members:
+- `testUpdateFederatedIdentityFound()`
+- `testUpdateFederatedIdentityNotFound()`
+- `testRemoveFederatedIdentityFound()`
+- `testRemoveFederatedIdentityNotFound()`
+- `testGetConsentByClientNull()`
+- `testGetConsentByClientPresent()`
+- `testUpdateConsentEntityMissing()`
+- `testRevokeConsentForClientNotFound()`
+- `testRevokeConsentForClientFound()`
+- `testToConsentModelWithClientId()`
+- `testToConsentModelWithExternalClient()`
+- `testCreateClientScopeEntityAddsNew()`
+- `testCreateClientScopeEntityExisting()`
+- `testRemoveVerifiableCredentialNotFound()`
+- `testRemoveVerifiableCredentialFound()`
+- `testGetVerifiableCredentialsByUserSorted()`
+- `testGetVerifiableCredentialByClientScopeNotFound()`
+- `getVerifiableCredentialsEntitiesByUser()`
+- `testUpdateVerifiableCredentialSuccessfully()`
+- `testUpdateVerifiableCredentialOptimisticLock()`
+- `testGetVerifiableCredentialsEntitiesByUser()`
+
+21 tests are lost.
+
+###### Stage 2
+The agent generated `JpaUserProviderPartialBranchTest` with 9 tests.
+Only one file was generated, despite listing seven files.
+
+`testCreateUserConsentClientScopeEntityRemoval()` and `testToConsentModelNullEntit()` are removed duo
+to attempt to access private members.
+
+##### Final Coverage
+OpenClover coverage is 32.7%, and decision coverage is 32.9%.
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gpt-oss_JpaUserProvider_round2.md`.
+
+##### Verdict
+In total, 1,190,094 input tokens and 34,404 output tokens used. no token was cached.
+
+The initial coverage is terrible.
+Missing many of the planned tests and some tests removed duo to violations are accounting for this low coverage.
+Gemma is already the winner in the end.
+
+The improvement wasn't that much either. Many tests were removed again for violations.
+
+#### Comparison
+| Title                            |  Gemma4   |  GPT-OSS  |
+|:---------------------------------|:---------:|:---------:|
+| Initial OpenClover Coverage      |   66.1%   |   23.3%   |
+| Initial Decision Coverage        |   53.1%   |   21.5%   |
+| Final OpenClover Coverage        |   77.0%   |   32.7%   |
+| Final Decision Coverage          |   71.3%   |   32.9%   |
+| Total Tests                      |    95     |    44     |
+| Context Window Usage             |  64,862   |  54,042   |
+| Total Input Tokens               | 1,238,241 | 1,190,094 |
+| Total Cached Tokens              |  167,936  |     0     |
+| Total Output Tokens              |  41,202   |  34,404   |
+| Total Tokens used                | 1,111,507 | 1,224,498 |
+| Tokens per OpenClover Coverage % |  14,435   |  37,446   |
+
+Clearly, gemma4 is the winner.
+The total token usage is lower and coverage is much higher.
+This is the third-largest file.
+With one more improvement phase with Gemma4, coverage will become satisfactory for sure.
+
+### KeycloakModelUtils
+This file has 1,412 LOC, 92 methods, 464 statements, and 236 branches.
+
+#### Gemma4
+##### Initial Implementation Plan
+###### Stage 1: Basic Utilities and Security Helpers
+Scope: Fundamental utility methods and simple security/parsing logic.
+- Methods: `generateId()`, `generateShortId()`, `isValidUUID()`, `toLowerCaseSafe()`, `parseRole()`,
+  `buildRoleQualifier()`, `convertClientScopeName()`, `normalizeGroupPath()`, `getPublicKey()`, `getCertificate()`,
+  `getPrivateKey()`, `getSecretKey()`, `getPemFromKey()`, `getPemFromCertificate()`, `generateKeyPairCertificate()`,
+  `generateSecret()`, `getRequiredClientSecretLength()`, `generateCodeSecret()`.
+- Focus: Null/empty inputs, valid/invalid UUIDs, successful vs. exception-throwing PEM decoding,
+  and correctness of generated identifiers.
+
+###### Stage 2: Client, Role, and Scope Management
+Scope: Methods related to client and role lifecycle and lookup.
+- Methods: `createManagementClient()`, `createPublicClient()`, `createClient()`, `getClientScopeByName()`,
+  `findClientScopeById()`, `setupDefaultRole()`, `setupOfflineRole()`, `setupDeleteAccount()`,
+  `getRoleFromString()` (both versions), `getRoleByName()`, `removeTransientAdminRoles()`,
+  `getClientScopeMappingsStream()`, `getAcceptedClientScopeProtocols()`.
+- Focus: Existence/non-existence of clients and roles, recursive role resolution, and edge cases in client authentication types.
+
+###### Stage 3: User and Group/Organization Path Management
+Scope: User attribute resolution and complex hierarchical pathing.
+- Methods: `findUserByNameOrEmail()`, `searchFor()` (roles), `resolveAttribute()` (Group/User),
+  `escapeSlashesInGroupPath()`, `findGroupByPath()` (String/Array/Org), `getGroupModel()` (recursive),
+  `splitPath()`, `escapeGroupNameForPath()`, `unescapeGroupNameForPath()`, `buildGroupPath()` (various versions),
+  `getOrgId()`, `getOrganizationForIdpMapper()`, `getGroupForIdpMapper()`, `setDefaultGroups()`.
+- Focus: Recursive attribute resolution, complex path parsing (including escaped slashes),
+  and group lookup within Realm vs. Organization hierarchies.
+
+###### Stage 4: Transaction and Session Management
+Scope: Managing sessions, context propagation, and transaction boundaries.
+- Methods: `runJobInTransaction()` (both versions), `runJobInTransactionWithResult()` (both versions),
+  `runJobInTransactionWithTimeout()`, `setTransactionLimit()`, `getTransactionLimit()`,
+  `cloneContextRealmClientToSession()`, `cloneContextRealmClientSessionToSession()`, `runOnRealm()`,
+  `componentModelGetter()`, `getComponentModel()`, `getComponentFactory()`, `createComponentModel()`,
+  `suspendJtaTransaction()`.
+- Focus: Transaction success vs. rollback (exception handling),
+  context propagation (realm/client/auth session presence), and JTA transaction/factory interactions.
+
+###### Stage 5: Authentication Flow and Identity Provider Management
+Scope: Authentication flow lifecycles and Identity Provider (IdP) logic.
+- Methods: `deepFindAuthenticationExecutions()`, `isFlowUsed()`, `deepDeleteAuthenticationFlow()`,
+  `deepDeleteAuthenticationExecutor()`, `setupAuthorizationServices()`, `getIdentityProviderDisplayName()`,
+  `getSecretLengthByAuthenticationType()`.
+- Focus: Recursive deletion of flows and executors, isFlowUsed across various realm/client scenarios,
+  and IdP display name/configuration resolution.
+
+##### Initial Implementation
+###### Stage 1
+The agent generated `KeycloakModelUtilsBasicTest` with 15 tests.
+These tests were missed from the plan:
+- Methods `getPemFromKey()`, `getPemFromCertificate()`, `generateKeyPairCertificate()`, `generateSecret()` were
+  not covered.
+
+###### Stage 2
+The agent generated `KeycloakModelUtilsClientRoleTest` with 16 tests.
+These tests were missed from the plan:
+- One of `getRoleFromString()` overloads.
+
+`testRemoveTransientAdminRoles_WithRoles()` was disabled since it was not asserting or verifying anything.
+
+###### Stage 3
+The agent generated `KeycloakModelUtilsUserGroupTest` with 13 tests.
+These tests were missed from the plan:
+- Methods `getOrgId()`, `getGroupForIdpMapper()`, and `setDefaultGroups()` were not covered.
+- `findGroupByPath(KeycloakSession, RealmModel, String[])` and `findGroupByPath(KeycloakSession,
+  RealmModel, OrganizationModel, String)` overloads.
+
+`testGetGroupForIdpMapper_Realm()` and `testSetDefaultGroups()` were disabled since they weren't
+asserting or verifying anything. were not covered.
+
+###### Stage 4
+The agent generated `KeycloakModelUtilsSessionTest` with 9 tests.
+All the tests that were planned are implemented. / These tests were missed from the plan:
+- Methods `runJobInTransactionWithTimeout()`, `setTransactionLimit()`, `getTransactionLimit()`,
+  `cloneContextRealmClientSessionToSession()`, `componentModelGetter()`, `getComponentModel()`,
+  `getComponentFactory()`, and `suspendJtaTransaction()` were not covered.
+
+###### Stage 5
+The agent generated `KeycloakModelUtilsFlowIdpTest` with 9 tests.
+These tests were missed from the plan:
+- Methods `deepDeleteAuthenticationExecutor()`, `setupAuthorizationServices()` were not covered.
+
+##### Initial Coverage
+OpenClover coverage is 48.6%, and decision coverage is 39.0%.
+
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gemma4_KeycloakModelUtils_round1.md`.
+
+##### Improvement Phase
+The agent was given the missing coverage markdown file. It came up with this two-stage plan
+
+###### Stage 1: Security, Transactions, and Component Management
+- Targeted Methods:
+  - Security/PEM: `getPublicKey()`, `getCertificate()`, `getPrivateKey()` (including true branches), `getPemFromKey()`,
+    `getPemFromCertificate()`, `generateKeyPairCertificate()` (both versions).
+  - Transactions/Session: `runJobInTransactionWithTimeout()`, `setTransactionLimit()`, `getTransactionLimit()`,
+    `suspendJtaTransaction()`, `cloneContextToSession()`, `cloneContextRealmClientSessionToSession()`.
+  - Component Management: `getComponentModel()`, `getComponentFactory()`, `componentModelGetter()`,
+    and all methods within the ScopeComponentModel inner class.
+  - Misc: `getMasterRealmAdminManagementClientId()`, `getIdentityProviderDisplayName()`.
+
+###### Stage 2: Hierarchy, Roles, and Authentication Flows
+- Targeted Methods:
+  - Hierarchy/Organization: `findGroupByPath()` (all variants), `getGroupModel()`, `buildGroupPath()` (all variants),
+    `getOrgId()`, `resolveAttribute()`, `findUserByNameOrEmail()`.
+  - Roles/Client Logic: `getRoleFromString()` (all variants), `removeTransientAdminRoles()`, `setupDeleteAccount()`,
+    `generateSecret()`.
+  - Flows/IdP Mappers: `isFlowUsed()`, `deepDeleteAuthenticationFlow()`, `deepDeleteAuthenticationExecutor()`,
+    `setupAuthorizationServices()`, `setDefaultGroups()`, `getOrganizationForIdpMapper()`, `getGroupForIdpMapper()`.
+
+##### Improvement Implementation
+###### Stage 1
+The agent generated `KeycloakModelUtilsSecuritySessionTest` with 9 tests.
+All the tests that were planned are implemented. / These tests were missed from the plan:
+- True branch in `getPrivateKey()`.
+- From Security/PEM, `getPemFromKey()`, `getPemFromCertificate()`, and `generateKeyPairCertificate()` are not covered.
+- From Transactions/Session, `suspendJtaTransaction()` and `cloneContextRealmClientSessionToSession()` are not tested.
+- From Component Management, `getComponentFactory()` is not covered.
+
+###### Stage 2
+The agent generated `KeycloakModelUtilsHierarchyFlowTest` with 13 tests.
+All the tests that were planned are implemented. / These tests were missed from the plan:
+- `buildGroupPath(GroupModel group, GroupModel)` variant is not covered.
+- From Roles/Client Logic, `generateSecret()` is not tested.
+- From Flows/IdP Mappers, `deepDeleteAuthenticationExecutor()` is not covered.
+
+##### Final Coverage
+OpenClover coverage is 61.5%, and decision coverage is 49.2%.
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gemma4_KeycloakModelUtils_round2.md`.
+
+##### Verdict
+In total, 1,217,459 input tokens and 31,308 output tokens used. 239,040 tokens were cached.
+
+Many Methods planned to be tested initially were not tested.
+The initial coverage could have been much higher if everything in the mentioned plan was covered.
+
+The final coverage is away from a satisfactory range.
+Again, many methods that were planned to be tested in the improvement are not still covered.
+10% improvement was achieved with 536,772 tokens. This was not worth it.
+
+#### GPT-OSS
+##### Initial Implementation Plan
+The agent did not give a title for each stage.
+
+###### Stage 1
+- `generateId()`
+- `generateShortId()`
+- `isValidUUID()`
+- `getPublicKey()`
+- `getCertificate()`
+- `getPrivateKey()`
+- `getSecretKey()`
+- `generateSecret()`
+- `getRequiredClientSecretLength()`
+- `generateCodeSecret()`
+
+###### Stage 2
+- `createManagementClient()`
+- `createPublicClient()`
+- `createClient()`
+- `setupDefaultRole()`
+- `setupOfflineRole()`
+- `setupDeleteAccount()`
+
+###### Stage 3
+- `searchFor()`
+- `getRoleFromString()` (no cache)
+- `parseRole()`
+- `buildRoleQualifier()`
+- `getRoleByName()`
+- `removeTransientAdminRoles()`
+
+###### Stage 4
+- `findGroupByPath()`
+- `splitPath()`
+- `escapeGroupNameForPath()`
+- `unescapeGroupNameForPath()`
+- `buildGroupPath()`
+- `normalizeGroupPath()`
+- `getOrganizationForIdpMapper()`
+- `getGroupForIdpMapper()`
+
+###### Stage 5
+- `runJobInTransaction()`
+- `runJobInTransactionWithResult()`
+- `cloneContextRealmClientToSession()/cloneContextRealmClientSessionToSession()`
+- `setTransactionLimit()`
+- `getTransactionLimit()`
+- `deepFindAuthenticationExecutions()`
+- `isFlowUsed()`
+
+##### Initial Implementation
+###### Stage 1
+The agent generated `KeycloakModelUtilsIdsTest` with 14 tests.
+All the tests that were planned are implemented.
+
+###### Stage 2
+The agent generated `KeycloakModelUtilsClientTest` with 6 tests.
+All the tests that were planned are implemented.
+
+###### Stage 3
+The agent generated `KeycloakModelUtilsRoleTest` with 12 tests.
+All the tests that were planned are implemented.
+
+###### Stage 4
+The agent generated `KeycloakModelUtilsGroupTest` with 6 tests.
+These tests were missed from the plan:
+- `getOrganizationForIdpMapper()`
+- `getGroupForIdpMapper()`
+
+###### Stage 5
+The agent generated `KeycloakModelUtilsSessionTest` with 3 tests.
+These tests were missed from the plan:
+- `runJobInTransaction()`
+- `runJobInTransactionWithResult()`
+- `cloneContextRealmClientSessionToSession()`
+- `setTransactionLimit`
+- `getTransactionLimit()`
+- `deepFindAuthenticationExecutions()`
+- `isFlowUsed()`
+
+##### Initial Coverage
+OpenClover coverage is 32.2%, and decision coverage is 29.2%.
+
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gpt-oss_KeycloakModelUtils_round1.md`.
+
+##### Improvement Phase
+The agent was given the missing coverage markdown file. It came up with this two-stage plan
+
+###### Stage 1: “Utilities & Session plumbing”
+Purpose: Cover the remaining static / public helpers that simply encode/decoding bytes,
+generate key‑pairs, run transactions, clone contexts, and build component models.
+
+1. `KeycloakModelUtilsPemTest.java` (PEM encoding/decoding)
+2. `KeycloakModelUtilsKeyPairTest.java` (certificate generation overloads)
+3. `KeycloakModelUtilsUserTest.java` (user lookup)
+4. `KeycloakModelUtilsTransactionTest.java` (runJobInTransaction overloads + timeout)
+5. `KeycloakModelUtilsComponentTest.java` (componentModelGetter/getComponentModel/getComponentFactory)
+6. `KeycloakModelUtilsContextTest2.java` (cloneContextRealmClientSessionToSession)
+7. `KeycloakModelUtilsGenericTest.java` (getMasterRealmAdminManagementClientId, createComponentModel,
+   toLowerCaseSafe, getPemFromKey, getPemFromCertificate)
+
+###### Stage 2: “Group & Role/Authentication logic”
+Purpose: Cover the remaining group resolution/attribute methods, role resolution with caching,
+authentication flow traversal, and admin‑role pruning.
+
+1. `KeycloakModelUtilsGroupResolveTest.java` (group path resolution, buildGroupPath recursion, normalizeGroupPath)
+2. `KeycloakModelUtilsRoleResolveTest.java` (role resolve from string, getRoleByName,
+   removeTransientAdminRoles branch)
+3. `KeycloakModelUtilsAuthFlowTest.java` (deep authentication execution/flow delete,
+   deepFindAuthenticationExecutions, isFlowUsed)
+4. `KeycloakModelUtilsAttributeTest.java` (user & group attribute resolution)
+
+##### Improvement Implementation
+I had to give the model a "continue" prompt in stage 2. This used 200K input tokens.
+
+###### Stage 1
+The agent generated `KeycloakModelUtilsPemTest`, `KeycloakModelUtilsKeyPairTest`,
+`KeycloakModelUtilsTransactionTest`, `KeycloakModelUtilsComponentTest`,
+and `KeycloakModelUtilsMiscTest` with 14 tests.
+These test files were missed from the plan:
+- `KeycloakModelUtilsUserTest`
+- `KeycloakModelUtilsContextTest2`
+- `KeycloakModelUtilsGenericTest`
+
+The agent generated `KeycloakModelUtilsMiscTest` outside the plan.
+
+For fixing some of the tests, `TestCryptoProvider` had to be created.
+This is definitely unfair, but given the fact that gpt-oss is going to lose anyway, it's fine.
+
+###### Stage 2
+The agent generated `KeycloakModelUtilsAuthFlowTest` with 3 tests.
+These test files were missed from the plan:
+- `KeycloakModelUtilsGroupResolveTest`
+- `KeycloakModelUtilsRoleResolveTest`
+- `KeycloakModelUtilsAttributeTest`
+
+##### Final Coverage
+OpenClover coverage is 42.4%, and decision coverage is 33.5%.
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gpt-oss_KeycloakModelUtils_round2.md`.
+
+##### Verdict
+In total, 1,767,478 input tokens and 44,407 output tokens used. no token was cached.
+
+This model was doing well this time until it reached the end of stage 4.
+From there, the majority of planned methods were missed.
+
+The improvement is not drastic at all. I knew even with the massive help I gave this model,
+it was not going to do better than Gemma4.
+The token usage is unusually high. The token saver was active during the test generation.
+
+#### Comparison
+| Title                            |  Gemma4   |  GPT-OSS  |
+|:---------------------------------|:---------:|:---------:|
+| Initial OpenClover Coverage      |   48.6%   |   32.2%   |
+| Initial Decision Coverage        |   39.0%   |   29.2%   |
+| Final OpenClover Coverage        |   61.5%   |   42.4%   |
+| Final Decision Coverage          |   49.2%   |   33.5%   |
+| Total Tests                      |    91     |    58     |
+| Context Window Usage             |  59,027   |  46,424   |
+| Total Input Tokens               | 1,217,459 | 1,767,478 |
+| Total Cached Tokens              |  239,040  |     0     |
+| Total Output Tokens              |  31,308   |  44,407   |
+| Total Tokens used                | 1,009,727 | 1,811,885 |
+| Tokens per OpenClover Coverage % |  16,418   |  42,733   |
+
+Even with the massive help I gave to GPT-OSS, the coverage improvement was less than Gemma4.
+Gemma4 wins again in all aspects.
+I am convinced that the token window cannot be used to compare token usage at all.
+GPT-OSS missed many planned tests. Therefore, total tests are much lower than Gemma's.
+
+### ModelToRepresentation
+This file has 1,555 LOC, 74 methods, 887 statements, and 188 branches.
+
+In the first attempt to generate a plan, the model got stuck in a loop in which it was just printing the plan, and
+it was adding a minor thing to it every time. After some minutes, the model stopped without the final plan.
+This used 73,292 input and 1,334 output tokens. I started a new session and I gave the initial prompt again.
+This time, nothing went wrong.
+
+#### Gemma4
+##### Initial Implementation Plan
+###### Stage 1: Groups & Roles
+* `buildGroupPath()`
+* `groupToBriefRepresentation()`
+* `toRepresentation(GroupModel, boolean)`
+* `toGroupHierarchy (all variants)`
+* `toRepresentation(RoleModel)`
+* `toBriefRepresentation(RoleModel)`
+
+###### Stage 2: Users & Credentials
+* `toRepresentation(KeycloakSession, RealmModel, UserModel)` (and overloads)
+* `toBriefRepresentation(UserModel)`
+* `toRepresentation(UserSessionModel)`
+* `toRepresentation(UserCredentialModel)`
+* `toRepresentation(CredentialModel)`
+* `toRepresentation(CredentialMetadata)`
+
+###### Stage 3: Realm & Identity Providers
+* `toBriefRepresentation(RealmModel)`
+* `toRepresentation(KeycloakSession, RealmModel, boolean, boolean)`
+* `toBriefRepresentation(RealmModel, IdentityProviderModel)`
+* `toRepresentation(KeycloakSession, RealmModel, IdentityProviderModel, boolean)`
+* `toEventsConfigReprensetation()`
+
+###### Stage 4: Clients & Client Scopes
+- `toRepresentation(ClientScopeModel)`
+- `toRepresentation(ClientModel, KeycloakSession)`
+- `stripClientAttributesIncludedAsFields()`
+
+###### Stage 5: Events & Utilities
+* `toRepresentation(Event)`
+* `toRepresentation(AdminEvent)`
+* `toRepresentation(AuthDetails)`
+* `toRepresentation(FederatedIdentityModel)`
+* `stripRealmAttributesIncludedAsFields()`
+* `filterValidRepresentations()`
+* export utilities (`exportGroups()`, `exportAuthenticationFlows()`, `exportRequiredActions()`)
+
+##### Initial Implementation
+###### Stage 1
+The agent generated `ModelToRepresentationGroupAndRoleTest` with 7 tests.
+These tests were missed from the plan:
+- `toGroupHierarchy(KeycloakSession, RealmModel, boolean)`, `toGroupHierarchy(GroupModel, boolean)` and
+  `toGroupHierarchy(GroupModel, boolean)` are not cover. However, they are deprecated.
+
+###### Stage 2
+The agent generated `ModelToRepresentationUserTest` with 7 tests.
+All the tests that were planned are implemented.
+
+###### Stage 3
+The agent generated `ModelToRepresentationRealmAndIdpTest` with 7 tests.
+All the tests that were planned are implemented.
+
+###### Stage 4
+The agent generated `ModelToRepresentationClientTest` with 5 tests.
+All the tests that were planned are implemented.
+
+###### Stage 5
+The agent generated `ModelToRepresentationEventAndUtilTest` with 8 tests.
+These tests were missed from the plan:
+- from export utilities `exportGroups()` was not covered.
+
+##### Initial Coverage
+OpenClover coverage is 57.9%, and decision coverage is 38.8%.
+
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gemma4_ModelToRepresentation_round1.md`.
+
+##### Improvement Phase
+The agent was given the missing coverage markdown file. It came up with this two-stage plan
+
+###### Stage 1: Branch & Logic Refinement
+Goal: Resolve the "Partially Covered" gaps, focusing on complex decision trees in core models.
+
+Focus Areas:
+- User Models: Complete branch coverage for `toRepresentation(UserModel, ...)` and `toBriefRepresentation(...)`,
+  specifically targeting null checks for attributes and the `isEnabled()` logic.
+- Realm Models: High-intensity testing of `toRepresentation(RealmModel, ...)` to cover feature flags (e.g.,
+  `Profile.isFeatureEnabled()`), null flows (browser, registration, etc.), and the `export` branch.
+- Identity Providers: Complete the branch logic for `toRepresentation(IdentityProviderModel, ...)`
+  regarding authentication flows.
+- Admin Events: Cover null/non-null branches for `authDetails()` and `resourceTypeAsString()` in
+  `toRepresentation(AdminEvent)`.
+- Utility Logic: Resolve coverage for `isRealmClient()` and `toLocalizedMessage()`.
+
+###### Stage 2: Full Method Integration
+Goal: Exercise the "Methods Not Entered" to ensure complete functional coverage.
+
+Focus Areas:
+- Authorization & Policy: Implement tests for the extensive suite of Authorization-related methods: `Policy`,
+  `Resource`, `PermissionTicket`, `ResourceServer`, and `AuthorizationProvider` transformations.
+- Organization & Verifiable Credentials: Cover the new `OrganizationModel` and
+  `IssuedVerifiableCredentialModel` mapping logic.
+- Component & Client Scopes: Exercise `ComponentModel`, `ClientScopeModel`, and `ProviderConfigProperty` transformations.
+- Groups & Hierarchy: Implement tests for the group hierarchy and search matching logic (`toGroupHierarchy()` and
+  `groupMatchesSearchOrIsPathElement()`).
+
+##### Improvement Implementation
+###### Stage 1
+The agent generated `ModelToRepresentationBranchTest` with 7 tests.
+These tests were missed from the plan:
+-  `toRepresentation(UserVerifiableCredentialModel, RealmModel)` is not covered.
+   `toBriefRepresentation()` is missing a branch.
+- All 6 entrances to `isRealmClient()` goes through a single branch.
+  This was the case too for all 3 entrances to `toLocalizedMessage()`.
+
+`testToLocalizedMessageBranches()` and `testIsRealmClientBranches()` are removed duo to
+attempt to access private members.
+
+###### Stage 2
+The agent generated `ModelToRepresentationMissingMethodsTest` with 6 tests.
+These tests were missed from the plan:
+- `groupMatchesSearchOrIsPathElement()` is not covered.
+
+##### Final Coverage
+OpenClover coverage is 76.7%, and decision coverage is 56.9%.
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gemma4_ModelToRepresentation_round2.md`.
+
+##### Verdict
+In total, 1,100,082 input tokens and 32,513 output tokens used. 160,768 tokens were cached.
+This does not include the failed initial plan attempt.
+
+The majority of the planned tests were implemented this time. Still, the coverage is mediocre.
+
+In the end, the OpenClover coverage is almost satisfactory.
+The decision coverage is away from satisfactory though.
+340,528 tokens were used to improve decision coverage by 20%.
+That's actually great for decision coverage.
+
+
+#### GPT-OSS
+##### Initial Implementation Plan
+The agent did not give a title for each stage.
+
+###### Stage 1
+- `toRepresentation(KeycloakSession, RealmModel, UserModel)`
+- `toBriefRepresentation(UserModel)`
+- `toRepresentation(UserModel, boolean)`
+- `addAttributeToBriefRep(UserModel, UserRepresentation, String)`
+
+###### Stage 2
+- `toRepresentation(GroupModel, boolean)`
+- `groupMatchesSearchOrIsPathElement()`
+- `toGroupHierarchy()` (hierarchy logic)
+- `buildGroupPath()`
+
+###### Stage 3
+- `toRepresentation(ClientModel, KeycloakSession)`
+- `isRealmClient()`
+- `exportGroups()`
+- `exportAuthenticationFlows()`
+
+###### Stage 4
+- `toRepresentation(KeycloakSession, RealmModel,, boolean, boolean)`
+- `toBriefRepresentation(RealmModel)`
+- `toEventsConfigReprensetation()`
+- `stripRealmAttributesIncludedAsFields()`
+- `toLocalizedMessage()`
+
+###### Stage 5
+- `filterValidRepresentations()`
+- `stripClientAttributesIncludedAsFields()`
+- `toLocalizedMessage()`
+- `toMetadataRepresentation()` (credential metadata)
+- `addAttributeToBriefRep()`
+
+Note that `toLocalizedMessage()` is covered in the previous stage.
+Method `toMetadataRepresentation()` does not exist.
+
+##### Initial Implementation
+###### Stage 1
+The agent generated `ModelToRepresentationUserTest` with 3 tests.
+All the tests that were planned are implemented.
+
+`testAddAttributeToBriefRep()` is removed duo to attempt to access a private member.
+
+###### Stage 2
+The agent generated `ModelToRepresentationGroupTest` with 4 tests.
+All the tests that were planned are implemented.
+
+`testSearchEmpty()` is removed duo to attempt to access a private member.
+
+###### Stage 3
+The agent generated `ModelToRepresentationClientTest` with 2 tests.
+These tests were missed from the plan:
+- `exportGroups()`
+- `exportAuthenticationFlows()`
+
+###### Stage 4
+The agent generated `ModelToRepresentationRealmTest` with 1 test.
+These tests were missed from the plan:
+- `toBriefRepresentation(RealmModel)`
+
+###### Stage 5
+The agent generated `ModelToRepresentationUtilityTest` with 6 tests.
+All the tests that were planned are implemented.
+
+##### Initial Coverage
+OpenClover coverage is 43.2%, and decision coverage is 30.9%.
+
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gpt-oss_ModelToRepresentation_round1.md`.
+
+##### Improvement Phase
+The agent was given the missing coverage markdown file.
+It came up with this two-stage plan.
+
+###### Stage 1: Group hierarchy, user, role, identity‑provider
+- `toGroupHierarchy()` (recursion, search path)
+- `toRepresentation(KeycloakSession, UserModel, boolean)` (setUserAttributes=false/true)
+- `toRepresentation(RoleModel)` (Client vs Realm role)
+- `toBriefRepresentation(RealmModel)`, `toRepresentation(RealmModel)` (internal=false)
+- `toBriefRepresentation(RealmModel, IdentityProviderModel)`
+
+###### Stage 2: Realm & Client conversions, events, and helper methods
+- `toRepresentation(KeycloakSession, RealmModel, boolean, boolean)` (internal=true/false)
+- `exportGroups()` / `exportAuthenticationFlows()` / `exportRequiredActions()` (ensure lists populated)
+- `toRepresentation(UserCredentialModel)`
+- `toRepresentation(FederatedIdentityModel)`
+- `toRepresentation(UserSessionModel)`
+- `toRepresentation(ClientScopeModel)`
+- `toEventsConfigRepresentation()`
+- `stripRealmAttributesIncludedAsFields()`
+- `stripClientAttributesIncludedAsFields()` (enclose keys)
+
+##### Improvement Implementation
+###### Stage 1
+The agent generated `ModelToRepresentationGroupHierarchyTest` and `ModelToRepresentationUserAttributesTest`
+with 5 tests.
+These tests were missed from the plan:
+- `toRepresentation(KeycloakSession, UserModel, boolean)`
+- `toRepresentation(RoleModel)`
+- `toBriefRepresentation(RealmModel)`
+- `toBriefRepresentation(RealmModel, IdentityProviderModel)`
+
+`toRepresentation(RealmModel)` does not exist.
+
+###### Stage 2
+The agent generated `ModelToRepresentationGroupFullTest` and `ModelToRepresentationGroupRoleTest` with 4 tests.
+Only these methods are covered:
+- `toRepresentation(KeycloakSession, RealmModel, boolean, boolean)` (a branch was not covered)
+- `stripRealmAttributesIncludedAsFields()`
+- `stripClientAttributesIncludedAsFields()`
+
+`toEventsConfigRepresentation` does not exist.
+
+##### Final Coverage
+OpenClover coverage is 44.9%, and decision coverage is 36.7%.
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gpt-oss_ModelToRepresentation_round2.md`.
+
+##### Verdict
+In total, 1,297,887 input tokens and 56,577 output tokens used. no token was cached.
+
+The initial coverage is low.
+
+Half-way through, we can already declare Gemma4 the better model at least in terms of coverage.
+
+This has been the worst improvement so far.
+Decision coverage increased by about 6%, and OpenClover coverage by 2%.
+
+#### Comparison
+| Title                            |  Gemma4   |  GPT-OSS  |
+|:---------------------------------|:---------:|:---------:|
+| Initial OpenClover Coverage      |   57.9%   |   43.2%   |
+| Initial Decision Coverage        |   38.8%   |   30.9%   |
+| Final OpenClover Coverage        |   76.7%   |   44.9%   |
+| Final Decision Coverage          |   56.9%   |   36.7%   |
+| Total Tests                      |    45     |    23     |
+| Context Window Usage             |  72,310   |  44,704   |
+| Total Input Tokens               | 1,100,082 | 1,297,887 |
+| Total Cached Tokens              |  160,768  |     0     |
+| Total Output Tokens              |  32,513   |  56,577   |
+| Total Tokens used                |  971,827  | 1,354,464 |
+| Tokens per OpenClover Coverage % |  12,670   |  30,166   |
+
+Gemma4 wins again, no surprises. It even used fewer tokens again.
+Still, the decision coverage is far from satisfactory.
+Maybe creating another improvement phase specifically aiming at missing branches can fix this.
