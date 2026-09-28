@@ -769,7 +769,7 @@ Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_AuthorizationEndpoint_round2.md`.
 
 ##### Verdict
-In total, 1,468,959 input tokens and 50,202 output tokens used. 258,240 tokens were cached.
+In total, 1,468,959 input tokens and 50,202 output tokens were used. 258,240 tokens were cached.
 This is one of the least complex files for this report. However, it did require many mocks.
 
 The initial coverage was very good. OpenClover coverage was already satisfactory.
@@ -1050,7 +1050,7 @@ Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_JpaUserProvider_round2.md`.
 
 ##### Verdict
-In total, 1,217,035 input tokens and 41,202 output tokens used. 167,936 tokens were cached.
+In total, 1,217,035 input tokens and 41,202 output tokens were used. 167,936 tokens were cached.
 
 The initial coverage was excellent. Even though this file is more complex that `AuthenticationProcessor`,
 Gemma manages to cover more portion of the code. Generating stages 3 to 5 in one go didn't have negative effects.
@@ -1221,7 +1221,7 @@ Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_JpaUserProvider_round1.md`.
 
 ##### Improvement Phase
-The agent was given the missing coverage markdown file. It came up with this two-stage plan
+The agent was given the missing coverage markdown file. It came up with this two-stage plan:
 
 ###### Stage 1: “Not Entered” methods
 Purpose: Exercise every public method that the current test suite never invokes.  
@@ -1286,8 +1286,10 @@ OpenClover coverage is 32.7%, and decision coverage is 32.9%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_JpaUserProvider_round2.md`.
 
+484,327 input tokens and 16,962 output tokens were consumed for this phase.
+
 ##### Verdict
-In total, 1,190,094 input tokens and 34,404 output tokens used. no token was cached.
+In total, 1,190,094 input tokens and 33,875 output tokens were used. no token was cached.
 
 The initial coverage is terrible.
 Missing many of the planned tests and some tests removed duo to violations are accounting for this low coverage.
@@ -1306,9 +1308,9 @@ The improvement wasn't that much either. Many tests were removed again for viola
 | Context Window Usage             |  64,862   |  54,042   |
 | Total Input Tokens               | 1,238,241 | 1,190,094 |
 | Total Cached Tokens              |  167,936  |     0     |
-| Total Output Tokens              |  41,202   |  34,404   |
-| Total Tokens used                | 1,111,507 | 1,224,498 |
-| Tokens per OpenClover Coverage % |  14,435   |  37,446   |
+| Total Output Tokens              |  41,202   |  33,875   |
+| Total Tokens used                | 1,111,507 | 1,223,969 |
+| Tokens per OpenClover Coverage % |  14,435   |  37,430   |
 
 Clearly, gemma4 is the winner.
 The total token usage is lower and coverage is much higher.
@@ -1450,7 +1452,7 @@ Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_KeycloakModelUtils_round2.md`.
 
 ##### Verdict
-In total, 1,217,459 input tokens and 31,308 output tokens used. 239,040 tokens were cached.
+In total, 1,217,459 input tokens and 31,308 output tokens were used. 239,040 tokens were cached.
 
 Many Methods planned to be tested initially were not tested.
 The initial coverage could have been much higher if everything in the mentioned plan was covered.
@@ -1602,8 +1604,10 @@ OpenClover coverage is 42.4%, and decision coverage is 33.5%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_KeycloakModelUtils_round2.md`.
 
+722,884 input tokens and 9,194 output tokens were used for this phase.
+
 ##### Verdict
-In total, 1,767,478 input tokens and 44,407 output tokens used. no token was cached.
+In total, 1,767,478 input tokens and 30,187 output tokens were used. no token was cached.
 
 This model was doing well this time until it reached the end of stage 4.
 From there, the majority of planned methods were missed.
@@ -1623,9 +1627,9 @@ The token usage is unusually high. The token saver was active during the test ge
 | Context Window Usage             |  59,027   |  46,424   |
 | Total Input Tokens               | 1,217,459 | 1,767,478 |
 | Total Cached Tokens              |  239,040  |     0     |
-| Total Output Tokens              |  31,308   |  44,407   |
-| Total Tokens used                | 1,009,727 | 1,811,885 |
-| Tokens per OpenClover Coverage % |  16,418   |  42,733   |
+| Total Output Tokens              |  31,308   |  30,187   |
+| Total Tokens used                | 1,009,727 | 1,797,665 |
+| Tokens per OpenClover Coverage % |  16,418   |  42,798   |
 
 Even with the massive help I gave to GPT-OSS, the coverage improvement was less than Gemma4.
 Gemma4 wins again in all aspects.
@@ -1761,7 +1765,7 @@ Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_ModelToRepresentation_round2.md`.
 
 ##### Verdict
-In total, 1,100,082 input tokens and 32,513 output tokens used. 160,768 tokens were cached.
+In total, 1,100,082 input tokens and 32,513 output tokens were used. 160,768 tokens were cached.
 This does not include the failed initial plan attempt.
 
 The majority of the planned tests were implemented this time. Still, the coverage is mediocre.
@@ -1893,8 +1897,10 @@ OpenClover coverage is 44.9%, and decision coverage is 36.7%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_ModelToRepresentation_round2.md`.
 
+676,898 input tokens and 9,486 output tokens were used for this phase.
+
 ##### Verdict
-In total, 1,297,887 input tokens and 56,577 output tokens used. no token was cached.
+In total, 1,297,887 input tokens and 33,163 output tokens were used. no token was cached.
 
 The initial coverage is low.
 
@@ -1914,10 +1920,290 @@ Decision coverage increased by about 6%, and OpenClover coverage by 2%.
 | Context Window Usage             |  72,310   |  44,704   |
 | Total Input Tokens               | 1,100,082 | 1,297,887 |
 | Total Cached Tokens              |  160,768  |     0     |
-| Total Output Tokens              |  32,513   |  56,577   |
-| Total Tokens used                |  971,827  | 1,354,464 |
-| Tokens per OpenClover Coverage % |  12,670   |  30,166   |
+| Total Output Tokens              |  32,513   |  33,163   |
+| Total Tokens used                |  971,827  | 1,331,050 |
+| Tokens per OpenClover Coverage % |  12,670   |  29,645   |
 
 Gemma4 wins again, no surprises. It even used fewer tokens again.
 Still, the decision coverage is far from satisfactory.
 Maybe creating another improvement phase specifically aiming at missing branches can fix this.
+
+### OIDCLoginProtocol
+This file has 598 LOC, 28 methods, 202 statements, and 72 branches.
+
+#### Gemma4
+##### Initial Implementation Plan
+###### Stage 1: Helpers and Reauthentication Logic
+Focus: Testing the utility and predicate methods that drive business logic.
+- `getClientData(AuthenticationSessionModel)`
+- `isIdTokenAsDetachedSignature(ClientModel)`
+- `isPromptLogin(AuthenticationSessionModel)`
+- `isAuthTimeExpired(UserSessionModel, AuthenticationSessionModel)` (test: null session,
+  missing maxAge, expired vs valid)
+- `isReAuthRequiredForKcAction(UserSessionModel, AuthenticationSessionModel)` (test: missing action,
+  provider not found, expired vs valid)
+- `requireReauthentication(UserSessionModel, AuthenticationSessionModel)` (test combinations of the above)
+
+###### Stage 2: Error Handling and Redirection
+Focus: Testing how the protocol handles failures and constructs error responses.
+- `sendError(AuthenticationSessionModel, Error, String)` (test: device flow vs standard, error translation)
+- `sendError(ClientModel, ClientData, Error)` (test: authorization checker paths)
+- `translateError(Error, String)` (test: all switch cases including `CANCELLED_AIA`,
+  `CONSENT_DENIED`, `ALREADY_LOGGED_IN`, and `default`)
+- `buildRedirectUri(...)` (verify various overload behaviors)
+
+###### Stage 3: Logout and Authentication Lifecycle
+Focus: Testing session termination and lifecycle hooks.
+- `backchannelLogout(UserSessionModel, AuthenticatedClientSessionModel)` (test: with vs without backchannel URL)
+- `frontchannelLogout(UserSessionModel, AuthenticatedClientSessionModel)` (test: enabled vs disabled,
+  null session)
+- `finishBrowserLogout(UserSessionModel, AuthenticationSessionModel)` (test: redirect URI presence,
+  logout handler presence)
+- `authenticationComplete(AuthenticationSessionModel)` (test: PAR valid vs PAR not found/error)
+
+###### Stage 4: The Standard/Code Grant Flow
+Focus: Testing the authenticated method specifically for the Authorization Code flow.
+- `authenticated(AuthenticationSessionModel, UserSessionModel, ClientSessionContext)`
+  - Branch: `isOAuth2DeviceVerificationFlow` is true.
+  - Branch: `response_type=code` (Standard/Hybrid).
+    - Test `OAuth2Code` generation and persistence.
+    - Test parameter injection (state, session_state, issuer, nonce, kc_action).
+
+###### Stage 5: Implicit/Hybrid Flows and Advanced Features
+Focus: Testing the remaining complex branches of the authenticated method.
+- `authenticated(...)` (Implicit/Hybrid branches)
+  - Branch: `isImplicitOrHybridFlow` is `true`.
+    - Sub-branch: `ID_TOKEN` requested.
+    - Sub-branch: `ACCESS_TOKEN` requested.
+    - Sub-branch: `CODE` hash (for hybrid).
+    - Sub-branch: Client Policy Exception (verify error event and redirect).
+  - Sub-branch: `offlineTokenRequested` handling.
+- `sendPushRevocationPolicyRequest(...)` (test: success vs `IOException`)
+
+##### Initial Implementation
+In the first attempt of implementing stage 1, the agent got stuck in a loop.
+It was assessing the generated test file again and again.
+
+###### Stage 1
+The agent generated `OIDCLoginProtocolHelpersTest` with 16 tests.
+All the tests that were planned are implemented.
+
+###### Stage 2
+The agent generated `OIDCLoginProtocolErrorTest` with 13 tests.
+All the tests that were planned are implemented.
+
+`testTranslateError_Default` is removed duo to attempt to access a non-existing member.
+It was done in order to cover a default case in a switch case on an enum.
+ll enums had a case, so covering this is impossible.
+
+###### Stage 3
+The agent generated `OIDCLoginProtocolLogoutTest` with 8 tests.
+All the tests that were planned are implemented.
+
+###### Stage 4
+The agent generated `OIDCLoginProtocolCodeFlowTest` with 2 tests.
+All the tests that were planned are implemented.
+
+###### Stage 5
+The agent generated `OIDCLoginProtocolTokenFlowTest` with 4 tests.
+These tests were missed from the plan:
+- `authenticated(...)` has some missing branches.
+
+##### Initial Coverage
+OpenClover coverage is 80.7%, and decision coverage is 70.8%.
+
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gemma4_OIDCLoginProtocol_round1.md`.
+
+##### Improvement Phase
+The agent was given the missing coverage markdown file. It came up with this two-stage plan
+
+###### Stage 1: Complex Flow and Error Branching
+Goal: Address the majority of missing branches in the authenticated, sendError,
+and buildErrorRedirectUri methods, specifically focusing on configuration variations and
+complex response type branches.
+
+Test Scenarios:
+- `authenticated()` method:
+  - Client Configuration Exclusions: Test branches where `isExcludeSessionStateFromAuthResponse()` and
+    `isExcludeIssuerFromAuthResponse()` return true.
+    - KC Action Status: Test both `kcActionStatus != null` (with and without a `requiredActionAlias`) and
+      `kcActionStatus == null`.
+    - Response Type Variations:
+      - Ensure coverage for `ID_TOKEN`, `TOKEN`, and `CODE` (for hybrid) branches.
+      - Test the `state != null` branch for `generateStateHash()`.
+  - Offline Token: Test the `offlineTokenRequested()` branch for non-implicit flows.
+- `sendError()` method:
+  - Test the true branch for `isOAuth2DeviceVerificationFlow()` (Device Flow error handling).
+- `buildErrorRedirectUri()` method:
+  - Test branches where `oauthError.getError()` or `oauthError.getErrorDescription()` are `null`.
+  - Test the `false` branch for `isExcludeIssuerFromAuthResponse()`.
+
+###### Stage 2: Lifecycle, Edge Cases, and Utility Completeness
+Goal: Address the remaining missing branches in logout, lifecycle, and utility methods.
+
+Test Scenarios:
+- Logout & Lifecycle:
+  - `frontchannelLogout()`: Test the `false` branch where `clientSession()` is `null`.
+  - `finishBrowserLogout()`: Test the `true` branch where `frontChannelLogoutHandler()` is not `null`.
+  - `close()`: Invoke the `close()` method to ensure it is entered.
+- Utility Predicates:
+- `isAuthTimeExpired()`: Explicitly test the `true` branch of the ternary operator (where
+  `authTime` is NOT null) to ensure integer parsing is covered.
+- `isReAuthRequiredForKcAction()`: Explicitly test the `true` branch of the ternary
+  operator (where `authTime` is NOT `null`).
+
+##### Improvement Implementation
+###### Stage 1
+The agent generated `OIDCLoginProtocolFlowExtensionTest` with 6 tests.
+These tests were missed from the plan:
+- `TOKEN` branch in Response Type
+- `false` branch for `isExcludeIssuerFromAuthResponse()`
+
+`testBuildErrorRedirectUri_Branches` is removed duo to attempt to access a non-existing member.
+
+###### Stage 2
+The agent generated `OIDCLoginProtocolLifecycleAndUtilityTest` with 5 tests.
+All the tests that were planned are implemented. Although, for `isAuthTimeExpired` and `isAuthTimeExpired()`,
+the true branch is actually when the variable is null.
+
+##### Final Coverage
+OpenClover coverage is 95.8%, and decision coverage is 88.9%.
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gemma4_OIDCLoginProtocol_round2.md`.
+
+257,306 input tokens and 11,304 output tokens were used for this phase.
+
+##### Verdict
+In total, 903,169 input tokens and 39,758 output tokens were used. 17,280 tokens were cached.
+
+The initial coverage is great.
+The decision coverage just needs a little bit more push to attain a satisfactory level.
+
+The improvement is alright.
+The agent mostly focused on missing branches.
+As a result, the goal of 80% decision coverage is obtained.
+
+#### GPT-OSS
+##### Initial Implementation Plan
+###### Stage 1: Minimal happy path: CODE flow
+- `isOAuth2DeviceVerificationFlow()` false
+- `responseType` contains `CODE` only
+- `approveOAuth2DeviceAuthorization` never invoked
+
+###### Stage 2: Implicit / hybrid flow: token + ID‑token
+- `responseType()` contains `TOKEN` and `ID_TOKEN`
+- `isImplicitOrHybridFlow()` true
+- `generateAccessToken()`, `generateIDToken()`, `generateAccessTokenHash()`, `generateCodeHash()`,
+  `generateStateHash()` called
+
+###### Stage 3: Device Authorization flow
+- `isOAuth2DeviceVerificationFlow()` true
+- `approveOAuth2DeviceAuthorization()` path
+- `denyOAuth2DeviceAuthorization()` path
+
+###### Stage 4: Error path
+- `sendError()` called with each `Error` enum case
+- `buildErrorRedirectUri()` produces expected params
+
+###### Stage 5: Session/reauth logic & cleanup
+- `requireReauthentication()` → `isPromptLogin()`, `isAuthTimeExpired()`, `isReAuthRequiredForKcAction()`
+- `sendPushRevocationPolicyRequest()` returns success/failure
+- `authenticationComplete()` removes PAR
+
+##### Initial Implementation
+Test file names did not have Test at the end of their names.
+
+###### Stage 1
+The agent generated `OIDCLoginProtocolTest_CodeFlow` with 1 test.
+All the tests that were planned are implemented.
+
+###### Stage 2
+The agent generated `OIDCLoginProtocolTest_HybridFlow` with 1 test.
+All the tests that were planned are implemented.
+
+###### Stage 3
+The agent generated `OIDCLoginProtocolTest_DeviceFlow`, `OIDCLoginProtocolTest_Errors` and
+`OIDCLoginProtocolTest_Session` with 9 tests.
+All the tests that were planned are implemented.
+
+###### Stage 4
+The agent generated `OIDCLoginProtocolTest_Errors` with 2 tests.
+The tests methods were missing signature!
+All the tests that were planned are implemented.
+
+###### Stage 5
+The agent generated `OIDCLoginProtocolTest_AdditionalSession` with 3 tests.
+All the tests that were planned are implemented.
+
+##### Initial Coverage
+OpenClover coverage is 64.2%, and decision coverage is 50.0%.
+
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gpt-oss_OIDCLoginProtocol_round1.md`.
+
+##### Improvement Phase
+The agent was given the missing coverage markdown file. It came up with this two-stage plan
+
+###### Stage 1: Additional Tests to Close Coverage Gaps
+- `setSession()`
+- `setRealm()`
+- `setUriInfo()`
+- `setHttpHeaders()`
+- `setEventBuilder()`
+- `getClientData()`
+- `backchannelLogout()`
+- `frontchannelLogout()`
+- `finishBrowserLogout()`
+- `close()`
+
+###### Stage 2: Partial‑coverage methods
+- `isIdTokenAsDetachedSignature()`
+- `buildErrorRedirectUri()`
+- `isAuthTimeExpired()`
+- `isReAuthRequiredForKcAction()`
+
+##### Improvement Implementation
+###### Stage 1
+The agent generated `OIDCLoginProtocolSetterTest` with 5 tests.
+These methods were missed to be covered from the plan:
+- `finishBrowserLogout()`
+- `close()`
+
+###### Stage 2
+The agent generated `OIDCLoginProtocolGetClientDataTest` and `OIDCLoginProtocolLogoutTest` with 5 tests.
+All mentioned methods are still partially covered.
+
+##### Final Coverage
+OpenClover coverage is 75.8%, and decision coverage is 56.9%.
+Missed coverage markdown file is available at
+`project3/reports/opencode/missing_coverages_report/gpt-oss_OIDCLoginProtocol_round2.md`.
+
+329,999 input tokens and 5,186 output tokens were used for this phase.
+
+##### Verdict
+In total, 877,428 input tokens and 21,355 output tokens were used. no token was cached.
+
+This file contains the least number of statements. Therefore, I was expecting more initial coverage.
+
+The improvement is not great, considering the token usage.
+
+#### Comparison
+| Title                            | Gemma4  |  GPT-OSS  |
+|:---------------------------------|:-------:|:---------:|
+| Initial OpenClover Coverage      |  87.4%  |   64.2%   |
+| Initial Decision Coverage        |  70.8%  |   50.0%   |
+| Final OpenClover Coverage        |  95.7%  |   75.8%   |
+| Final Decision Coverage          |  88.9%  |   56.9%   |
+| Total Tests                      |   52    |    26     |
+| Context Window Usage             | 56,602  |  36,149   |
+| Total Input Tokens               | 903,169 | 1,297,887 |
+| Total Cached Tokens              | 17,280  |     0     |
+| Total Output Tokens              | 39,758  |  21,355   |
+| Total Tokens used                | 925,647 | 1,319,242 |
+| Tokens per OpenClover Coverage % |  9,672  |  17,404   |
+
+Gemma4 is clearly the winner.
+Less token usage, but much more coverage.
+This file has the lowest statements between all files.
+It's good to see that at least gemma4 reached satisfactory coverage.
