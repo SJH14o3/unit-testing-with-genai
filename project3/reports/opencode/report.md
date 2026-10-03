@@ -1,21 +1,247 @@
 # Unit Test Generation Using OpenCode For Hard Project
-TODO
-## Table of Content
-TODO
+The size of code is about the same as the previous project.
+However, the code is much more complex.
+Each file that is going to be tested has many dependencies.
+In this report, I won't cover errors and failed tests.
+We are focusing on coverage and actual token usage.
 
-##  How tests are generated?
-TODO
-### How a good test generation flow is achieved
+Two local models "gemma4:26b" and "gpt-oss:20b" are going to be used again.
+They are called Gemma4 and GPT-OSS throughout the whole report.
+The tests for each file for every model will be done in separate sessions.
+These sessions are going to have multiple prompts and stages.
+10 files are chosen, and for each file, 2 sets of tests will be generated.
+A set by each model.
+
+We learned from previous project that these local models can't reach a good coverage in large files.
+All selected files here are large and complex.
+Therefore, tests will be generated for each file individually but in five stages in the first phase.
+There will be a second phase called improvement phase.
+Missing coverage is given to the agent, and the agent is prompted to create new tests to improve coverage.
+This phase test generation is done in two stages.
+Therefore, there are seven stages of test generation in total.
+
+I tried LSP and MCP servers on this project.
+LSP was not utilized for test generation.
+I have explained why it was not used in the next parts.
+
+## Table of Content
+* [What is LSP](#what-is-lsp)
+* [What is MCP Server](#what-is-mcp-server)
+  * [codebase-memory](#codebase-memory)
+  * [Context7](#context7)
+  * [Sequential Thinking](#sequential-thinking)
+* [How Token Usage is Tracked](#how-token-usage-is-tracked)
+  * [9router](#9router)
+    * [Headroom AI](#headroom-ai)
+    * [Used Providers](#used-providers)
+      * [Nvidia NIM](#nvidia-nim)
+      * [AvalAI](#avalai)
+* [How Tests Are Generated?](#how-tests-are-generated)
+  * [How a Good Test Generation Flow Is Achieved](#how-a-good-test-generation-flow-is-achieved)
+  * [Prompts Given to Models to Generate Test](#prompts-given-to-models-to-generate-test)
+* [How Coverage is Calculated](#how-coverage-is-calculated)
+  * [Introduction to OpenClover](#introduction-to-openclover)
+* [Why Errors and Failed Tests Are Not Fixed By The Models](#why-errors-and-failed-tests-are-not-fixed-by-the-models)
+  * [How These Errors Are Fixed?](#how-these-errors-are-fixed)
+* [How Missing Coverage Is Created](#how-missing-coverage-is-created)
+* [Which Tests Will Be Disqualified](#which-tests-will-be-disqualified)
+  * [Accessing a Private/Protected Member Directly](#accessing-a-privateprotected-member-directly)
+  * [Accessing a Member That Doesn't Exist](#accessing-a-member-that-doesnt-exist)
+* [Individual File Test Generation Analysis Format](#individual-file-test-generation-analysis-format)
+* [Test Generation Report](#test-generation-report)
+  * [AuthenticationProcessor](#authenticationprocessor)
+  * [AuthorizationEndpoint](#authorizationendpoint)
+  * [JpaUserProvider](#jpauserprovider)
+  * [KeycloakModelUtils](#keycloakmodelutils)
+  * [ModelToRepresentation](#modeltorepresentation)
+  * [OIDCLoginProtocol](#oidcloginprotocol)
+  * [RealmManager](#realmmanager)
+  * [RepresentationToModel](#representationtomodel)
+  * [TokenManager](#tokenmanager)
+  * [UserAdapter](#useradapter)
+* [Aggregated Result](#aggregated-result)
+* [Can gemma4:26b Be Used For Generating Tests For a Complex File?](#can-gemma426b-be-used-for-generating-tests-for-a-complex-file)
+
+## What is LSP
+Language Service Protocol is a JSON-RPC-based protocol for use between source-code editor or
+integrated development environments (IDE) and servers that provide "language intelligence tool".
+Programming features like code completion, syntax highlighting and marking of warnings and errors,
+as well as refactoring routines are given to the editor or IDE.
+
+AI agents make incorrect code changes because they can't see the full picture:
+who calls this function, what breaks if I rename it, does the build still pass.
+We have seen this in the previous project.
+
+So LSP can be beneficial to AI agents to understand the code better.
+However, this wasn't really helpful for this project at least with GPT-OSS.
+I have explained this in [how tests are generated part.](#How-tests-are-generated)
+
+## What is MCP Server
+Model Context Provider server is an open standard and open-source framework introduced by
+Anthropic in November 2024 to standardize the way artificial intelligence systems like
+LLMs integrate and share data with external tools, systems, and data sources.
+
+For example, you can connect an AI agent directly to GitHub platform.
+This will grant them abilities to read repositories and code files,
+manage issues and PRs, analyze code, and automate workflows.
+
+I didn't find MCP servers that can directly be beneficial to unit testing.
+This can be covered by skills.
+Still, I used some MCP servers to help the AI agents with the test generation task.
+
+What makes skills and MCP servers different is that skills run locally,
+but MCP servers involve network calls to external services.
+
+Here are the MCP servers I used:
+
+### codebase-memory
+This is an opensource MCP server that index a codebase into a persistent knowledge graph of
+functions, classes, call chains, etc. Instead of reading files one at a time, an AI agent
+queries this graph.
+
+So, if an AI agent wanted to find usage of a class, instead of calling `grep` command to find
+the class name, the agent will run a query on the graph.
+This reduces token usage significantly.
+This graph is also made locally, and it won't be uploaded elsewhere.
+
+I mainly used this MCP server to replace LSP.
+
+You can also view the generated graph in a modern web browser.
+
+Here is Gson project graph made by this mcp server:
+![cbm-gson.jpg](img/cbm-gson.jpg)
+
+Here is Keycloak project graph only containing the modules I choose
+files from:
+![cbm-keycloak.jpg](img/cbm-keycloak.jpg)
+
+I believe it's clear why keycloak is the hard project.
+This graph only contains modules required for test generation of the selected files.
+The whole project graph will be much more complex than this already sophisticated graph.
+
+### Context7
+Context7 is an MCP server that delivers up-to-date,
+version-specific documentation and code examples directly into prompts.
+
+This project contains dependencies on some external libraries like
+`JakartaEE`, `Quartus`, etc., which are not present in the folder
+where tests are going to be generated.
+The agent can retrieve up-to-date or version specific information
+about the external libraries.
+
+I installed it on OpenCode using a command.
+It was installed as a skill.
+This skill includes when to use it and how to fetch documentation.
+I also tried it on Visual Studio's GitHub Copilot.
+It was installed there as an MCP server.
+
+### Sequential Thinking
+An MCP server implementation that provides a tool for dynamic and reflective problem-solving through a
+structured thinking process.
+It can:
+- Break down complex problems into manageable steps
+- Revise and refine thoughts as understanding deepens
+- Branch into alternative paths of reasoning
+- Adjust the total number of thoughts dynamically
+- Generate and verify solution hypotheses
+
+We are dealing with large and complex files.
+Breaking down test generation for this file is going to be advantageous.
+
+## How Token Usage is Tracked
+I used API keys to use these local models.
+My setup was not strong enough to handle this models.
+Specially when context size gets really high.
+Gemma4 was really slow.
+GPT-OSS was taking an hour to implement one of the final stages.
+So, I had to find alternatives.
+
+Even though you can connect many providers to OpenCode, you can't connect them all directly.
+This is where 9router comes in.
+
+### 9router
+This is smart gateway between agentic coding tools (Cursor, Claude Code, Codex, Cline, Copilot…) and
+60+ AI providers.
+Moreover, you can connect more providers if their API is OpenAI or Anthropic compatible.
+
+You can add multiple API keys from a provider.
+By default, the key arranged at the top of the list will be used, but you can change it to use round-robin.
+
+The best feature of this tool is combo.
+You can set up a combo to use different models from any providers.
+Whenever you reach a limit in a model, it automatically fallbacks to the next model.
+Round-robin can also be used to keep a balance between them.
+
+You can see in detail how many input/output/cached tokens were used in total or by each model.
+I measured token usages using this.
+Although, I started measuring token usage from the second file onward.
+
+It also comes with token savers.
+As of now, it supports these token savers:
+- Compress tool output (RTK)
+  - git/grep/ls/tree/logs → 60-90% fewer input tokens
+- Compress context (Headroom AI)
+  - Compress prompts via /v1/compress before routing to the model
+- Compress LLM output (Caveman)
+  - Terse-style system prompt → ~65% fewer output tokens (up to 87%)
+- Lazy senior dev (Ponytail)
+  - Bias the model toward minimal code: YAGNI, reuse stdlib, deletion over addition
+
+There are some bold numbers here as we can see.
+However, token usage reduction is not a goal of this project, so I only used headroom from the third file onward.
+I didn't measure how much token usage was reduced, but token usage was reduced for sure.
+
+#### Headroom AI
+Headroom compresses AI agent context before it reaches the model,
+cutting repeated boilerplate from tool calls, file reads, and RAG payloads.
+Compression runs on your machine; no prompt or file content is sent anywhere to be compressed.
+
+#### Used Providers
+Since I was unable to run these local models on my own device,
+I had to use API providers that had these two models.
+
+##### Nvidia NIM
+NVIDIA NIM provides containers to self-host GPU-accelerated inferencing microservices for
+pretrained and customized AI models across clouds, data centers, and RTX AI PCs and workstations.  
+It has a free tier, but it requires verification through a phone number.
+Furthermore, only some models are available.
+The only limit it has is 40 requests per minute, which is very generous.
+I never hit this limit.
+Although, the generation speed is not as fast as you expect.
+Some available free models are:
+- gpt-oss-20b
+- nemotron-3-super-120b-a12b
+- nemotron-3-ultra-550b-a55b
+
+This provider sorted out GPT-OSS completely free.
+However, sometimes, this model was unavailable, and whenever it happened, it took a long time to be back online.
+
+##### AvalAI
+Duo to sanctions, Iranians don't have access to international payment methods.
+I used this Iranian provider, so I can pay without a problem.
+They provide many models from different providers.
+I was able to access gemma4:26b though the API key I got from this provider.
+However, I was paying for it from my pocket.
+This is one of the reasons why errors are not fixed by the original models themselves.
+However, I did realize that this provider prices for our local model are more expensive than OpenRouter.
+The more expensive models such as *Claude Sonnet* had the official price though.
+
+## How Tests Are Generated?
+It actually took me some days to figure out a way to generate tests for these complex files.
+I have to use plan mode since just generating test in one go was not going to be enough
+as we will see in the first attempts.
+
+### How a Good Test Generation Flow Is Achieved
 Firstly, I created a folder containing only the files that are chosen to generate test for.
 Their dependencies were imported to project in maven.
 That included some of the keycloak modules.
 I wasn't sure if mocking should be used duo to sheer amount of dependencies.
-I was running GPT-OSS locally, and the context windows was set to 64K context inside.
+I was running GPT-OSS locally, and the context windows was set to 64K context.
 This will matter in later attempts.
 So I tried generating tests with and without mocking first.
 
 #### First attempt: Build test using mock
-In the first attempt, that model is given this prompt:
+In the first attempt, GPT-OSS is given this prompt:
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
 > create unit tests using Junit5 and Mockito.
 > Achieve decision coverage. Use "junit-5-skill" skill.
@@ -111,7 +337,8 @@ This time, the agent generated 4 tests.
 It was also taking the time into account, which is why it decided not to generate all the tests.
 It was able to find some classes that it needed to read thanks to me adding all those files.
 After the four tests had been generated,
-the agent analyzed the file and fixed some supposed error and warning that it found.
+the agent analyzed the file and fixed some errors and warnings that it supposed found.
+It was not using any tool or command to find these errors and warnings.
 After that, it decided to verify the tests.
 
 There were 10 errors. Instead of fixing them one by one,
@@ -126,12 +353,10 @@ the final result was not going to be satisfactory.
 
 #### Sixth Attempt: LSP Enabled
 I changed OpenCode's configuration to enable LSP.
-In short, Language Server Protocol is a tool that enables a code editor, IDE,
-or agent to communicate with a language server to understand source code to understand the code.
-For example, instead of searching for usage of a class by using *grep* command,
-it will use a tool to find all references of the class.
 I added this since I noticed agents were spending a lot of time trying to find a specific class.
-LSP also finds errors before compilation. The lsp used for java was jdtls. I could see that in OpenCode's sidebar,
+LSP also finds errors before compilation.
+The lsp used for java was jdtls.
+I could see that in OpenCode's sidebar,
 it said that LSP will be used when files are read.
 
 This prompt was given to the model:
@@ -144,7 +369,7 @@ The model came up with 20 tests and a setup plan.
 After that I gave it this prompt:
 > Now implement the planned tests.
 > Verify that all tests pass using "mvn clean verify" command.
-> Don't stop until all compilation errors are fixed and all tests pass. 
+> Don't stop until all compilation errors are fixed and all tests pass.
 
 The Model was struggling what to mock or stub. The model was still using commands like glob or grep.
 This made me doubt whether LSP was really being used. In the end, the model refused to generate tests again:
@@ -156,11 +381,14 @@ that would need to be mocked or stubbed extensively. Creating that amount of moc
 the scope of an answer in this format.
 ```
 
-At this moment, I realized that I better tell the agent to implement the tests in multiple stages, rather than in one go.
+At this moment, I realized that I better tell the agent to implement the tests in multiple stages,
+rather than in one go.
 
 #### Seventh Attempt: Can You Run the Tests
-This was just a sidetracked attempt. I wanted to give generating tests without plans another go while LSP is enabled.
-I also thought since last time the model said it wasn't possible to generate a full and exhaustive set of unit tests,
+This was just a sidetracked attempt.
+I wanted to give generating tests without plans another go while LSP is enabled.
+I also thought since last time the model said it wasn't possible to generate a
+full and exhaustive set of unit tests,
 I changed high coverage to a satisfactory coverage. Still, 80% decision coverage is what I'm aiming for.
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
 > create unit tests using Junit5 and Mockito. Aim for a satisfactory decision coverage.
@@ -168,22 +396,17 @@ I changed high coverage to a satisfactory coverage. Still, 80% decision coverage
 Don't stop until all compilation errors are fixed and all tests pass. 
 
 The model generated three tests.
-Somehow like this, more tests are being generated.
 After that, it tried to run the tests. There were 23 errors.
-After making some changes,  errors were reduced to 14.
+After making some changes, errors were reduced to 14.
 This time, the agent decided to rewrite the whole file. Two tests were generated.
 Still, there were 12 errors. It wrote the test file again! This time 3 tests.
 There were only 2 errors now. The Agent decided that two of the testes were not important,
 so it removed them. With only one test, finally, there was no compilation error.
-However, this test failed.
-I don't know what change it did that resulted in verify command to give this output:
-
-`Tests run: 1, Failures: 0, Errors: 0, Skipped: 0`.
 
 The command was successful finally. However, the agent was almost at 64K tokens, and the token window was almost full.
-So it was not possible to continue that session further.
+So it was impossible to continue that session further.
 I probably won't force the agents to fix errors and run tests since the context windows will run out quickly even
-if it's set to 256K, which is ollama's limit.
+if it's set to 131K, which is this model's limit.
 
 #### Eighth Attempt: LSP comes in
 I still have hope that with planning, it is possible to create a good unit test in multiple stages for
@@ -201,19 +424,20 @@ After that, I prompted it to carry out the first stage.
 I also prompt it to only generate the tests and don't build them, since in the previous times,
 this took long and context window ran out.
 
-Six tests were generated, however, five of them didn't have an implementation.
+Six tests were generated in the first stage, however, five of them didn't have an implementation.
 LSP actually came into play and pointed out to errors. Agent was able to fix these errors.
 I prompted it to generate the second stage.
 
 It generated a new test file. It had three tests but with many errors. The Agent tried to fix these errors,
-but it wasn't able to do it. The Agent tried to fix this error, but in the end it gave up. It said that given time,
+but it wasn't able to do it. In the end, it gave up. It said that given time,
 It would stop there.
 
 LSP was definitely taking effect, but it added a problem which was forcing the agent to fix errors.
 
 #### Ninth Attempt: Ignore LSP Errors.
 The prompt was exactly the same as previous attempt, but I added that the LSP errors should be ignored.
-This did not happen! So I just disabled LSP. This is why I didn't provide many details about it.
+This did not happen! So I just disabled LSP.
+For GPT-OSS, LSP can't be beneficial.
 
 #### Tenth Attempt: LSP Disabled.
 I disabled LSP, since I didn't notice any benefit.
@@ -225,10 +449,10 @@ This is the prompt given:
 > The implementation will be done in multiple stages, so plan these stages as well.
 > Remember that you should avoid fixing the errors LSP determines. 
 
-I did forget to remove the last sentence. It was fine though.
+I forget to remove the last sentence, but since LSP was disabled in the first place, it didn't matter.
 However, the agent generated twenty tiny stages.
 This made me realize that I should force the agent to a definite amount of stages.
-I decided to ditch this session and start a new session.
+I decided to start a new session.
 
 #### Eleventh Attempt: LSP Disabled, Definite Stages.
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
@@ -242,7 +466,7 @@ In the end, the agent generated a test file with about 350 lines. Removing LSP w
 I have been wanting to try using MCP severs for a while. I looked up some MCP servers suitable for this project.
 In the next attempt, all three MCP servers I have introduced will be used.
 
-##### Twelfth Attempt: MCP Servers Enabled.
+#### Twelfth Attempt: MCP Servers Enabled.
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
 > plan out creating unit tests using Junit5 and Mockito.
 > Use "junit-5-skill" skill. Use "context7-mcp" skill if you need to fetch information about dependencies.
@@ -258,7 +482,7 @@ The agent asked for some clarifications:
 
 I decided to add more clarification to the prompt, so agent will get to work right away next time.
 
-##### Thirteenth Attempt: MCP Servers Enabled & More Clarification
+#### Thirteenth Attempt: MCP Servers Enabled & More Clarification
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
 > plan out creating unit tests using Junit5.
 > Use real instances of dependencies.
@@ -280,7 +504,7 @@ The more test generation is credited to each stage having its own separate test 
 For these models, it is easier to generate something from scratch rather than editing something previously.
 This does increase token usage for sure, but I believe it is worth it.
 
-##### Fourteenth Attempt: Mock Only When Needed.
+#### Fourteenth Attempt: Mock Only When Needed.
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
 > plan out creating unit tests using Junit5 and Mockito.
 > You will implement based on this plan later on.
@@ -298,28 +522,238 @@ This time, the agent did use codebase-memory commands.
 
 However, the agent decided to generate tests in one single file.
 This caused it to fall into a loop in which it was rewriting the test file again and again.
-I think if I just prompt the agent to generate tests in separate files, we have finally found an excellent flow.
+I think if I just prompt the agent to generate tests in separate files.
 
-#### Prompt
-This will be given to the agent in plan mode:
-> For @[file name] , plan out creating unit tests using Junit5 and Mockito.
+After all of these attempts, I had finally found an excellent flow.
+
+### Prompts Given to Models to Generate Test
+To generate the initial plan, this prompt is given to the agent in plan mode:
+> For @[file] , plan out creating unit tests using Junit5 and Mockito.
 > You will implement based on this plan later on.
-> Use "junit-5-skill" skill. Use "context7-mcp" skill if you need to fetch information about dependencies.
+> Use "junit-5-skill" skill.
+> Use "context7-mcp" skill if you need to fetch information about dependencies. 
 > I don't have any particular branch or special scenario to test in mind.
 > But, plan to achieve 80% decision coverage of the whole file.
 > The goal is unit testing, so try to avoid integration test if possible.
-> If it wasn't, use a simple mock or stub. Since this file is large and complex,
+> If it wasn't, use a simple mock or stub.
+> Since this file is large and complex,
 > the implementation of tests will be done in five stages, so plan these stages as well.
 > Generate tests for each stages in separate test files.
 > The repository has been indexed with codebase-memory.
+> Test directory exist but there are no tests.
 
-With the prompt above, I got a satisfactory result. We will proceed with this prompt now.
+Then this prompt is given 5 times in build mode. One for each stage:
+> Proceed to stage [1-5]. Don't compile/run the tests, only generate them.
+
+After all generated tests pass and missing coverage file is created,
+this prompt is given to the agent in plan mode:
+> @missing_coverage.md contains missing coverage of the tests you generated.
+> Plan a 2 stage implementation to add new tests in order to increase coverage.
+> Do not make any change to previously generated test files, so generate new ones.
+> You will be prompted to implement these stages.
+
+Then, this prompt is given 2 times in build mode:
+> Proceed to stage [1-2]. Don't compile/run the tests, only generate them.
 
 ## How Coverage is Calculated
-TODO
-mentions DIFFERENCE OF COVERAGE AND STATEMENT WITH JACOCO
+Our focus again is on decision coverage.
+Jacoco is a really helpful tool, but it was not showing me decision coverage.
+I decided to try another tool called "OpenClover"
 
-## Tests Report
+### Introduction to OpenClover
+OpenClover is a free and open-source code coverage tool for Java, Groovy, and AspectJ.
+Based on Atlassian Clover.
+Like Jacoco, you can generate an html report of coverage by building the project.
+It also generates an xml file containing the missing statements and branches.
+This will be very useful to calculate raw decision coverage.
+The main reason I am using it is for showing if the two outcomes of a decision point like an
+if-clause were covered or not.
+
+It also shows you a Total Coverage Percent (TPC).
+This coverage is calculated based on the formula below:  
+*TPC = (BT + BF + SC + MC)/(2\*B + S + M) \* 100%*  
+where
+
+BT - branches that evaluated to "true" at least once  
+BF - branches that evaluated to "false" at least once   
+SC - statements covered  
+MC - methods entered  
+
+B - total number of branches  
+S - total number of statements  
+M - total number of methods
+
+This is not a raw decision coverage, however, it is a well-made combination.
+Because of that, for *tokens used for a coverage percent*, this coverage is used.
+
+Here are some pictures from the html report generated by OpenClover:
+
+![oc_main.png](img/oc_main.png)
+The main page of the report
+
+![oc_package.png](img/oc_package.png)
+Inside a package
+
+![oc_file.png](img/oc_file.png)
+A file report
+
+![oc_missed_branch.png](img/oc_missed_branch.png)
+Missing a branch on a decision point.
+The number to the right of number of a line shows how many times that line of code was executed.
+
+![oc_method_not_entered.png](img/oc_method_not_entered.png)
+A method is not entered
+
+Turns out these coverage tools measure the complexity of a file differently.
+For example, Jacoco reported that `UserAdapter` has 1250 statements, while OpenClover reported 263.
+As I had mentioned, these tools also calculate decision differently.
+For LOC, I created a straight-forward python script to count lines that are non-white space and
+are not just comment.
+OpenClover measures more LOC than this script too.
+
+## Why Errors and Failed Tests Are Not Fixed By The Models
+There are multiple reasons.
+Firstly, I was paying for Gemma4.
+I was unable to find a free API, unlike GPT-OSS.
+Forcing the agent to fix its mistakes was going to consume tokens.
+I also attempted to force the models to errors in finding an excellent prompt phase.
+Since I was running GPT-OSS on my own device, it was taking me an extensive amount of time.
+Later on, when I found a free GPT-OSS API key, I tried forcing the model to fix its error again.
+I gave GPT-OSS the chosen prompt for planning `AuthenticationProcessor`.
+This is an average complex file between files chosen for this report.
+Then for the implementation, I enabled LSP and changed the build prompt to run the tests and make
+sure they pass.
+By just stage two of the initial phase, this model had consumed 2.5 input million tokens.
+It was not able to fix the error in the second stage, and it apologized to me.
+At least GPT-OSS is not capable of fixing these errors.
+For Gemma4, this needs to be investigated.
+
+### How These Errors Are Fixed?
+If the models are not fixing their errors, how are they fixed then?
+Unlike the previous project, fixing the errors was not easy at all.
+Especially since mocking is used, and keycloak is very complex.
+Some of their errors like import errors, type errors, etc. could be fixed easily by me.
+This reduced token usage by a lot.
+The remaining complex errors were given to stronger models to fix.
+I was able to fix compile errors at least, but not the failing tests.
+I made two rules for tests mentioned [here](#Which-tests-will-be-disqualified) that disqualified some tests.
+A large portion of the failed tests were caused by incomplete mocking.
+This prompt was given to stronger models in a new session:
+> Some unit tests were created for @[file path] but some of their tests won't pass.
+> Try to fix these.
+> The project has been indexed with codebase-memory.
+> Try to make these change have minimum impact on coverage;
+> For example, reverse failed assertions, or change wrongly expected values to the received values.
+> Don't stop until all tests pass.
+> Many of the tests fail because of incomplete mocking of method calls.
+> Failed tests are in @[test files containing the failed tests].
+> Errors and failures are [errors and failures list by `mvn clean verify` command].
+
+One main goal is to make these fixes have minimum effect on coverage.
+I specifically gave the failed test files, errors, and failures to reduce token usage.
+I also had limited access to these models too, so I still had to be conservative with token usage.
+The large models did not let me down here, and they were able to fix these failing tests.
+If a test was changed drastically in order to pass, I would remove it since
+the stronger model actually contributed to the test more than the original model.
+Different models like *GPT Luna 5.6*, *MiMo-V2.6-Flash*, and an anonymous model *Space Bunny* were used.
+They were provided by GitHub Copilot and OpenCode Zen.
+
+One thing about anonymous models like *Space Bunny* is that
+prompts and completions for this model may be retained by the provider.
+For this project, this is not a big deal for generating tests for an open source project.
+However, for a real life confidential project, this is a disaster.
+
+Fixing the tests by not the same model or person that created them could potentially cause some of the tests to
+divert from their original intention.
+TO be fair, these tests must have been generated correctly in the first place.
+
+## How Missing Coverage Is Created
+When you generate a report with OpenClover, an xml file is also created.
+This allows to extract missing coverage readily.
+A python script is made to read this xml file and create a markdown file containing
+methods that weren't entered at all, and branches that were missed in partially covered methods.
+The python script is available at`project3\openclover_coverage_extractor.py`.
+To generate missing coverage individually for `UserAdapter` from `clover.xml` to write in 
+`missing-coverage.md`, this command is given in the folder the script and xml file resides (requires python 3):
+```bash
+python script.py clover.xml --file src\main\java\org\keycloak\models\jpa\UserAdapter.java --output missing-coverage.md
+```
+
+## Which Tests Will Be Disqualified
+Since the models were not fixing their errors,
+two of these errors were not going to be fixed easily.
+So I just removed them.
+This is intentional to avoid adding coverage to the original test, since many changes were needed to fix these errors.
+Unironically, this does reduce coverage.
+In some of the test generations, many tests had these errors, so they had to be removed.
+It might be a severe punishment.
+
+These errors are:
+
+### Accessing a Private/Protected Member Directly
+If a test is accessing a private or protected member of a class, it will be eliminated.
+The agent must have accessed that member indirectly or through reflection.
+This was not easy to fix since accessing that member indirectly was going to affect coverage.
+If the agent wanted to access that function with reflection, it should have done it in the first place.
+
+### Accessing a Member That Doesn't Exist
+Sometimes, a method or an enum is accessed which doesn't exist.
+I was not going to be able to recognize what the model exactly tried to do here,
+neither did the stronger model.
+Although there is one exception.
+if this non-existing member is called after a mockito `when` method call,
+I removed the whole statement rather than the test.
+The large models were able to handle what to add to fix the tests.
+Again, if the changes were drastic, the test will be removed.
+
+## Individual File Test Generation Analysis Format
+Firstly, the number of statements, branches, LOC and methods are given.
+They are given by OpenClover.
+
+Then the test generation of Gemma4 report is written.
+GPT-OSS comes after that.
+They have the same format below:
+
+It starts with the initial plan and what each stage is going to test.
+After that, each stage of the implementation is analyzed.
+This covers:
+- what test files are generated with how many tests
+- Whether everything planned was implemented or not. If not, what was missed.
+- What tests were removed and why.
+
+The initial phase coverage report comes up next.
+
+Then the improvement phase begins.
+like the previous phase, the plan comes first, followed by the implementation and the final coverage.
+The final coverage from the third file onward contains the token usage.
+Then the final verdict is given.
+This includes how the model did in the initial phase and improvement phase.
+
+After GPT-OSS test generation report for a file, a table comparing the performance of two models is placed.
+This table contains these rows:
+- Initial Total Coverage: The initial phase coverage calculated by OpenClove (Total Coverage Percent).
+- Initial Decision Coverage: The initial phase pure decision coverage.
+- Final Total Coverage: The final coverage calculated by OpenClover.
+- Final Decision Coverage: The final pure decision coverage.
+- Total Tests: How many tests are generated and kept in the final phase.
+- Context Window Usage: This is provided by OpenCode.
+- Total Input Tokens: How many input tokens were consumed.
+- Total Cached Tokens: How many tokens were cached.
+- Total Output Tokens: How many output tokens were consumed.
+- Total Tokens used: It is calculated by *total input tokens + total output tokens - cached tokens*
+- Tokens per Total Coverage %: How many tokens were used to cover 1% of the file.
+
+The token consumption starts from the initial planning to the last stage in the second phase.
+It doesn't include tokens used for fixing the failed tests.  
+Cached tokens are not free, but they are much cheaper than input tokens.
+The cost is just neglected here.
+
+After this table, the two models are compared for this file.
+
+## Test Generation Report
+Generated tests (original and final runnable version) are available at
+`project3\reports\opencode\generated tests\`
+
 ### AuthenticationProcessor
 This file has 1,319 LOC, 128 methods, 524 statements, and 168 branches.
 
@@ -340,18 +774,18 @@ and basic properties.
 Focus: Testing the Result class, which is the primary context used by authenticators.
 - Lifecycle/Status: Test `success()` (with/without credentials), `failure()` (various overloads),
   `challenge()`, `forceChallenge()`, and `attempted()`.
-- Configuration: Test `getAuthenticatorConfig()` (handling both null cases 
-and realm-based fetching).
+- Configuration: Test `getAuthenticatorConfig()` (handling both null cases
+  and realm-based fetching).
 - State Management: Test the generic `getState()` method with different types and suppliers.
 - User Attachment: Test `attachUserSession()` (specifically the logic for lightweight users).
 - Form Generation: Test `form()` (ensuring it interacts with `LoginFormsProvider` and
-correctly applies forwarded Error, Success, or Info messages).
+  correctly applies forwarded Error, Success, or Info messages).
 - URL Generation: Test `getActionUrl()`, `getActionTokenUrl()`, and `getRefreshUrl()`.
 
 ######  Stage 3: Core Authentication Flow Logic
 Focus: Testing the primary entry points that drive the authentication process.
 - Main Entry: Test `authenticate()` (covering the paths through `authenticateOnly()` and
-`authenticationComplete()`).
+  `authenticationComplete()`).
 - Browser Auth: Test `authenticateOnly()` (including client session validation and flow execution).
 - Client Auth: Test `authenticateClient()` (handling the flow and potential internal exceptions).
 - Action Processing: Test `authenticationAction()` (validating the current execution,
@@ -362,7 +796,7 @@ Focus: Testing the primary entry points that drive the authentication process.
 ###### Stage 4: Error Handling and Exception Management
 Focus: High-density decision coverage by hitting the numerous error branches in
 exception handlers.
-- Browser Exceptions: Test `handleBrowserException(Exception)` (testing 
+- Browser Exceptions: Test `handleBrowserException(Exception)` (testing
   `AuthenticationFlowException` with various `AuthenticationFlowError` types and
   the generic Exception path).
 - Exception Lists: Test `handleBrowserExceptionList(AuthenticationFlowException)`(covering
@@ -377,7 +811,7 @@ Focus: Testing static helper methods and session manipulation logic.
 - Flow Reset: Test `resetFlow()` and the static `resetFlow(AuthenticationSessionModel, String)`.
 - Session Management: Test the static `clone(...)` and `recreate(...)` methods (ensuring
   notes and properties are correctly copied).
-- Session Attachment: Test the static `attachSession(...)` method (handling username logic and 
+- Session Attachment: Test the static `attachSession(...)` method (handling username logic and
   session persistence states).
 - Status Checks: Test `isSuccessful(AuthenticationExecutionModel)`.
 
@@ -412,10 +846,11 @@ These tests were missed from the plan:
 - Status check via `isSuccessful(AuthenticationExecutionModel)` was not generated.
 
 Tests `testAttachSession_WithAttemptedUsername()` and `testAttachSession_ExistingValidSession()`
-are disabled since they ran into error. Extended mocking behavior is needed.
+are disabled since they ran into error.
+Extended mocking behavior is needed. (At this point, the test is not being fixed by larger models yet.)
 
 ##### Initial Coverage
-OpenClover coverage is 37.6%, and decision coverage is 25.0%.
+Total Coverage is 37.6%, and decision coverage is 25.0%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_AuthenticationProcessor_round1.md`.
@@ -424,7 +859,7 @@ Missed coverage markdown file is available at
 The agent was given the missing coverage markdown file. It came up with this two-stage plan
 
 ###### Stage 1: Result Context and Primary Authentication Flow
-Goal: Target the Result inner class (which has significant missing methods)and
+Goal: Target the Result inner class (which has significant missing methods) and
 the core authentication entry points, while closing critical branch gaps.
 - New Test File: `src/test/java/org/keycloak/authentication/AuthenticationProcessorResultDeepDiveTest.java`
 - Targeting "Methods Not Entered":
@@ -439,7 +874,7 @@ the core authentication entry points, while closing critical branch gaps.
 - `attachUserSession(UserSessionModel)`: Test the false branch (where
   the user is not a lightweight user).
 - `logFailure(String)`: Test the false branch (where no user is found for brute force logging).
-  
+
 ###### Stage 2: Exception Handlers, URL Utilities, and Session Management
 Goal: Achieve high decision coverage in the complex error-handling logic and
 cover the remaining utility and session management methods.
@@ -471,7 +906,7 @@ These tests were missed from the plan:
 - From Remaining Getters/Setters, `getFlowPath()` is not entered.
 
 ##### Final Coverage
-OpenClover coverage is 60.9%, and decision coverage is 56.5%.
+Total Coverage is 60.9%, and decision coverage is 56.5%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_AuthenticationProcessor_round2.md`.
 
@@ -483,7 +918,7 @@ It is not satisfactory, but I guess with one more improvement phase like this,
 reaching 80% decision coverage is possible.
 It is possible that giving the agent what were missed makes it easier for them to
 generate test with higher coverage.
-With all these 7 stages, token consumption was 55,611.
+With all these 7 stages, the token window was at 55,611 tokens.
 
 #### GPT-OSS
 ##### Initial Implementation
@@ -497,7 +932,7 @@ With all these 7 stages, token consumption was 55,611.
 - `generateCode()` (assert that it delegates to ClientSessionCode and updates parent timestamp).
 - `getClientData()` (verify protocol selection and encode).
 - `getSignedAuthSessionId()` (ensure correct delegation to AuthenticationSessionManager).
-- `getRefreshUrl()` (check that query params are built correctly for both authSessionIdParam = true/false).
+- `getRefreshUrl()` (check that query params are built correctly for both `authSessionIdParam = true/false`).
 - `getActionUrl(String)` & `getActionTokenUrl(String)` produce correct paths and include signed session ID when needed.
 
 ###### Stage 3: Flow builder & client‑auth exception handling
@@ -514,7 +949,7 @@ With all these 7 stages, token consumption was 55,611.
 
 ###### Stage 5: End‑to‑end authentication path
 - `authenticateClient()` – mock `createFlowExecution()` to return a stub flow that returns a pending challenge, then
-  a successful result; 
+  a successful result;
   verify that the response is null when flow is successful and that error path returns appropriate error.
 - `authenticate()` – combine `authenticateOnly()` and `authenticationComplete()` stubs;
   verify that challenge in `authenticateOnly()` is returned directly.
@@ -522,7 +957,7 @@ With all these 7 stages, token consumption was 55,611.
   returns null when flow success.
 - `authenticationAction(String)` – verify that an unknown execution id resets flow, that user not found throws error,
   and that a successful flow leads to `authenticationComplete()`.
-- All of the above should use a mocked AuthenticationFlow whose `processFlow()` / `processAction()` / 
+- All of the above should use a mocked AuthenticationFlow whose `processFlow()` / `processAction()` /
   `isSuccessful()` methods return controlled values.
 
 ##### Initial Implementation
@@ -555,11 +990,10 @@ All the tests that were planned are implemented.
 
 ###### Stage 5
 The agent generated `AuthenticationProcessorStage5Test` with 5 tests.
-All the tests that were planned are implemented. / These tests were missed from the plan:
-- missed 1
+All the tests that were planned are implemented.
 
 ##### Initial Coverage
-OpenClover coverage is 28.9%, and decision coverage is 28.0%.
+Total Coverage is 28.9%, and decision coverage is 28.0%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_AuthenticationProcessor_round1.md`.
@@ -592,27 +1026,27 @@ The agent generated `AuthenticationProcessorFlowTest` with 7 tests.
 `authenticationComplete()` is not covered still.
 
 ##### Final Coverage
-OpenClover coverage is 46.2%, and decision coverage is 38.7%.
+Total Coverage is 46.2%, and decision coverage is 38.7%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_AuthenticationProcessor_round2.md`.
 
 ##### Verdict
-The initial coverage was despondent.
-Like Gemma4, OpenClover coverage was improved by about 60%. However,
+The initial coverage was disappointing.
+Like Gemma4, Total Coverage was improved by about 60%. However,
 the decision coverage was not improve that much compared to Gemma4.
 
 This model plan to improve coverage was too large for a two-stage plan. It needed more stages.
 
 
 #### Comparison
-| Title                            | Gemma4 | GPT-OSS |
-|:---------------------------------|:------:|:-------:|
-| Initial OpenClover Coverage      | 37.6%  |  28.9%  |
-| Initial Decision Coverage        | 25.0%  |  28.0%  |
-| Final OpenClover Coverage        | 60.9%  |  46.2%  |
-| Final Decision Coverage          | 56.5%  |  38.7%  |
-| total tests                      |   69   |   53    |
-| Context Window Usage             | 55,611 | 66,687  |
+| Title                     | Gemma4 | GPT-OSS |
+|:--------------------------|:------:|:-------:|
+| Initial Total Coverage    | 37.6%  |  28.9%  |
+| Initial Decision Coverage | 25.0%  |  28.0%  |
+| Final Total Coverage      | 60.9%  |  46.2%  |
+| Final Decision Coverage   | 56.5%  |  38.7%  |
+| total tests               |   69   |   53    |
+| Context Window Usage      | 55,611 | 66,687  |
 
 Clearly Gemma4 is winner.
 Not only it used fewer tokens (at least in terms of context window),
@@ -711,7 +1145,7 @@ Tests `action_REGISTER_Dispatch_CallsBuildRegister()` and
 `action_FORGOT_CREDENTIALS_Dispatch_CallsBuildForgotCredential()` were removed duo to attempt to access a private method.
 
 ##### Initial Coverage
-OpenClover coverage is 81.7%, and decision coverage is 71.7%.
+Total Coverage is 81.7%, and decision coverage is 71.7%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_AuthorizationEndpoint_round1.md`.
@@ -764,7 +1198,7 @@ The agent generated `AuthorizationEndpointCoverageTestStage2` with 7 tests.
 All the tests that were planned are implemented.
 
 ##### Final Coverage
-OpenClover coverage is 89.4%, and decision coverage is 91.7%.
+Total Coverage is 89.4%, and decision coverage is 91.7%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_AuthorizationEndpoint_round2.md`.
 
@@ -772,12 +1206,12 @@ Missed coverage markdown file is available at
 In total, 1,468,959 input tokens and 50,202 output tokens were used. 258,240 tokens were cached.
 This is one of the least complex files for this report. However, it did require many mocks.
 
-The initial coverage was very good. OpenClover coverage was already satisfactory.
+The initial coverage was great. Total Coverage was already satisfactory.
 Honestly, I wouldn't do the improvement phase if I was not doing this project and
 trying to achieve 80% decision coverage.
 
 The final coverage is superb. 90% coverage leaves no room for complain.
-Although I admit, 1.5M tokens were used.
+Although, 1.5M tokens is more than expected.
 If you run this model on your own system smoothly, you will never worry about the token usage.
 
 #### GPT-OSS
@@ -830,8 +1264,7 @@ All the tests that were planned are implemented.
 `testRedirectErrorToClient_IncludesStateIfPresent()` was removed duo to attempt to access a private member.
 
 ##### Initial Coverage
-OpenClover coverage is 41.2%, and decision coverage is 36.7%.
-Low coverage is credited to many tests removed because of inaccessible members.
+Total Coverage is 41.2%, and decision coverage is 36.7%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_AuthorizationEndpoint_round1.md`.
@@ -880,41 +1313,39 @@ The agent generated `AuthorizationEndpointProcessBranchTest` with 5 tests.
 The model did not generate any logic. In fact, all the tests were TODOs. They are removed.
 
 ##### Final Coverage
-OpenClover coverage is 46.1%, and decision coverage is 41.7%.
+Total Coverage is 46.1%, and decision coverage is 41.7%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_AuthorizationEndpoint_round2.md`.
 
-Only two tests were qualified for this phase.
+##### Verdict
+Low initial coverage is credited to many tests removed because of inaccessible members.
+Only two tests were qualified for the improvement phase.
 Removing a test since it tried accessing private members might be harsh.
 But they are hard to fix through reflection or alternative routes.
 Moreover, the model should have either used reflection or access that member through a legitimate way.
 Let's not forget that the model did not generate any logic for the second stage.
-
-##### Verdict
-It was very weird of this model to generate six test files for stage 1 of improvement phase.
+Still, removing tests trying to access private member did a serious number for this model.
+In addition, it was very weird of this model to generate six test files for stage 1 of improvement phase.
 
 Before the improvement phase, 906,313 input tokens and 37,949 output tokens were consumed.
 
-Removing tests trying to access private member did a serious number for this model.
-The coverage is terrible. Gemma achieved an astonishing coverage.
-
 #### Comparison
-| Title                            |  Gemma4   | GPT-OSS |
-|:---------------------------------|:---------:|:-------:|
-| Initial OpenClover Coverage      |   81.7%   |  41.2%  |
-| Initial Decision Coverage        |   71.7%   |  36.7%  |
-| Final OpenClover Coverage        |   89.4%   |  46.1%  |
-| Final Decision Coverage          |   91.7%   |  41.7%  |
-| Total Tests                      |    35     |   11    |
-| Context Window Usage             |  67,865   | 54,790  |
-| Total Input Tokens               | 1,468,959 |    _    |
-| Total Cached Tokens              |  258,240  |    _    |
-| Total Output Tokens              |  50,202   |    _    |
-| Total Tokens used                | 1,260,921 |    _    |
-| Tokens per OpenClover Coverage % |  14,104   |    _    |
+| Title                       |  Gemma4   | GPT-OSS |
+|:----------------------------|:---------:|:-------:|
+| Initial Total Coverage      |   81.7%   |  41.2%  |
+| Initial Decision Coverage   |   71.7%   |  36.7%  |
+| Final Total Coverage        |   89.4%   |  46.1%  |
+| Final Decision Coverage     |   91.7%   |  41.7%  |
+| Total Tests                 |    35     |   11    |
+| Context Window Usage        |  67,865   | 54,790  |
+| Total Input Tokens          | 1,468,959 |    _    |
+| Total Cached Tokens         |  258,240  |    _    |
+| Total Output Tokens         |  50,202   |    _    |
+| Total Tokens used           | 1,260,921 |    _    |
+| Tokens per Total Coverage % |  14,104   |    _    |
 
 Gemma4 wins here without any question. It was GPT-OSS fault to fail generating enough tests.
-Even with me removing some of the tests, it was not going to reach the same amount as gemma.
+Even with me removing some of the tests, it was not going to reach the same amount as Gemma4.
 Despite this being a small file, both models used a surprising amount of tokens.
 If we were using a high-end model, the cost would have been very high.
 Although, it's probably possible to generate tests with high coverage with those models in one go.
@@ -993,7 +1424,7 @@ The agent generated `JpaUserProviderStage5Test` with 14 tests.
 All the tests that were planned are implemented.
 
 ##### Initial Coverage
-OpenClover coverage is 66.1%, and decision coverage is 53.1%. This is beyond my expectation for such a complex file.
+Total Coverage is 66.1%, and decision coverage is 53.1%. This is beyond my expectation for such a complex file.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_JpaUserProvider_round1.md`.
@@ -1045,7 +1476,7 @@ The agent generated `JpaUserProviderCoverageStage2Test` with 9 tests.
 None of the methods mentioned in Lifecycle & Specialized Lookups are covered.
 
 ##### Final Coverage
-OpenClover coverage is 77.0%, and decision coverage is 71.3%.
+Total Coverage is 77.0%, and decision coverage is 71.3%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_JpaUserProvider_round2.md`.
 
@@ -1053,13 +1484,13 @@ Missed coverage markdown file is available at
 In total, 1,217,035 input tokens and 41,202 output tokens were used. 167,936 tokens were cached.
 
 The initial coverage was excellent. Even though this file is more complex that `AuthenticationProcessor`,
-Gemma manages to cover more portion of the code. Generating stages 3 to 5 in one go didn't have negative effects.
+Gemma4 manages to cover more portion of the code. Generating stages 3 to 5 in one go didn't have negative effects.
 
 Compared to the last file, this file is much more complex.
 With the token saver enabled, the token usage in this file is actually lower than the previous file.
 
 The coverage improvement is medium.
-OpenClover coverage is almost satisfactory.
+Total Coverage is almost satisfactory.
 Decision coverage was improved by 18%.
 318,110 Tokens in total were used for improvement phase.
 About 30% more token usage for this improvement might not be worth it. Perhaps doing improvement phase in a new session
@@ -1215,7 +1646,7 @@ Moreover, `testPreRemove_componentTypeUserStorage()` and `testPreRemove_componen
 were generated which weren't in the plan.
 
 ##### Initial Coverage
-OpenClover coverage is 23.3%, and decision coverage is 21.5%.
+Total Coverage is 23.3%, and decision coverage is 21.5%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_JpaUserProvider_round1.md`.
@@ -1282,7 +1713,7 @@ Only one file was generated, despite listing seven files.
 to attempt to access private members.
 
 ##### Final Coverage
-OpenClover coverage is 32.7%, and decision coverage is 32.9%.
+Total Coverage is 32.7%, and decision coverage is 32.9%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_JpaUserProvider_round2.md`.
 
@@ -1293,26 +1724,26 @@ In total, 1,190,094 input tokens and 33,875 output tokens were used. no token wa
 
 The initial coverage is terrible.
 Missing many of the planned tests and some tests removed duo to violations are accounting for this low coverage.
-Gemma is already the winner in the end.
+Gemma4 is already the winner in the end.
 
 The improvement wasn't that much either. Many tests were removed again for violations.
 
 #### Comparison
-| Title                            |  Gemma4   |  GPT-OSS  |
-|:---------------------------------|:---------:|:---------:|
-| Initial OpenClover Coverage      |   66.1%   |   23.3%   |
-| Initial Decision Coverage        |   53.1%   |   21.5%   |
-| Final OpenClover Coverage        |   77.0%   |   32.7%   |
-| Final Decision Coverage          |   71.3%   |   32.9%   |
-| Total Tests                      |    95     |    44     |
-| Context Window Usage             |  64,862   |  54,042   |
-| Total Input Tokens               | 1,238,241 | 1,190,094 |
-| Total Cached Tokens              |  167,936  |     0     |
-| Total Output Tokens              |  41,202   |  33,875   |
-| Total Tokens used                | 1,111,507 | 1,223,969 |
-| Tokens per OpenClover Coverage % |  14,435   |  37,430   |
+| Title                       |  Gemma4   |  GPT-OSS  |
+|:----------------------------|:---------:|:---------:|
+| Initial Total Coverage      |   66.1%   |   23.3%   |
+| Initial Decision Coverage   |   53.1%   |   21.5%   |
+| Final Total Coverage        |   77.0%   |   32.7%   |
+| Final Decision Coverage     |   71.3%   |   32.9%   |
+| Total Tests                 |    95     |    44     |
+| Context Window Usage        |  64,862   |  54,042   |
+| Total Input Tokens          | 1,238,241 | 1,190,094 |
+| Total Cached Tokens         |  167,936  |     0     |
+| Total Output Tokens         |  41,202   |  33,875   |
+| Total Tokens used           | 1,111,507 | 1,223,969 |
+| Tokens per Total Coverage % |  14,435   |  37,430   |
 
-Clearly, gemma4 is the winner.
+Clearly, Gemma4 is the winner.
 The total token usage is lower and coverage is much higher.
 This is the third-largest file.
 With one more improvement phase with Gemma4, coverage will become satisfactory for sure.
@@ -1392,7 +1823,7 @@ asserting or verifying anything. were not covered.
 
 ###### Stage 4
 The agent generated `KeycloakModelUtilsSessionTest` with 9 tests.
-All the tests that were planned are implemented. / These tests were missed from the plan:
+These tests were missed from the plan:
 - Methods `runJobInTransactionWithTimeout()`, `setTransactionLimit()`, `getTransactionLimit()`,
   `cloneContextRealmClientSessionToSession()`, `componentModelGetter()`, `getComponentModel()`,
   `getComponentFactory()`, and `suspendJtaTransaction()` were not covered.
@@ -1403,7 +1834,7 @@ These tests were missed from the plan:
 - Methods `deepDeleteAuthenticationExecutor()`, `setupAuthorizationServices()` were not covered.
 
 ##### Initial Coverage
-OpenClover coverage is 48.6%, and decision coverage is 39.0%.
+Total Coverage is 48.6%, and decision coverage is 39.0%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_KeycloakModelUtils_round1.md`.
@@ -1433,7 +1864,7 @@ The agent was given the missing coverage markdown file. It came up with this two
 ##### Improvement Implementation
 ###### Stage 1
 The agent generated `KeycloakModelUtilsSecuritySessionTest` with 9 tests.
-All the tests that were planned are implemented. / These tests were missed from the plan:
+These tests were missed from the plan:
 - True branch in `getPrivateKey()`.
 - From Security/PEM, `getPemFromKey()`, `getPemFromCertificate()`, and `generateKeyPairCertificate()` are not covered.
 - From Transactions/Session, `suspendJtaTransaction()` and `cloneContextRealmClientSessionToSession()` are not tested.
@@ -1441,13 +1872,13 @@ All the tests that were planned are implemented. / These tests were missed from 
 
 ###### Stage 2
 The agent generated `KeycloakModelUtilsHierarchyFlowTest` with 13 tests.
-All the tests that were planned are implemented. / These tests were missed from the plan:
+These tests were missed from the plan:
 - `buildGroupPath(GroupModel group, GroupModel)` variant is not covered.
 - From Roles/Client Logic, `generateSecret()` is not tested.
 - From Flows/IdP Mappers, `deepDeleteAuthenticationExecutor()` is not covered.
 
 ##### Final Coverage
-OpenClover coverage is 61.5%, and decision coverage is 49.2%.
+Total Coverage is 61.5%, and decision coverage is 49.2%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_KeycloakModelUtils_round2.md`.
 
@@ -1543,7 +1974,7 @@ These tests were missed from the plan:
 - `isFlowUsed()`
 
 ##### Initial Coverage
-OpenClover coverage is 32.2%, and decision coverage is 29.2%.
+Total Coverage is 32.2%, and decision coverage is 29.2%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_KeycloakModelUtils_round1.md`.
@@ -1590,7 +2021,7 @@ These test files were missed from the plan:
 The agent generated `KeycloakModelUtilsMiscTest` outside the plan.
 
 For fixing some of the tests, `TestCryptoProvider` had to be created.
-This is definitely unfair, but given the fact that gpt-oss is going to lose anyway, it's fine.
+This is definitely unfair, but given the fact that GPT-OSS is going to lose anyway, it's fine.
 
 ###### Stage 2
 The agent generated `KeycloakModelUtilsAuthFlowTest` with 3 tests.
@@ -1600,7 +2031,7 @@ These test files were missed from the plan:
 - `KeycloakModelUtilsAttributeTest`
 
 ##### Final Coverage
-OpenClover coverage is 42.4%, and decision coverage is 33.5%.
+Total Coverage is 42.4%, and decision coverage is 33.5%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_KeycloakModelUtils_round2.md`.
 
@@ -1617,24 +2048,24 @@ it was not going to do better than Gemma4.
 The token usage is unusually high. The token saver was active during the test generation.
 
 #### Comparison
-| Title                            |  Gemma4   |  GPT-OSS  |
-|:---------------------------------|:---------:|:---------:|
-| Initial OpenClover Coverage      |   48.6%   |   32.2%   |
-| Initial Decision Coverage        |   39.0%   |   29.2%   |
-| Final OpenClover Coverage        |   61.5%   |   42.4%   |
-| Final Decision Coverage          |   49.2%   |   33.5%   |
-| Total Tests                      |    91     |    58     |
-| Context Window Usage             |  59,027   |  46,424   |
-| Total Input Tokens               | 1,217,459 | 1,767,478 |
-| Total Cached Tokens              |  239,040  |     0     |
-| Total Output Tokens              |  31,308   |  30,187   |
-| Total Tokens used                | 1,009,727 | 1,797,665 |
-| Tokens per OpenClover Coverage % |  16,418   |  42,798   |
+| Title                       |  Gemma4   |  GPT-OSS  |
+|:----------------------------|:---------:|:---------:|
+| Initial Total Coverage      |   48.6%   |   32.2%   |
+| Initial Decision Coverage   |   39.0%   |   29.2%   |
+| Final Total Coverage        |   61.5%   |   42.4%   |
+| Final Decision Coverage     |   49.2%   |   33.5%   |
+| Total Tests                 |    91     |    58     |
+| Context Window Usage        |  59,027   |  46,424   |
+| Total Input Tokens          | 1,217,459 | 1,767,478 |
+| Total Cached Tokens         |  239,040  |     0     |
+| Total Output Tokens         |  31,308   |  30,187   |
+| Total Tokens used           | 1,009,727 | 1,797,665 |
+| Tokens per Total Coverage % |  16,418   |  42,798   |
 
 Even with the massive help I gave to GPT-OSS, the coverage improvement was less than Gemma4.
 Gemma4 wins again in all aspects.
 I am convinced that the token window cannot be used to compare token usage at all.
-GPT-OSS missed many planned tests. Therefore, total tests are much lower than Gemma's.
+GPT-OSS missed many planned tests. Therefore, total tests are much lower than Gemma4's.
 
 ### ModelToRepresentation
 This file has 1,555 LOC, 74 methods, 887 statements, and 188 branches.
@@ -1708,7 +2139,7 @@ These tests were missed from the plan:
 - from export utilities `exportGroups()` was not covered.
 
 ##### Initial Coverage
-OpenClover coverage is 57.9%, and decision coverage is 38.8%.
+Total Coverage is 57.9%, and decision coverage is 38.8%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_ModelToRepresentation_round1.md`.
@@ -1760,7 +2191,7 @@ These tests were missed from the plan:
 - `groupMatchesSearchOrIsPathElement()` is not covered.
 
 ##### Final Coverage
-OpenClover coverage is 76.7%, and decision coverage is 56.9%.
+Total Coverage is 76.7%, and decision coverage is 56.9%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_ModelToRepresentation_round2.md`.
 
@@ -1770,7 +2201,7 @@ This does not include the failed initial plan attempt.
 
 The majority of the planned tests were implemented this time. Still, the coverage is mediocre.
 
-In the end, the OpenClover coverage is almost satisfactory.
+In the end, the Total Coverage is almost satisfactory.
 The decision coverage is away from satisfactory though.
 340,528 tokens were used to improve decision coverage by 20%.
 That's actually great for decision coverage.
@@ -1844,7 +2275,7 @@ The agent generated `ModelToRepresentationUtilityTest` with 6 tests.
 All the tests that were planned are implemented.
 
 ##### Initial Coverage
-OpenClover coverage is 43.2%, and decision coverage is 30.9%.
+Total Coverage is 43.2%, and decision coverage is 30.9%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_ModelToRepresentation_round1.md`.
@@ -1893,7 +2324,7 @@ Only these methods are covered:
 `toEventsConfigRepresentation` does not exist.
 
 ##### Final Coverage
-OpenClover coverage is 44.9%, and decision coverage is 36.7%.
+Total Coverage is 44.9%, and decision coverage is 36.7%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_ModelToRepresentation_round2.md`.
 
@@ -1904,25 +2335,25 @@ In total, 1,297,887 input tokens and 33,163 output tokens were used. no token wa
 
 The initial coverage is low.
 
-Half-way through, we can already declare Gemma4 the better model at least in terms of coverage.
+Half-way through, we can already declare Gemma4 the better model at least in terms of coverage for this report.
 
 This has been the worst improvement so far.
-Decision coverage increased by about 6%, and OpenClover coverage by 2%.
+Decision coverage increased by about 6%, and Total Coverage by 2%.
 
 #### Comparison
-| Title                            |  Gemma4   |  GPT-OSS  |
-|:---------------------------------|:---------:|:---------:|
-| Initial OpenClover Coverage      |   57.9%   |   43.2%   |
-| Initial Decision Coverage        |   38.8%   |   30.9%   |
-| Final OpenClover Coverage        |   76.7%   |   44.9%   |
-| Final Decision Coverage          |   56.9%   |   36.7%   |
-| Total Tests                      |    45     |    23     |
-| Context Window Usage             |  72,310   |  44,704   |
-| Total Input Tokens               | 1,100,082 | 1,297,887 |
-| Total Cached Tokens              |  160,768  |     0     |
-| Total Output Tokens              |  32,513   |  33,163   |
-| Total Tokens used                |  971,827  | 1,331,050 |
-| Tokens per OpenClover Coverage % |  12,670   |  29,645   |
+| Title                       |  Gemma4   |  GPT-OSS  |
+|:----------------------------|:---------:|:---------:|
+| Initial Total Coverage      |   57.9%   |   43.2%   |
+| Initial Decision Coverage   |   38.8%   |   30.9%   |
+| Final Total Coverage        |   76.7%   |   44.9%   |
+| Final Decision Coverage     |   56.9%   |   36.7%   |
+| Total Tests                 |    45     |    23     |
+| Context Window Usage        |  72,310   |  44,704   |
+| Total Input Tokens          | 1,100,082 | 1,297,887 |
+| Total Cached Tokens         |  160,768  |     0     |
+| Total Output Tokens         |  32,513   |  33,163   |
+| Total Tokens used           |  971,827  | 1,331,050 |
+| Tokens per Total Coverage % |  12,670   |  29,645   |
 
 Gemma4 wins again, no surprises. It even used fewer tokens again.
 Still, the decision coverage is far from satisfactory.
@@ -2010,7 +2441,7 @@ These tests were missed from the plan:
 - `authenticated(...)` has some missing branches.
 
 ##### Initial Coverage
-OpenClover coverage is 80.7%, and decision coverage is 70.8%.
+Total Coverage is 80.7%, and decision coverage is 70.8%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_OIDCLoginProtocol_round1.md`.
@@ -2068,7 +2499,7 @@ All the tests that were planned are implemented. Although, for `isAuthTimeExpire
 the true branch is actually when the variable is null.
 
 ##### Final Coverage
-OpenClover coverage is 95.8%, and decision coverage is 88.9%.
+Total Coverage is 95.8%, and decision coverage is 88.9%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_OIDCLoginProtocol_round2.md`.
 
@@ -2129,7 +2560,7 @@ All the tests that were planned are implemented.
 
 ###### Stage 4
 The agent generated `OIDCLoginProtocolTest_Errors` with 2 tests.
-The tests methods were missing signature!
+The tests methods were missing their signature!
 All the tests that were planned are implemented.
 
 ###### Stage 5
@@ -2137,7 +2568,7 @@ The agent generated `OIDCLoginProtocolTest_AdditionalSession` with 3 tests.
 All the tests that were planned are implemented.
 
 ##### Initial Coverage
-OpenClover coverage is 64.2%, and decision coverage is 50.0%.
+Total Coverage is 64.2%, and decision coverage is 50.0%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_OIDCLoginProtocol_round1.md`.
@@ -2175,7 +2606,7 @@ The agent generated `OIDCLoginProtocolGetClientDataTest` and `OIDCLoginProtocolL
 All mentioned methods are still partially covered.
 
 ##### Final Coverage
-OpenClover coverage is 75.8%, and decision coverage is 56.9%.
+Total Coverage is 75.8%, and decision coverage is 56.9%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_OIDCLoginProtocol_round2.md`.
 
@@ -2189,24 +2620,24 @@ This file contains the least number of statements. Therefore, I was expecting mo
 The improvement is not great, considering the token usage.
 
 #### Comparison
-| Title                            | Gemma4  |  GPT-OSS  |
-|:---------------------------------|:-------:|:---------:|
-| Initial OpenClover Coverage      |  87.4%  |   64.2%   |
-| Initial Decision Coverage        |  70.8%  |   50.0%   |
-| Final OpenClover Coverage        |  95.7%  |   75.8%   |
-| Final Decision Coverage          |  88.9%  |   56.9%   |
-| Total Tests                      |   52    |    26     |
-| Context Window Usage             | 56,602  |  36,149   |
-| Total Input Tokens               | 903,169 | 1,297,887 |
-| Total Cached Tokens              | 17,280  |     0     |
-| Total Output Tokens              | 39,758  |  21,355   |
-| Total Tokens used                | 925,647 | 1,319,242 |
-| Tokens per OpenClover Coverage % |  9,672  |  17,404   |
+| Title                       | Gemma4  |  GPT-OSS  |
+|:----------------------------|:-------:|:---------:|
+| Initial Total Coverage      |  87.4%  |   64.2%   |
+| Initial Decision Coverage   |  70.8%  |   50.0%   |
+| Final Total Coverage        |  95.7%  |   75.8%   |
+| Final Decision Coverage     |  88.9%  |   56.9%   |
+| Total Tests                 |   52    |    26     |
+| Context Window Usage        | 56,602  |  36,149   |
+| Total Input Tokens          | 903,169 | 1,297,887 |
+| Total Cached Tokens         | 17,280  |     0     |
+| Total Output Tokens         | 39,758  |  21,355   |
+| Total Tokens used           | 925,647 | 1,319,242 |
+| Tokens per Total Coverage % |  9,672  |  17,404   |
 
 Gemma4 is clearly the winner.
 Less token usage, but much more coverage.
 This file has the lowest statements between all files.
-It's good to see that at least gemma4 reached satisfactory coverage.
+It's good to see that at least Gemma4 reached satisfactory coverage.
 
 ### RealmManager
 This file has 922 LOC, 56 methods, 447 statements, and 160 branches.
@@ -2305,7 +2736,7 @@ These tests were missed from the plan:
 - in `importRealm(...)`, `postponeImpersonationSetup` and `postponeAdminCliSetup` variables are not covered.
 
 ##### Initial Coverage
-OpenClover coverage is 44.6%, and decision coverage is 36.9%.
+Total Coverage is 44.6%, and decision coverage is 36.9%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_RealmManager_round1.md`.
@@ -2382,7 +2813,7 @@ These tests were missed from the plan:
 `testImportRealm_FullFlow_Success()`, `testDetermineDefaultRoleName_WithConflicts(),
 
 ##### Final Coverage
-OpenClover coverage is 48.4%, and decision coverage is 43.1%.
+Total Coverage is 48.4%, and decision coverage is 43.1%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_RealmManager_round2.md`.
 
@@ -2478,7 +2909,7 @@ Tests in this file required drastic changes for each test in order for them to p
 As a result, it has been removed.
 
 ##### Initial Coverage
-OpenClover coverage is 62.6%, and decision coverage is 41.3%.
+Total Coverage is 62.6%, and decision coverage is 41.3%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_RealmManager_round1.md`.
@@ -2580,7 +3011,7 @@ Tests `determineDefaultRoleName_newRole`, `determineDefaultRoleName_existingRole
 Only four tests survived.
 
 ##### Final Coverage
-OpenClover coverage is 70.9%, and decision coverage is 50.0%.
+Total Coverage is 70.9%, and decision coverage is 50.0%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_RealmManager_round2.md`.
 
@@ -2594,26 +3025,26 @@ The initial coverage is better than average. This is an average size.
 The improvement is not significant either.
 
 #### Comparison
-| Title                            |  Gemma4   |  GPT-OSS  |
-|:---------------------------------|:---------:|:---------:|
-| Initial OpenClover Coverage      |   44.6%   |   62.6%   |
-| Initial Decision Coverage        |   36.9%   |   41.3%   |
-| Final OpenClover Coverage        |   48.4%   |   70.9%   |
-| Final Decision Coverage          |   43.1%   |   50.0%   |
-| Total Tests                      |    41     |    21     |
-| Context Window Usage             |  57,325   |  47,356   |
-| Total Input Tokens               | 1,041,284 | 1,063,160 |
-| Total Cached Tokens              |  169,792  |     0     |
-| Total Output Tokens              |  36,828   |  21,355   |
-| Total Tokens used                |  908,320  | 1,102,296 |
-| Tokens per OpenClover Coverage % |  18,767   |  15,547   |
+| Title                       |  Gemma4   |  GPT-OSS  |
+|:----------------------------|:---------:|:---------:|
+| Initial Total Coverage      |   44.6%   |   62.6%   |
+| Initial Decision Coverage   |   36.9%   |   41.3%   |
+| Final Total Coverage        |   48.4%   |   70.9%   |
+| Final Decision Coverage     |   43.1%   |   50.0%   |
+| Total Tests                 |    41     |    21     |
+| Context Window Usage        |  57,325   |  47,356   |
+| Total Input Tokens          | 1,041,284 | 1,063,160 |
+| Total Cached Tokens         |  169,792  |     0     |
+| Total Output Tokens         |  36,828   |  21,355   |
+| Total Tokens used           |  908,320  | 1,102,296 |
+| Tokens per Total Coverage % |  18,767   |  15,547   |
 
 GPT-OSS wins! What a surprise.
 It is worth the more token usage for the more coverage you get.
 Even in the improvement phase, GPT-OSS did better.
 GPT-OSS did much better than usual since not many tests were removed and many planned tests were implemented.
 On the contrary, Gemma4 was the opposite. Many tests were removed or were not implemented.
-If it wasn't for caching, gemma4 would have used the same amount of tokens in total.
+If it wasn't for caching, Gemma4 would have used the same amount of tokens in total.
 
 ### RepresentationToModel
 This file has 1,853 LOC, 66 methods, 889 statements, and 430 branches.
@@ -2761,7 +3192,7 @@ These tests were missed from the plan:
 - `importAuthorizationSettings()` feature disabled.
 
 ##### Initial Coverage
-OpenClover coverage is 49.2%, and decision coverage is 37.0%.
+Total Coverage is 49.2%, and decision coverage is 37.0%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_RepresentationToModel_round1.md`.
@@ -2805,12 +3236,12 @@ All the tests that were planned are implemented.
 
 ###### Stage 2
 The agent generated `RepresentationToModelResourceTest` with 17 tests.
-All the tests that were planned are implemented. / These tests were missed from the plan:
+These tests were missed from the plan:
 - `toModel(KeycloakSession, RealmModel, AuthenticationExecutionRepresentation)`
 - `toModel(UserConsentRepresentation, ...)` is still missing branches.
 
 ##### Final Coverage
-OpenClover coverage is 59.4%, and decision coverage is 47.7%.
+Total Coverage is 59.4%, and decision coverage is 47.7%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_RepresentationToModel_round2.md`.
 
@@ -2911,7 +3342,7 @@ Nothing remains from this stage.
 The agent generated `ClientIdChangeEventTest` with 1 test. This file was not in the plan.
 
 ##### Initial Coverage
-OpenClover coverage is 15.5%, and decision coverage is 13.3%.
+Total Coverage is 15.5%, and decision coverage is 13.3%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_RepresentationToModel_round1.md`.
@@ -2941,49 +3372,49 @@ Targeted Method:
 
 ###### Stage 2: Deep Branch Coverage for Key Pathways
 1. `importRoles()` – The coverage report lists missed branches. Create tests that:
-  - Branch where `realmRoles` is null → no action.
-  - Branch with real realm roles: `realmRoles.getRealm()` returns a list; test both on‑path (!= null) and
-    off‑path (`== null`).
-  - Client roles: test with valid client ID and roles; also test the exception thrown when a client is missing.
-  - Composite path: after roles are created, call `addComposites()` with both realm and client composites enabled.
+   - Branch where `realmRoles` is null → no action.
+   - Branch with real realm roles: `realmRoles.getRealm()` returns a list; test both on‑path (!= null) and
+     off‑path (`== null`).
+   - Client roles: test with valid client ID and roles; also test the exception thrown when a client is missing.
+   - Composite path: after roles are created, call `addComposites()` with both realm and client composites enabled.
 2. `importGroup()` – For all missing branches:
-  - Test with clientRoles map present/absent.
-  - Missed client in clientRoles → exception.
-  - `group.getSubGroups()` null → no recursion.
-  - `group.getSubGroups().size()>0` → recursive import.
+   - Test with clientRoles map present/absent.
+   - Missed client in clientRoles → exception.
+   - `group.getSubGroups()` null → no recursion.
+   - `group.getSubGroups().size()>0` → recursive import.
 3. `createRole()` – Already partially covered, but create tests that:
-  - Explicitly set `getDescription()` and `getAttributes()` and verify they are applied.
+   - Explicitly set `getDescription()` and `getAttributes()` and verify they are applied.
 4. `createClient()` – Exhaustively test each conditional:
-  - Client type feature enabled → expect augmentation (mock a `ClientType` and confirm augment called).
-  - Direct grants flag → correct flipping of flags.
-  - SAML protocol with missing binding attribute → compute binding ID.
-  - Flow overrides (existing and missing).
-  - Registered nodes.
-  - Protocol mappers (remove defaults, add new, apply migrations).
-  - Client template mapping.
+   - Client type feature enabled → expect augmentation (mock a `ClientType` and confirm augment called).
+   - Direct grants flag → correct flipping of flags.
+   - SAML protocol with missing binding attribute → compute binding ID.
+   - Flow overrides (existing and missing).
+   - Registered nodes.
+   - Protocol mappers (remove defaults, add new, apply migrations).
+   - Client template mapping.
 5. `updateClient()` – Ensure all branches touched:
-  - New client ID exists → event published.
-  - Flow overrides for null or empty.
-  - Registered nodes added.
-  - Metadata updates via `updateClientProperties()`.
-  - Client type validation exception aggregation (already in Stage 4).
+   - New client ID exists → event published.
+   - Flow overrides for null or empty.
+   - Registered nodes added.
+   - Metadata updates via `updateClientProperties()`.
+   - Client type validation exception aggregation (already in Stage 4).
 6. `updateClientProperties()` – Cover stress‑case:
-  - One setter throws `ClientTypeException`; confirm aggregation.
-  - Default protocol and full‑scope logic triggered by missing values.
-  - Secret management (public vs non‑public).
-  - Attribute handling and extension.
+   - One setter throws `ClientTypeException`; confirm aggregation.
+   - Default protocol and full‑scope logic triggered by missing values.
+   - Secret management (public vs non‑public).
+   - Attribute handling and extension.
 7. `determineNewSecret()` – Test public/non‑public paths.
 8. `defaultWebOrigins()` – Test both branches (existing origins vs derive from redirects).
 9. `filterEmptyValues()` – Provide a collection with null/blank strings and non‑blank to test filtering.
 10. `updateClientScopes()` – Cover:
-  - Adding a new optional scope.
-  - Removing an unwanted default scope.
-  - No‑op when desired scopes equal existing.
-  - Client scope mapping via `addClientScopeToClient()`.
+    - Adding a new optional scope.
+    - Removing an unwanted default scope.
+    - No‑op when desired scopes equal existing.
+    - Client scope mapping via `addClientScopeToClient()`.
 11. `ProtocolMapper` handling – Verify:
-  - Existing mapper update yields `updateProtocolMapper()` with same ID.
-  - Adding new mapper leads to no `ModelDuplicateException`.
-  - Removing forgotten mappers.
+    - Existing mapper update yields `updateProtocolMapper()` with same ID.
+    - Adding new mapper leads to no `ModelDuplicateException`.
+    - Removing forgotten mappers.
 
 ###### Test-Project Layout
 All new tests should be placed under src/test/java/org/keycloak/models/utils/.  
@@ -3027,10 +3458,10 @@ The agent generated `ImportRealmTest`, `DeprecatedCredFormatTest`, `AddComposite
 Consequently, all tests of `AddCompositesTest` are disqualified.
 
 `RepresentationToModel.addClientScopeToClient()` has private access.
-Consequently, all tests of `ClientScopeRegistrationTest` are disqualified.
+As a result, all tests of `ClientScopeRegistrationTest` are disqualified.
 
 `RepresentationToModel.convertDeprecatedCredentialsFormat()` has private access.
-Consequently, all tests of `DeprecatedCredFormatTest` are disqualified.
+Therefore, all tests of `DeprecatedCredFormatTest` are disqualified.
 
 ###### Stage 2
 The agent generated `UpdateRealmTest`, `CreateUserTest` with 4 tests.
@@ -3056,7 +3487,7 @@ These files are not generated, despite being in the plan:
 - `ClientIdChangeEventTest.java`
 
 ##### Final Coverage
-OpenClover coverage is 18.5%, and decision coverage is 14.4%.
+Total Coverage is 18.5%, and decision coverage is 14.4%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_RepresentationToModel_round2.md`.
 
@@ -3073,19 +3504,19 @@ The total token usage is absurdly high too.
 GPT-OSS is not suited for test generation of complex file.
 
 #### Comparison
-| Title                            | Gemma4  |  GPT-OSS  |
-|:---------------------------------|:-------:|:---------:|
-| Initial OpenClover Coverage      |  49.2%  |   15.5%   |
-| Initial Decision Coverage        |  37.0%  |   13.3%   |
-| Final OpenClover Coverage        |  59.4%  |   18.5%   |
-| Final Decision Coverage          |  47.7%  |   14.4%   |
-| Total Tests                      |   63    |    18     |
-| Context Window Usage             | 79,233  |  48,428   |
-| Total Input Tokens               | 939,434 | 2,839,095 |
-| Total Cached Tokens              |  7,488  |     0     |
-| Total Output Tokens              | 39,519  |  34,304   |
-| Total Tokens used                | 971,465 | 2,873,399 |
-| Tokens per OpenClover Coverage % | 16,354  |  155,319  |
+| Title                       | Gemma4  |  GPT-OSS  |
+|:----------------------------|:-------:|:---------:|
+| Initial Total Coverage      |  49.2%  |   15.5%   |
+| Initial Decision Coverage   |  37.0%  |   13.3%   |
+| Final Total Coverage        |  59.4%  |   18.5%   |
+| Final Decision Coverage     |  47.7%  |   14.4%   |
+| Total Tests                 |   63    |    18     |
+| Context Window Usage        | 79,233  |  48,428   |
+| Total Input Tokens          | 939,434 | 2,839,095 |
+| Total Cached Tokens         |  7,488  |     0     |
+| Total Output Tokens         | 39,519  |  34,304   |
+| Total Tokens used           | 971,465 | 2,873,399 |
+| Tokens per Total Coverage % | 16,354  |  155,319  |
 
 Gemma4 is the obvious winner. GPT-OSS performance was really poor.
 Furthermore, it used an absurd amount of input tokens.
@@ -3170,13 +3601,10 @@ These tests were missed from the plan:
 - `detachClientSession()`
 
 ##### Initial Coverage
-OpenClover coverage is 37.7%, and decision coverage is 33.6%.
+Total Coverage is 37.7%, and decision coverage is 33.6%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_TokenManager_round1.md`.
-
-The initial coverage is not great.
-Even gemma is not going to get close to a satisfactory coverage.
 
 ##### Improvement Phase
 The agent was given the missing coverage markdown file. It came up with this two-stage plan
@@ -3237,16 +3665,18 @@ These tests were missed from the plan:
 - Nothing from Generation & Helpers is covered.
 
 ##### Final Coverage
-OpenClover coverage is 43.9%, and decision coverage is 40.9%.
+Total Coverage is 43.9%, and decision coverage is 40.9%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_TokenManager_round2.md`.
 
 231,715 input tokens and 14,273 output tokens were used for this phase.
 
-The improvement is poor.
-
 ##### Verdict
 In total, 724,963 input tokens and 35,042 output tokens were used. no token was cached.
+
+The initial coverage was low.
+The improvement is poor.
+This model did terrible for this file, unfortunately.
 
 #### GPT-OSS
 ##### Initial Implementation Plan
@@ -3324,7 +3754,7 @@ These tests were missed from the plan:
 - `verifyRefreshToken‑clientMismatch()`
 
 ##### Initial Coverage
-OpenClover coverage is 17.6%, and decision coverage is 17.3%.
+Total Coverage is 17.6%, and decision coverage is 17.3%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_TokenManager_round1.md`.
@@ -3382,7 +3812,7 @@ or require more complex setup (e.g., mappers, scopes, organization logic, token 
 ##### Improvement Implementation
 ###### Stage 1
 The agent generated `TokenManagerStage1AdditionalTests` with 12 tests.
-Only four tests had an exact name match to the tests in plan mode.
+Only four tests had an exact name match to the tests in the plan.
 Branches on these lines are not covered despite being planned to be covered:
 - 185 (`true` branch: timed out offline user)
 - 207 (`!user.isEnabled()`)
@@ -3393,19 +3823,19 @@ Branches on these lines are not covered despite being planned to be covered:
 
 ###### Stage 2
 The agent generated `TokenManagerStage2Tests` with 14 tests.
-Only three tests had an exact name match to the tests in plan mode.
+Only three tests had an exact name match to the tests in the plan.
 These tests were missed from the plan:
 - two of `attachAuthenticationSession()` overloads
 - `clientSession.getUserSession()` returns `null` in `detachClientSession()`
 - `client.isFullScopeAllowed()==true` in `getAccess()`
 - `isValidScope(KeycloakSession ,String, ClientModel)`
-- transformUserInfoAccessToken()`
+- `transformUserInfoAccessToken()`
 
 tests `tryResolveOrganizationScope_enabled`, `tryResolveOrganizationScope_disabled`, and
 `tryResolveOrganizationClientScope_nullOrg` are removed duo to attempt to access a private member.
 
 ##### Final Coverage
-OpenClover coverage is 33.7%, and decision coverage is 32.2%.
+Total Coverage is 33.7%, and decision coverage is 32.2%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_TokenManager_round2.md`.
 
@@ -3419,25 +3849,25 @@ The initial coverage is terrible.
 The improvement phase was actually better than average for this model.
 
 #### Comparison
-| Title                            | Gemma4  |  GPT-OSS  |
-|:---------------------------------|:-------:|:---------:|
-| Initial OpenClover Coverage      |  37.7%  |   17.6%   |
-| Initial Decision Coverage        |  33.6%  |   17.3%   |
-| Final OpenClover Coverage        |  43.9%  |   33.7%   |
-| Final Decision Coverage          |  40.9%  |   32.2%   |
-| Total Tests                      |   66    |    49     |
-| Context Window Usage             | 67,143  |  45,949   |
-| Total Input Tokens               | 724,963 | 1,019,138 |
-| Total Cached Tokens              |    0    |     0     |
-| Total Output Tokens              | 35,042  |  30,195   |
-| Total Tokens used                | 760,005 | 1,049,333 |
-| Tokens per OpenClover Coverage % | 17,312  |  31,137   |
+| Title                       | Gemma4  |  GPT-OSS  |
+|:----------------------------|:-------:|:---------:|
+| Initial Total Coverage      |  37.7%  |   17.6%   |
+| Initial Decision Coverage   |  33.6%  |   17.3%   |
+| Final Total Coverage        |  43.9%  |   33.7%   |
+| Final Decision Coverage     |  40.9%  |   32.2%   |
+| Total Tests                 |   66    |    49     |
+| Context Window Usage        | 67,143  |  45,949   |
+| Total Input Tokens          | 724,963 | 1,019,138 |
+| Total Cached Tokens         |    0    |     0     |
+| Total Output Tokens         | 35,042  |  30,195   |
+| Total Tokens used           | 760,005 | 1,049,333 |
+| Tokens per Total Coverage % | 17,312  |  31,137   |
 
 Gemma4 wins again. It did much better in the initial phase.
 However, GPT-OSS had a drastic improvement in coverage.
 Still, with less token usage, Gemma4 covered more.
-The coverage is not close to satisfactory though.
-It is below 50% still.
+The coverage is very far from satisfactory though.
+It is below 50%.
 
 ### UserAdapter
 This file has 641 LOC, 59 methods, 263 statements, and 108 branches.
@@ -3488,7 +3918,7 @@ The agent generated `UserAdapterRoleTest` with 11 tests.
 All the tests that were planned are implemented.
 
 ##### Initial Coverage
-OpenClover coverage is 87.9%, and decision coverage is 72.2%.
+Total Coverage is 87.9%, and decision coverage is 72.2%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_UserAdapter_round1.md`.
@@ -3535,19 +3965,29 @@ Key Test Scenarios:
 ##### Improvement Implementation
 ###### Stage 1
 The agent generated `UserAdapterRefinementTest` with 13 tests.
-All the tests that were planned are implemented. / These tests were missed from the plan:
-- missed 1
+These tests were missed from the plan:
+- in `setSingleAttribute()`, a branch in line 169 is missing.
+- in `setAttribute()`, a branch is not covered in line 214.
+- in `removeAttribute()`, line 241 is missing the false branch.
+- `addRequiredAction()` is missing a branch in line 322.
+- `removeRequiredAction()` is missing a branch in line 338.
 
 ###### Stage 2
 The agent generated `UserAdapterAdvancedTest` with 8 tests.
-All the tests that were planned are implemented. / These tests were missed from the plan:
-- missed 1
+These tests were missed from the plan:
+- `getGroupsCountByNameContaining()` is not entered.
+- in `getGroupsCount()`, `ORGANIZATION` enabled is not tested.
+- in `hasDirectGroup()`, `membership != null` is not covered.
+- in `joinGroup()`, line 471 is missing a branch.
+- in `joinGroupImpl(GroupModel, MembershipMetadata )` line 485 is missing a branch.
+- `leaveGroup()` is still missing the three branches.
+- line 562 in `grantRoleImpl()` is missing a branch.
 
 `testHasDirectGroupTrue()` is removed duo to attempt to access private members.  
 `testGetGroupsCountByNameContaining()` is removed since it required a drastic change to pass.
 
 ##### Final Coverage
-OpenClover coverage is 93.3%, and decision coverage is 84.3%.
+Total Coverage is 93.3%, and decision coverage is 84.3%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gemma4_UserAdapter_round2.md`.
 
@@ -3560,6 +4000,7 @@ The initial coverage is superb.
 Decision coverage needs a little bit more push to reach the satisfactory number.
 This was achieved in the improvement phase.
 Was about 40% of token usage in the initial phase worth it for this improvement?
+Probably no.
 
 #### GPT-OSS
 ##### Initial Implementation Plan
@@ -3571,7 +4012,7 @@ helper to create `UserAdapter`; configure `Profile` feature flag.
 Covered areas:  
 `setSingleAttribute()`, `setAttribute()`, `removeAttribute()`, `getFirstAttribute()`, `getAttributeStream()`,
 `getAttributes()`.  
-Branches: name equalsFIRST/LAST/EMAIL/USERNAME, null/empty values, duplicate attributes, HQL delete path.
+Branches: name equals FIRST/LAST/EMAIL/USERNAME, null/empty values, duplicate attributes, HQL delete path.
 
 ###### Stage 3: Required‑action logic
 Covered areas:  
@@ -3618,7 +4059,7 @@ These tests were missed from the plan:
 - `hasRole()` is not covered.
 
 ##### Initial Coverage
-OpenClover coverage is 59.1%, and decision coverage is 52.8%.
+Total Coverage is 59.1%, and decision coverage is 52.8%.
 
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_UserAdapter_round1.md`.
@@ -3676,7 +4117,7 @@ The agent generated `UserAdapterSetSingleAttributePartialTest` with 2 tests.
 Every method mentioned in the plan is still missing some branch or is not covered at all.
 
 ##### Final Coverage
-OpenClover coverage is 67.0%, and decision coverage is 54.6%.
+Total Coverage is 67.0%, and decision coverage is 54.6%.
 Missed coverage markdown file is available at
 `project3/reports/opencode/missing_coverages_report/gpt-oss_UserAdapter_round2.md`.
 
@@ -3689,19 +4130,75 @@ The improvement is not that much, especially in decision coverage.
 Many of the planned tests were not implemented fully.
 
 #### Comparison
-| Title                            | Gemma4  | GPT-OSS |
-|:---------------------------------|:-------:|:-------:|
-| Initial OpenClover Coverage      |  87.9%  |  59.1%  |
-| Initial Decision Coverage        |  72.2%  |  52.8%  |
-| Final OpenClover Coverage        |  93.3%  |  67.0%  |
-| Final Decision Coverage          |  84.3%  |  54.6%  |
-| Total Tests                      |   72    |   44    |
-| Context Window Usage             | 45,462  | 29,854  |
-| Total Input Tokens               | 578,746 | 578,854 |
-| Total Cached Tokens              | 28,160  |    0    |
-| Total Output Tokens              | 31,728  | 16,742  |
-| Total Tokens used                | 582,314 | 595,596 |
-| Tokens per OpenClover Coverage % |  6,241  |  8,889  |
+| Title                       | Gemma4  | GPT-OSS |
+|:----------------------------|:-------:|:-------:|
+| Initial Total Coverage      |  87.9%  |  59.1%  |
+| Initial Decision Coverage   |  72.2%  |  52.8%  |
+| Final Total Coverage        |  93.3%  |  67.0%  |
+| Final Decision Coverage     |  84.3%  |  54.6%  |
+| Total Tests                 |   72    |   44    |
+| Context Window Usage        | 45,462  | 29,854  |
+| Total Input Tokens          | 578,746 | 578,854 |
+| Total Cached Tokens         | 28,160  |    0    |
+| Total Output Tokens         | 31,728  | 16,742  |
+| Total Tokens used           | 582,314 | 595,596 |
+| Tokens per Total Coverage % |  6,241  |  8,889  |
 
-Gemma clearly wins again. Less token usage thanks to caching and also more coverage.
-Gemma attained satisfactory coverage but GPT-OSS did not. GPT-OSS always generates much fewer tests.
+Gemma4 clearly wins again. Less token usage thanks to caching and also more coverage.
+Gemma4 attained satisfactory coverage but GPT-OSS did not. GPT-OSS always generates much fewer tests.
+
+## Aggregated Result
+In total, there are 9264 LOC, 27984 statements, and 2686 decisions (given by Jacoco and LOC script).  
+In total, there are 11840 LOC, 5148 statements, and 1922 decisions (given by OpenClover).
+
+| Title                            |  Gemma4   |  GPT-OSS   |
+|:---------------------------------|:---------:|:----------:|
+| Initial Total Coverage           |   54.2%   |   33.5%    |
+| Initial Decision Coverage        |   41.4%   |   26.3%    |
+| Final Total Coverage             |   64.8%   |   41.9%    |
+| Final Decision Coverage          |   54.6%   |   33.4%    |
+| Total Tests in the initial phase |    453    |    218     |
+| Total Tests at the end           |    629    |    347     |
+| Total Input Tokens               | 7,743,378 | 10,666,787 |
+| Total Cached Tokens              |  790,464  |     0      |
+| Total Output Tokens              |  287,898  |  247,842   |
+| Total Tokens used                | 7,240,812 | 10,914,629 |
+| Tokens per Total Coverage %      |  111,741  |  260,492   |
+| Cost for 1M input tokens         |   0.13$   |   0.075$   |
+| Cost for 1M output tokens        |   0.4$    |    0.3$    |
+| Cost                             |   1.02$   |   0.89$    |
+
+Note that the first two files are not counted toward the token usages since they weren't tracked there.  
+Evidently, Gemma4 wins here.
+It is covering much more code.
+This coverage is still far from satisfactory.
+With some more improvement phases, it is possible to achieve satisfactory coverage. 
+Generating these improvement phases in new sessions could save tokens.
+But, it might reduce tests performance.
+This should be investigated.
+
+The cost is provided by AvalAI.
+However, OpenRouter's prices are cheaper.  
+Gemma4 might have used 15% more cash, but it performed 62% better than GPT-OSS which
+makes it absolutely worth.
+
+The Reasons Gemma wins are:
+- More parameters (26b vs 20b)
+- Newer (April 2026 vs August 2025)
+- More tests generated (629 vs 347)
+- Well-suited for coding (in official specification)
+- More optimal input token usage (especially with caching)
+
+The OpenClover reports are available in `project3\reports\opencode\openclover\reports.zip`.
+
+## Can gemma4:26b Be Used For Generating Tests For a Complex File?
+If you are able to run gemma4:26b on your own systems, the answer is yes.
+You should use LSP, proper MCP servers and skills to boost the model performance.
+A correct test flow is also needed.
+Tests must be planned first, then the plan is implemented in multiple stages.
+It will not achieve high coverage at first.
+However, this coverage can be improved if we give this model where it has not been tested.
+The model might be able to fix its errors too.
+I was unable to test this, but if we don't need to worry about token usage, eventually it will succeed.
+If I had unlimited access to this model, I would have been able to experiment with it more.
+I might have been able to achieve 80% decision coverage as well.

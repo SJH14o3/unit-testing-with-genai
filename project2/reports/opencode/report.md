@@ -1,4 +1,3 @@
-
 # Unit Test Generation Using OpenCode for Medium Project
 We are dealing with a much larger code, from 86 to 10100 LOC.
 This report won't be as detailed previously.
@@ -15,8 +14,12 @@ Therefore, for each file, 4 unit tests will be generated.
 In the next part, I have explained why I came up with this way of testing.
 
 Token usage will be observed.
-I have assumed that the cost of each local model for the same token usage is equal.
-I will observe with how much token usage, how much of the code will be covered.
+I have assumed that the cost of each local model for the same token usage is equal.  
+I will observe with how much token usage, how much of the code will be covered.  
+*NOTE THAT* I realized in the hard project that the context tokens shown by OpenCode is not the total
+token usage, and it's just the context windows. It's too late to edit this project now.
+However, since almost all session had one prompt, that number might be closer to reality.
+Still, for these local models, if we run them on our own computer, it wouldn't matter.
 
 Another matter of interest is to see how much of the code will be covered by tests.
 Since we are dealing with a much larger project, this is essential.
@@ -45,7 +48,7 @@ I tried three ways to generate unit tests for the whole project with "gemma4:e4b
 Initially I was planning to use this model alongside "gpt-oss:20b" to generate tests,
 but it was replaced with "Gemma4:26b".
 Anyhow, prompts were same apart from referencing which files to generate tests for.
-To compare results, generated tests for *com.google.gson.JsonArray* will be used.
+To compare results, generated tests for `com.google.gson.JsonArray` will be used.
 
 ### 1. Generating test for all files of project in one session.
 Firstly, I used plan mode, and prompted the agent to plan out multiple stages
@@ -59,20 +62,20 @@ After the plan was ready, I prompted it to proceed with stage 1.
 After each stage was completed,
 I prompted it to proceed with the following stage.
 In the end, 22 files were generated, and each file contained few tests.
-*JsonArrayTest* only had 68 lines.
+`JsonArrayTest` only had 68 lines.
 
 ### 2. Generating test for a single file in a session
 I didn't use plan mode.
 The given group is the "1.
 Core JSON Data Model".
-It contained 5 files (*JsonParser* wasn't part of this group at that moment).
-Anyway, *JsonArrayTest* was generated with 249 lines.
+It contained 5 files (`JsonParser` wasn't part of this group at that moment).
+Anyway, `JsonArrayTest` was generated with 249 lines.
 
 ### 3. Generating test for all files of a group in a session
 Plan mode wasn't used.
 After 1-2 files were generated,
 the agent stopped and I had to prompt it to continue. 
-*JsonArrayTest* was generated with 341 lines.
+`JsonArrayTest` was generated with 341 lines.
 
 ### Result
 Local models cannot handle a colossal input,
@@ -149,7 +152,7 @@ This tool can be added to a project dependencies as a plugin,
 and upon build of a project, it will generate a report in html.
 These files contain coverage assessment of the whole project.
 Moreover, it is possible to see each file and its method coverage individually.
-Output is located at *$project_folder/target/site/jacoco/index.html*.
+Output is located at `$project_folder/target/site/jacoco/index.html`.
 At the end of analysis for each file,
 there is a summary that contains the assessment of coverage by this tool for generated tests.
 Note that all tests must pass in order to be able to generate a report.
@@ -204,11 +207,11 @@ public class BranchDemonstration {
     }
 }
 ```
-There are two simple *or* methods alongside two simple *and* methods. I am going to create tests that achieve:
-- decision coverage for *or()*.
-- condition coverage for *and()*.
-- decision/condition coverage for *or2()*.
-- MD/DC for *and2()*.
+There are two simple `or` methods alongside two simple `and` methods. I am going to create tests that achieve:
+- decision coverage for `or()`.
+- condition coverage for `and()`.
+- decision/condition coverage for `or2()`.
+- MD/DC for `and2()`.
 
 ```java
 import org.junit.jupiter.api.BeforeEach;
@@ -333,7 +336,7 @@ It was not easy to fix some of them.
 
 Then all tests are listed.
 Items of the list are grabbed from the description of the test if the
-tests have *@DisplayName* annotation.
+tests have `@DisplayName` annotation.
 If not, the method name of the test is used.
 Parametrized tests are determined with [parametrized].
 How many tests they had is included after the test title.
@@ -368,18 +371,18 @@ After that table, a summary is given about which model performed better.
 Is it reasonable to generate tests for this file alongside other files to reduce token usage?
 
 ## Group 1: Core JSON Data Model
-GPT-OSS in group mode did not generate tests for *JsonNull* in the output of the first prompt.
+GPT-OSS in group mode did not generate tests for `JsonNull` in the output of the first prompt.
 I had to prompt it to generate the test for it afterward.  
-GPT-OSS in single mode did not use skill for generating test in *JsonArray* even though I explicitly had it in the prompt.
+GPT-OSS in single mode did not use skill for generating test in `JsonArray` even though I explicitly had it in the prompt.
 In the second attempt, however, it used skill.
 ### JsonArray
 This file has 146 LOC, 258 statements and 24 decisions.
 
 #### Gemma Group
 The generated file contained 3 errors:
-- in test *addElement_handlesNull*, null was directly passed to add method. It must be cast into a supported type first.
-- in test *set_replacesElement*, A string was passed as second argument of *set()* method. A JsonPrimitive with a string value must be passed.
-- Like previous error, but for *add()* method of a list of JsonElement in test *asList_mutableView*.
+- in test `addElement_handlesNull()`, null was directly passed to add method. It must be cast into a supported type first.
+- in test `set_replacesElement()`, A string was passed as second argument of `set()` method. A JsonPrimitive with a string value must be passed.
+- Like previous error, but for `add()` method of a list of JsonElement in test `asList_mutableView()`.
 
 After fixing the errors, all the 14 tests passed.  
 list of tests:
@@ -399,17 +402,17 @@ list of tests:
 14. equals() and hashCode() work correctly
 
 Missing coverage:
-- In four implementations of add(...) method, only non-null branch was tested (test *addElement_handlesNull()* had to handle this).
+- In four implementations of `add(...)` method, only non-null branch was tested (test `addElement_handlesNull()` had to handle this).
 - Like previous but for set(...)
 - getAsSingleElement() and all getAs... have not been tested at all.
 - in equals(), 2 of 6 branches are missed.
 
 #### Gemma Single
 The generated file contained 4 errors:
-- in *testSet()*, a string was passed as second argument of set method. A JsonPrimitive with a string value must be passed.
-- in *testSetOutOfBounds()*, an integer was passed as second argument of set method. A JsonPrimitive with an integer value must be passed.
-- in *testGetAsMethodsSuccess()*, different types of primitives are passed in their java form, not JsonPrimitive form.
-- in *testAddJsonElement()* null was directly passed to add method. It must be cast into a supported type first.
+- in `testSet()`, a string was passed as second argument of set method. A JsonPrimitive with a string value must be passed.
+- in `testSetOutOfBounds()`, an integer was passed as second argument of set method. A JsonPrimitive with an integer value must be passed.
+- in `testGetAsMethodsSuccess()`, different types of primitives are passed in their java form, not JsonPrimitive form.
+- in `testAddJsonElement()` null was directly passed to add method. It must be cast into a supported type first.
 
 After fixing all errors, all 27 tests passed.
 
@@ -443,7 +446,7 @@ list of tests:
 27. hashCode() should be consistent with equals
 
 Tests were in order corresponding to the original file.
-In *testGetAsMethodsFailure()*, *getAsInt()* is tested twice in each assertion group.
+In `testGetAsMethodsFailure()`, `getAsInt()` is tested twice in each assertion group.
 
 Missing coverage:
 - getAsNumber() and getAsFloat() were not tested at all
@@ -452,9 +455,9 @@ Missing coverage:
 #### GPT-OSS Group
 The generated file contained 2 errors:
 - missing package statement
-- in test *setReplacesAndHandlesNull,* an integer is passed as second argument of set(). Fixed with replacing it with *new JsonPrimitive(int)*
+- in test `setReplacesAndHandlesNull,` an integer is passed as second argument of set(). Fixed with replacing it with `new JsonPrimitive(int)`
 
-After fixing all errors, 5 tests passed and 1 test failed.  in setReplacesAndHandlesNull(), *arr.set()* returns the previous element which the agent though it would be null, but it's a *JsonPrimitive*.
+After fixing all errors, 5 tests passed and 1 test failed.  in `setReplacesAndHandlesNull()`, `arr.set()` returns the previous element which the agent though it would be null, but it's a `JsonPrimitive`.
 
 list of tests:
 1. add null to array in various types
@@ -475,8 +478,8 @@ Missing coverage:
 The Generated file contained no error.
 
 19 tests passed and 2 tests failed. Failed tests are:
-1. the last assertion in *testGetAsSingleElementSingle()* will throw as exception. The agent had realized this in the comment next to the assertion, but it did not fix it. Assertion is commented
-2. This one is actually Gson fault! In JsonPrimitive.deepCopy(), the same object (reference) is returned, that's why *assertNotSame()* in *testDeepCopyNonEmpty()*, in the for loop fails!
+1. the last assertion in `testGetAsSingleElementSingle()` will throw as exception. The agent had realized this in the comment next to the assertion, but it did not fix it. Assertion is commented
+2. This one is actually Gson fault! In `JsonPrimitive.deepCopy()`, the same object (reference) is returned, that's why `assertNotSame()` in `testDeepCopyNonEmpty()`, in the for loop fails!
 
 list of tests:
 1. deepCopy() of empty array returns empty array
@@ -532,7 +535,7 @@ getAsCharacter() is deprecated. However, it is counted in coverage since the age
 #### Gemma Group
 The generated file contained no errors.
 
-10 tests passed and 4 tests failed. Failed tests are *getAsBoolean_throwsException()*, *getAsNumber_throwsException()*, *getAsString_throwsException()*, and *getAsDouble_throwsException()*. JsonArray is used to call the respective methods. However, these methods have been overridden and another exception is thrown. This can be fixed by using JsonObject instead.
+10 tests passed and 4 tests failed. Failed tests are `getAsBoolean_throwsException()`, `getAsNumber_throwsException()`, `getAsString_throwsException()`, and `getAsDouble_throwsException()`. JsonArray is used to call the respective methods. However, these methods have been overridden and another exception is thrown. This can be fixed by using JsonObject instead.
 
 list of tests:
 1. isJsonArray() correctly identifies JsonArray
@@ -559,7 +562,7 @@ Missing coverage:
 #### Gemma Single
 The generated file contained no error.
 
-17 tests passed and 4 tests failed. Failed tests are *testGetAsJsonObjectThrows()*, *testGetAsJsonArrayThrows()*, *testGetAsJsonPrimitiveThrows()*, and *testGetAsJsonNullThrows()*. In these tests, IllegalStateException is thrown, not ClassCastException.
+17 tests passed and 4 tests failed. Failed tests are `testGetAsJsonObjectThrows()`, `testGetAsJsonArrayThrows()`, `testGetAsJsonPrimitiveThrows()`, and `testGetAsJsonNullThrows()`. In these tests, IllegalStateException is thrown, not ClassCastException.
 
 list of tests:
 1. isJsonArray() correctly identifies JsonArray
@@ -584,10 +587,10 @@ list of tests:
 20. getAsByte()
 21. getAsShort()
 
-For getAsJson...(), the object that is tested should have been a *JsonElement* type. This would have made more sense.
+For getAsJson...(), the object that is tested should have been a `JsonElement` type. This would have made more sense.
 
 Missing coverage:
-- all getAs...() are not covered, although there are tests for them. Agent should have tested in a way that the code in *JsonElement* would be executed, not overridden code.
+- all getAs...() are not covered, although there are tests for them. Agent should have tested in a way that the code in `JsonElement` would be executed, not overridden code.
 - IOException in toString is not tested.
 
 #### GPT-OSS Group
@@ -609,11 +612,11 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 2 errors:
 - missing package statement.
-- passing null as second argument to *addProperty* in test *toStringConvertsToJson()*.
+- passing null as second argument to `addProperty()` in test `toStringConvertsToJson()`.
 
 After fixing all errors, 9 tests passed and 13 tests failed! Failed tests are:
-- asserting false on a null object *isJsonNull()* call. Assertion commented.
-- from test *getAsBooleanThrowsUnsupported()* onward, these methods do not throw exception, in fact, a value is returned instead. Tests are replaced with assertEquals.
+- asserting false on a null object `isJsonNull()` call. Assertion commented.
+- from test `getAsBooleanThrowsUnsupported()` onward, these methods do not throw exception, in fact, a value is returned instead. Tests are replaced with assertEquals.
 
 list of tests:
 1. isJson...() return true when correct
@@ -763,10 +766,10 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 4 errors:
-- in test *newJsonObjectIsEmpty()*, non-defined variable jsontoObject used instead of jsonObject.
-- above test *addStringProperty()*, a line explaining something was not commented.
-- in test *addStringPropertyNull()*, null is passed without string cast.
-- in test *equalsSameMembers()*, non-defined variable objermedObj2 used instead of obj2.
+- in test `newJsonObjectIsEmpty()`, non-defined variable jsontoObject used instead of jsonObject.
+- above test `addStringProperty()`, a line explaining something was not commented.
+- in test `addStringPropertyNull()`, null is passed without string cast.
+- in test `equalsSameMembers()`, non-defined variable objermedObj2 used instead of obj2.
 
 After fixing all errors, all 27 tests passed.
 
@@ -804,7 +807,7 @@ Missing coverage:
 The Generated file contained a single error which was not stating the package.
 
 After fixing all errors, 3 tests passed and a single test failed.
-- in test *getAsJsonXThrowsOnWrongType()*, *ClassCastException* is returned instead of *IllegalStateException* in both assertions.
+- in test `getAsJsonXThrowsOnWrongType()`, `ClassCastException` is returned instead of `IllegalStateException` in both assertions.
 
 list of tests:
 - add() and remove()
@@ -864,7 +867,7 @@ This file has 173 LOC, 415 statements and 88 decisions.
 The Generated file contained 3 errors:
 - Made a dummy JsonableNumber class to inherit from JsonPrimitive, which is a final class! Fixed by replacing the usage to JsonPrimitive.
 - Made another dummy BooleanPrimitive class. Fixed like above.
-- in test *getAsFloat_works()*, agent was trying to fix a syntax error but forgot to remove the faulty code.
+- in test `getAsFloat_works()`, agent was trying to fix a syntax error but forgot to remove the faulty code.
 
 After fixing all errors, all 17 tests passed.
 
@@ -902,7 +905,7 @@ Missing coverage:
 - getAsDouble(), hashOfDoubleValue are not tested at all.
 
 #### Gemma Single
-The Generated file contained a single error. In *testBigInteger()*, a line was cut off but continued in the next line.
+The Generated file contained a single error. In `testBigInteger()`, a line was cut off but continued in the next line.
 
 After fixing the error, all 17 tests passed.
 
@@ -955,7 +958,7 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained no errors.
 
-11 tests passed and 1 test failed. Failed test is *equalsAndHashCodeConsistency()*. Agent thought that initializing a JsonPrimitive with argument 42 and "42" should result in equal objects which isn't the case. This was fixed by changing assertEquals to assertNotEquals. Also, their hash code was expected to be equals and I couldn't fix it properly, so I just added two assertions verifying each hashCode separately.
+11 tests passed and 1 test failed. Failed test is `equalsAndHashCodeConsistency()`. Agent thought that initializing a JsonPrimitive with argument 42 and "42" should result in equal objects which isn't the case. This was fixed by changing assertEquals to assertNotEquals. Also, their hash code was expected to be equals and I couldn't fix it properly, so I just added two assertions verifying each hashCode separately.
 
 list of tests:
 1. boolean constructor and access
@@ -995,9 +998,9 @@ All models did poorly for this file, especially in equals() which was a complex 
 ### JsonParser
 This file has 59 LOC, 77 statements and 6 decisions.
 #### Gemma Group
-The Generated file contained an error which was missing *com.google.gson.stream.JsonReader* import.
+The Generated file contained an error which was missing `com.google.gson.stream.JsonReader` import.
 
-After fixing the errors, 6 tests passed and 1 test failed. The failed test was expecting an *JsonSyntaxException* in test *parseReader_multipleElements_throwsException()* but JsonReader fixes this with only reading the first element. Making a syntax error in input json will result in *JsonSyntaxException*.
+After fixing the errors, 6 tests passed and 1 test failed. The failed test was expecting an `JsonSyntaxException` in test `parseReader_multipleElements_throwsException()` but JsonReader fixes this with only reading the first element. Making a syntax error in input json will result in `JsonSyntaxException`.
 
 list of tests:
 1. parseString() works for valid JSON
@@ -1015,7 +1018,7 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 2 errors:
-- in test *deprecatedMethods_delegateCorrectly()*, parse(...) is called statically for the last two assertions. Fixed with instantiating JsonParser.
+- in test `deprecatedMethods_delegateCorrectly()`, parse(...) is called statically for the last two assertions. Fixed with instantiating JsonParser.
 
 After fixing all errors, all 9 tests passed.
 
@@ -1058,7 +1061,7 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 3 errors:
 - missing package statement.
-- wrong directory for importing *com.google.gson.Strictness*.
+- wrong directory for importing `com.google.gson.Strictness`.
 - a conceptional test that overrides a method that it can't. I commented it to avoid compile error.
 
 After fixing all errors, 5 tests passed and 1 test failed. Failed test is:
@@ -1126,8 +1129,8 @@ This file has 395 LOC, 848 statements and 136 decisions.
 The Generated file contained a single error. Code was trying to access Strictness.STRICT using Strict::STRICT.
 
 After fixing the error, 2 tests passed and 2 tests failed. Failed tests are:
-- in *testStrictness()* first part, strictness is set to *STRICT* which results in *jsonWriter.value(Double.NaN)* throwing exception which is not asserted. In the second part of this test, this is tested but exception is asserted. The second part is also testing *STRICT* again. It looks like an agent meant to test *LENIENT* in the first part.
-- in *testNestingProblem()*, the first part must be expecting an exception, but it's not. the first part is commented.
+- in `testStrictness()` first part, strictness is set to `STRICT` which results in `jsonWriter.value(Double.NaN)` throwing exception which is not asserted. In the second part of this test, this is tested but exception is asserted. The second part is also testing `STRICT` again. It looks like an agent meant to test `LENIENT` in the first part.
+- in `testNestingProblem()`, the first part must be expecting an exception, but it's not. the first part is commented.
 
 list of tests:
 1. value types
@@ -1151,16 +1154,16 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 5 errors:
-- *com.google.gson.FormattingStyle* was not imported.
+- `com.google.gson.FormattingStyle` was not imported.
 - an unexpected token in beginObject_endObject_works().
 - calling undefined method "setLength" on a JsonWriter in valueBoolean_handlesTrueAndFalse.
-- *com.google.gson.Strictness* was not imported
-- *StringWriter* does not have *setLength()*. I believe the agent tried to reset the data. I will instantiate that variable again instead, since I didn't find a method to do it.
+- `com.google.gson.Strictness` was not imported
+- `StringWriter` does not have `setLength()`. I believe the agent tried to reset the data. I will instantiate that variable again instead, since I didn't find a method to do it.
 
 After fixing all errors, 23 tests passed and 7 tests failed. Failed tests are:
 - in name_throwsException_ifAlreadyWroteAName(), after a name written, another name must be written to throw exception.
-- in valueBoolean_handlesTrueAndFalse(), writer can only write a single value and writing another value will throw exception. variables *out* (for assertion) and *writer* are reset to fix this.
-- In every test that *out = new StringWriter()* is replaced setLength(0), *writer = new JsonWriter(out)* is also added. This fixed many of the failures.
+- in valueBoolean_handlesTrueAndFalse(), writer can only write a single value and writing another value will throw exception. variables `out` (for assertion) and `writer` are reset to fix this.
+- In every test that `out = new StringWriter()` is replaced setLength(0), `writer = new JsonWriter(out)` is also added. This fixed many of the failures.
 - in nullValue_respectsSerializeNulls(), in first assertion, '}' at the expected string is wrong. In the second assertion, writing the null value removes the name, so the expected string is "{".
 
 list of tests:
@@ -1201,7 +1204,7 @@ Missing coverage:
 
 #### GPT-OSS Group
 The Generated file contained 2 errors:
-- missing import for *com.google.gson.Strictness*.
+- missing import for `com.google.gson.Strictness`.
 - used an improper way to access written json content. It was trying to access these content with a private method which is inaccessible. I replaced it by changing output to a StringWriter
 
 After fixing all errors, 5 tests passed and one test failed.
@@ -1231,7 +1234,7 @@ After fixing all errors, 3 tests passed and 4 tests failed. Failed tests are:
 - in testStringValueEscaping(), expected string was wrong.
 - in testNullSerialization(), first an object must begin to write a name to the writer. Then, the expected assertion was wrong. This happened for both parts of this test.
 - in testObjectScope(), exception message assertion is wrong. The assertion is commented.
-- in testHTMLSafeCharacters(), I just changed the last assertion to *assertNotEqual()*. I couldn't figure out how to fix it.
+- in testHTMLSafeCharacters(), I just changed the last assertion to `assertNotEqual()`. I couldn't figure out how to fix it.
 
 list of tests:
 1. write string value with escaping
@@ -1269,7 +1272,7 @@ Overall, Gemma4 Single is winner if user is willing to trade 2.5x token for a si
 ### JsonReader
 This file has 1232 LOC, 3045 statements and 519 decisions. It is the largest file of the project.
 #### Gemma Group
-The Generated file contained an error. In *testLenientReading()*, code was asserting a return value from *close()* which returns nothing. Replaced with *reader.nextLong()* since the array still had one more value end.
+The Generated file contained an error. In `testLenientReading()`, code was asserting a return value from `close()` which returns nothing. Replaced with `reader.nextLong()` since the array still had one more value end.
 
 After fixing the error, all 3 tests passed.
 
@@ -1289,32 +1292,32 @@ Missing coverage:
 #### Gemma Single
 The Generated file contained 2 errors:
 - The Agent realized it was initializing a class that doesn't exist, but forgot to remove it.
-- Non-exising *JsonToken.NUMBER_STRING_CONVERSION_TESTING* is called but not used.
+- Non-exising `JsonToken.NUMBER_STRING_CONVERSION_TESTING` is called but not used.
 
 After fixing all errors, 13 tests passed and 4 tests failed. Failed tests are:
-- in test *hasNext_returnsFalseOnEof()*, actually an IOException is thrown. Replaced the expected exception with IOException.
-- in test *nextName_returnsName()*, for a json object, only the name is received, and the value is ignored. Therefore, an exception is thrown when endObject() is called.
-- in test *close_closesReader()*, nothing is thrown since calling close() for StringReader multiple times won't throw exception. Instead, placed read() in the assertion.
-- in test *skipValue_skipsValues()*, one additional name-value pair is read, which throws exception.
+- in test `hasNext_returnsFalseOnEof()`, actually an IOException is thrown. Replaced the expected exception with IOException.
+- in test `nextName_returnsName()`, for a json object, only the name is received, and the value is ignored. Therefore, an exception is thrown when endObject() is called.
+- in test `close_closesReader()`, nothing is thrown since calling close() for StringReader multiple times won't throw exception. Instead, placed read() in the assertion.
+- in test `skipValue_skipsValues()`, one additional name-value pair is read, which throws exception.
 
 list of tests:
-1. beginArray should throw IllegalStateException if token is not BEGIN_ARRAY
-2. endArray should throw IllegalStateException if token is not END_ARRAY
-3. beginObject should throw IllegalStateException if token is not BEGIN_OBJECT
-4. endObject should throw IllegalStateException if token is not END_OBJECT
-5. hasNext should return false on EOF
-6. peek should return the correct token for various JSON types
-7. nextString should return string value
-8. nextBoolean should return boolean value
-9. nextNull should consume null token
-10. nextLong should return long value
-11. nextDouble should return double value
-12. nextName should return property name
-13. setNestingLimit should throw exception for negative limit
-14. close should close the underlying reader
-15. setStrictness should work correctly
-16. skipValue should skip various values
-17. toString should return class name and location
+1. `beginArray()` should throw `IllegalStateException` if token is not BEGIN_ARRAY
+2. `endArray()` should throw `IllegalStateException` if token is not END_ARRAY
+3. `beginObject()` should throw `IllegalStateException` if token is not BEGIN_OBJECT
+4. `endObject()` should throw `IllegalStateException` if token is not END_OBJECT
+5. `hasNext()` should return false on EOF
+6. `peek()` should return the correct token for various JSON types
+7. `nextString()` should return string value
+8. `nextBoolean()` should return boolean value
+9. `nextNull()` should consume null token
+10. `nextLong()` should return long value
+11. `nextDouble()` should return double value
+12. `nextName()` should return property name
+13. `setNestingLimit()` should throw exception for negative limit
+14. `close()` should close the underlying reader
+15. `setStrictness()` should work correctly
+16. `skipValue()` should skip various values
+17. `toString()` should return class name and location
 
 Even 17 tests is insufficient for a large file with over 1000 LOC.
 
@@ -1324,9 +1327,9 @@ Missing coverage:
 - checkLenient(), consumeNonExecutePrefix(), getNestingLimit(), getPreviousPath(), getStrictness(), nextUnquotedValue(), readEscapeCharacter(), skipToEndOfLine(), skipTo(String), skipUnquotedValue(), syntaxError(String), validateAscii(String), and nextInt() are not tested at all.
 
 #### GPT-OSS Group
-The Generated file contained 1 error which was missing import of *com.google.gson.Strictness*.
+The Generated file contained 1 error which was missing import of `com.google.gson.Strictness`.
 
-After fixing the error, 4 tests passed and 1 test failed. In test *invalidJson(), first*, object must be read before *nextName()* call. This threw exception for the malformed json.
+After fixing the error, 4 tests passed and 1 test failed. In test `invalidJson()`, first, object must be read before `nextName()` call. This threw exception for the malformed json.
 
 list of tests:
 1. parses numbers as long and double
@@ -1336,7 +1339,7 @@ list of tests:
 5. throws on invalid JSON when strict
 
 5 tests for a mammoth of a file is not enough.  
-A utility method to instantiate JsonReader is created. The Junit way is to have a private JsonReader that is instantiated with a *@BeforeEach* method.
+A utility method to instantiate JsonReader is created. The Junit way is to have a private JsonReader that is instantiated with a `@BeforeEach` method.
 
 Missing coverage:
 - setLenient(boolean) is not tested, however, it's deprecated.
@@ -1349,8 +1352,8 @@ The Generated file contained 2 errors:
 - placing '"' inside a string without a backslash behind it. The model done that three times.
 
 After fixing all errors, 2 tests passed and 7 tests failed. Failed tests are:
-- in test *beginArraySuccess()*, an array with three integers is tested but only one of them is read and endArray() is called which throws exception. Fixed by reading two other integers and also asserting them.
-- in test *strictnessToggling()*, the exception thrown is *IllegalStateException*, not *IOException*. It also needed a *beginArray()* before the second assertion.
+- in test `beginArraySuccess()`, an array with three integers is tested but only one of them is read and endArray() is called which throws exception. Fixed by reading two other integers and also asserting them.
+- in test `strictnessToggling()`, the exception thrown is `IllegalStateException`, not `IOException`. It also needed a `beginArray()` before the second assertion.
 
 Like GPT-OSS group, a utility method for instantiating JsonReader was generated.  
 9 tests are too low to achieve a good coverage.
@@ -1390,7 +1393,7 @@ All models did terrible. It is evident that these small models can't attain a hi
 ### JsonTreeReader
 This file has 360 LOC, 891 statements and 125 decisions.
 #### Gemma Group
-The Generated file contained 1 error. Path to import *org.junit.jupiter.api.Assertions* are incorrect.
+The Generated file contained 1 error. Path to import `org.junit.jupiter.api.Assertions` are incorrect.
 
 After fixing the error, all 2 tests passed.
 
@@ -1407,16 +1410,16 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 3 errors:
-- in tests *peekIteratorArray()* and *peekClosed()*, the agent realized JsonTreeReader initialization is wrong and initiated another instant correctly, but left the wrong code.
-- in test *arrayStructural()*, a JsonArray is instantiated wrongly.
-- in tests *skipValue()*, *JsonArray()*, and *JsonElements()*, null is added to a JsonObject incorrectly.
+- in tests `peekIteratorArray()` and `peekClosed()`, the agent realized JsonTreeReader initialization is wrong and initiated another instant correctly, but left the wrong code.
+- in test `arrayStructural()`, a JsonArray is instantiated wrongly.
+- in tests `skipValue()`, `JsonArray()`, and `JsonElements()`, null is added to a JsonObject incorrectly.
 
 After fixing all errors, 13 tests passed and 6 tests failed. Failed tests are:
-- in test *peekEmpty()*, the created file is not empty, in fact it must read the null first, then it will reach *END_DOCUMENT* token.
-- in test *peekIteratorArray()*, the first expected assertion is *BEGIN_ARRAY* token. In addition, array must begin the array in order to read the values inside the array.
-- in test *peekIteratorObject()*, the first expected assertion is *BEGIN_OBJECT* token. Then, object must begin, and value must also be read after the key is read.
-- in tests *arrayStructural()* and *objectStructural()*, the model also made a mistake in token order and traversal.
-- in test *pathTests()*, agent did not traverse the object to get to the expected path.
+- in test `peekEmpty()`, the created file is not empty, in fact it must read the null first, then it will reach `END_DOCUMENT` token.
+- in test `peekIteratorArray()`, the first expected assertion is `BEGIN_ARRAY` token. In addition, array must begin the array in order to read the values inside the array.
+- in test `peekIteratorObject()`, the first expected assertion is `BEGIN_OBJECT` token. Then, object must begin, and value must also be read after the key is read.
+- in tests `arrayStructural()` and `objectStructural()`, the model also made a mistake in token order and traversal.
+- in test `pathTests()`, agent did not traverse the object to get to the expected path.
 
 list of tests:
 1. peek empty reader returns END_DOCUMENT
@@ -1447,13 +1450,13 @@ Missing coverage:
 
 #### GPT-OSS Group
 The Generated file contained 5 errors:
-- missing *java.io.IOException* import.
-- missing *com.google.gson.stream.JsonToken* import.
-- missing *com.google.gson.stream.MalformedJsonException* import.
-- in test *readSimpleStructure()*, agent called getClass() on a primitive type.
-- in test *unsupportedElement()*, agent tried instantiating an abstract class. Instead, I created a class with no implementation inheriting that class for the expected result.
+- missing `java.io.IOException` import.
+- missing `com.google.gson.stream.JsonToken` import.
+- missing `com.google.gson.stream.MalformedJsonException` import.
+- in test `readSimpleStructure()`, agent called getClass() on a primitive type.
+- in test `unsupportedElement()`, agent tried instantiating an abstract class. Instead, I created a class with no implementation inheriting that class for the expected result.
 
-After fixing all errors, 2 tests passed and 1 test failed. In test *promoteName()*, a key is read, therefore, tree has traversed and *promoteNameToValue()* throws exception. A *nextName* and an assertion are removed to fix this.
+After fixing all errors, 2 tests passed and 1 test failed. In test `promoteName()`, a key is read, therefore, tree has traversed and `promoteNameToValue()` throws exception. A `nextName` and an assertion are removed to fix this.
 
 list of tests:
 1. read a simple element tree
@@ -1469,14 +1472,14 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 4 errors:
 - missing package statement.
-- wrong path for importing *com.google.gson.stream.JsonToken*.
+- wrong path for importing `com.google.gson.stream.JsonToken`.
 - missing unhandled exceptions. Changed method signatures to throw the exception.
-- implementation of *CustomElement* was not complete.
+- implementation of `CustomElement` was not complete.
 
 After fixing all errors, 8 tests passed and 3 tests failed. Failed tests are:
-- in test *nextDoubleTest()* last assertion, *NumberFormatException* is thrown not *IOException*.
-- in test *skipValueTest()*, *skipValue* must be called twice before the first assertion.
-- in test *getPathTest()*, two first assertions expected the wrong string. Appending "." to end of the expected strings fix it.
+- in test `nextDoubleTest()` last assertion, `NumberFormatException` is thrown not `IOException`.
+- in test `skipValueTest()`, `skipValue()` must be called twice before the first assertion.
+- in test `getPathTest()`, two first assertions expected the wrong string. Appending "." to end of the expected strings fix it.
 
 list of tests:
 1. peek detects JsonObject, JsonArray, JsonPrimitive, JsonNull, and custom element
@@ -1491,7 +1494,7 @@ list of tests:
 10. getPath reflects current stack location
 11. isAllAscii correctly detects non-ASCII characters
 
-There is a private JsonTreeReader with a *@BeforeEach* to instantiate it, but the agent didn't use it.
+There is a private JsonTreeReader with a `@BeforeEach` to instantiate it, but the agent didn't use it.
 
 Missing coverage:
 - endArray(), endObject(), expect(Json Token), getPath(boolean), nextBoolean(), nextDouble(), nextLong(), nextNull(), nextString(), nextInt(), push(Object),skip Value(), and peek() have missing branches.
@@ -1532,7 +1535,7 @@ Missing coverage:
 #### Gemma Single
 The Generated file contained no errors.
 
-17 tests passed and a test failed. In closeBehavior(), *assertNotNull* must be called before *writer.close()*.
+17 tests passed and a test failed. In `closeBehavior()`, `assertNotNull` must be called before `writer.close()`.
 
 list of tests:
 1. Write primitive string
@@ -1559,9 +1562,9 @@ Missing coverage:
 - flush(), value(Boolean), and value(Number) are not tested at all
 
 #### GPT-OSS Group
-The Generated file contained a single error which was not importing *java.io.IOException*.
+The Generated file contained a single error which was not importing `java.io.IOException`.
 
-After fixing the error, 1 test passed and 3 tests failed. In tests *buildArray()*, *objectWithNames()*, and *nestedStructure()*, *JsonTreeWriter.get()* is called after *JsonTreeWriter.close()*. Fixed my moving *close()* call after the *get()* call.
+After fixing the error, 1 test passed and 3 tests failed. In tests `buildArray()`, `objectWithNames()`, and `nestedStructure()`, `JsonTreeWriter.get()` is called after `JsonTreeWriter.close()`. Fixed my moving `close()` call after the `get()` call.
 
 list of tests:
 1. builds a simple array element
@@ -1578,11 +1581,11 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 2 errors:
 - missing package statement.
-- missing import of *java.io.IOException*.
+- missing import of `java.io.IOException`.
 
 After fixing all errors, 11 tests passed and 2 tests failed. Failed tests are:
-- in *testValueNumber()*, unused variable *nan* is initiated with *BigDecimal("NaN")* which causes exception.
-- in *testClosedProductImmutability()*, the last assertion causes an exception since *writer* is closed. Replaced with *assertThrows*.
+- in `testValueNumber()`, unused variable `nan` is initiated with `BigDecimal("NaN")` which causes exception.
+- in `testClosedProductImmutability()`, the last assertion causes an exception since `writer` is closed. Replaced with `assertThrows()`.
 
 list of tests:
 1. get() returns initial JsonNull and fails when stack not empty
@@ -1639,9 +1642,9 @@ Missing coverage:
 The Generated file contained an error which was a creation of a dummy class that inherited from final class JsonStreamParser.
 
 After fixing the error, 3 tests passed and 3 tests failed. Failed tests are:
-- in test *nextThrowsExceptionWhenEmpty()*, when *parser.hasNext()* is called, *JsonIOException.class* is thrown. In the next assertion, also *JsonIOException.class* is thrown.
-- in test *hasNextReturnsFalseForEmptyInput()*, last test mistake also happened. This test is completely redundant.
-- in test *hasNextThrowsJsonSyntaxExceptionOnMalformedJson()*, a weird Gson behavior is seen. While *hasNext* does not throw exception, *next* does! This is potentially another Gson fault.
+- in test `nextThrowsExceptionWhenEmpty()`, when `parser.hasNext()` is called, `JsonIOException.class` is thrown. In the next assertion, also `JsonIOException.class` is thrown.
+- in test `hasNextReturnsFalseForEmptyInput()`, last test mistake also happened. This test is completely redundant.
+- in test `hasNextThrowsJsonSyntaxExceptionOnMalformedJson()`, a weird Gson behavior is seen. While `hasNext()` does not throw exception, `next()` does! This is potentially another Gson fault.
 
 list of tests:
 1. next() returns JsonElement when elements are present
@@ -1655,7 +1658,7 @@ Missing coverage:
 - next() and hasNext() have missing branches.
 
 #### GPT-OSS Group
-The Generated file contained an error which was not importing *java.util.NoSuchElementException*.
+The Generated file contained an error which was not importing `java.util.NoSuchElementException`.
 
 After fixing the error, all 3 tests passed.
 
@@ -1674,9 +1677,9 @@ Missing coverage:
 The Generated file contained an error which was missing package statement.
 
 After fixing the error, 3 tests passed and 3 tests failed. Failed tests are:
-- in test *hasNextReturnsTrueUntilEnd()*, an array is given. The agent didn't realize that the array is only counted a single element.
-- in test *hasNextFalseWhenDocumentComplete()*, another quirk is seen. While the test as expecting false on *hasNext()* call, exception is thrown for the empty json file.
-- The gson weird behavior mentioned in Gemma4 Single happened in test *hasNextThrowsJsonSyntaxExceptionOnMalformedInput()*.
+- in test `hasNextReturnsTrueUntilEnd()`, an array is given. The agent didn't realize that the array is only counted a single element.
+- in test `hasNextFalseWhenDocumentComplete()`, another quirk is seen. While the test as expecting false on `hasNext()` call, exception is thrown for the empty json file.
+- The gson weird behavior mentioned in Gemma4 Single happened in test `hasNextThrowsJsonSyntaxExceptionOnMalformedInput()`.
 
 list of tests:
 1. has next() return true until end
@@ -1724,24 +1727,24 @@ Gemma4 performed slightly better in single mode, but in group mode, GPT-OSS was 
 It's probably not worth it to use twenty thousand more tokens to only have 4% more coverage,
 so my choice will be GPT-OSS.
 However, the coverage is not acceptable.
-These local models can't cover a good portion of large files like *JsonReader*.
-The best decision coverage for *JsonReader* was 34%.
+These local models can't cover a good portion of large files like `JsonReader`.
+The best decision coverage for `JsonReader` was 34%.
 Since models didn't perform significantly better in single mode, it's just better to use group mode, unfortunately.
 
 ## Group 3: Reflection & Type System
-In the first attempt to generate test for *ReflectionHelper* with Gemma4,
+In the first attempt to generate test for `ReflectionHelper` with Gemma4,
 the agent suddenly started printing "Decision-making error" non-stop.
 In the second attempt, I had to give it a "continue" prompt after planning the test in its thought.
 It stopped once more, but after that, the test was generated without any problem.  
-GPT-OSS in single mode generated some additional classes for *ReflectionAccessFilter*.
+GPT-OSS in single mode generated some additional classes for `ReflectionAccessFilter`.
 They were used to simulate behavior if package was from some specific path.
 
 ### TypeToken
 This file has 275 LOC, 689 statements and 100 decisions.
 #### Gemma Group
 The Generated file contained 2 errors:
-- in *testGetType()*, *getRawType()* cannot be called after *getType()*.
-- in *testGetArray()*, token must be of *TypeToken* class.
+- in `testGetType()`, `getRawType()` cannot be called after `getType()`.
+- in `testGetArray()`, token must be of `TypeToken` class.
 
 After fixing all errors, all 7 tests passed.
 
@@ -1761,13 +1764,13 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 2 errors:
-- in *testToString()*, a non-working dummy type is used.
-- in *testGetParameterizedInvalidRawType()*, the invalid type was initialized incorrectly.
+- in `testToString()`, a non-working dummy type is used.
+- in `testGetParameterizedInvalidRawType()`, the invalid type was initialized incorrectly.
 
 After fixing all errors, 12 tests passed and 3 tests failed. Failed tests are:
-- in *testIsAssignableFromClass()*, the second assertion is also true. Agent realized this too.
-- in *testIsAssignableFromType()*, it looks like the model didn't fix the issue that had realized.
-- in *testNonDirectSubclass()*, agent is testing a class created in the file itself?!
+- in `testIsAssignableFromClass()`, the second assertion is also true. Agent realized this too.
+- in `testIsAssignableFromType()`, it looks like the model didn't fix the issue that had realized.
+- in `testNonDirectSubclass()`, agent is testing a class created in the file itself?!
 
 list of tests:
 1. basic TypeToken construction and properties
@@ -1787,7 +1790,7 @@ list of tests:
 15. IllegalStateException for non-direct subclass
 
 In two methods, the agent decided to fix its issues, but it didn't fix them in the final result.  
-Also, *testCapturingTypeVariablesError() and testRawTypeTokenThrows()* have empty body.  
+Also, `testCapturingTypeVariablesError()` and `testRawTypeTokenThrows()` have empty body.  
 Five utility classes are created. Two of them were not used.
 
 Missing coverage:
@@ -1796,11 +1799,11 @@ Missing coverage:
 - buildUnsupportedTypeException(Type, Class[]), get(Type), isAssignableFrom(Type, GenericArrayType), matches(Type, Type, Map), typeEquals(ParameterizedType, ParameterizedType, Map), and isAssignableFrom(Type, ParameterizedType, Map) are not tested at all.
 
 #### GPT-OSS Group
-The Generated file contained an error. It was wrong import path for *com.google.gson.internal.GsonTypes*.
+The Generated file contained an error. It was wrong import path for `com.google.gson.internal.GsonTypes`.
 
 After fixing the error, 2 tests passed and 6 tests failed. Failed tests are:
-- in test *typeTokenArray()*, the last assertion does a wrong casting.
-- in test *captureTypeVariableForbidden()*, nothing is thrown.
+- in test `typeTokenArray()`, the last assertion does a wrong casting.
+- in test `captureTypeVariableForbidden()`, nothing is thrown.
 
 list of tests:
 1. TypeToken of a parameterized type
@@ -1819,18 +1822,18 @@ Missing coverage:
 
 #### GPT-OSS Single
 The Generated file contained 5 errors:
-- missing import for *java.util.List*.
-- in test *defaultConstructorCapturesType()*, second assertion had a wrong method chain.
-- in test *getParameterized_nonClassRawType()*, there is a placeholder that caused error. fixed by implementing an inner class.
-- in test *assignableParameterizedSame()*, I had to change listString1 and listString2 to type TypeToken<?>, instead of  TypeToken<String>. I don't think getParameterized() returns TypeToken<?>.
-- in test *assignableGenericArray()*, had to change the TypeToken<...> to TypeToken<?>.
-- for test *equalsAndHashCode()*, I did what the same thing in the previous error.
+- missing import for `java.util.List`.
+- in test `defaultConstructorCapturesType()`, second assertion had a wrong method chain.
+- in test `getParameterized_nonClassRawType()`, there is a placeholder that caused error. fixed by implementing an inner class.
+- in test `assignableParameterizedSame()`, I had to change listString1 and listString2 to type TypeToken<?>, instead of  TypeToken<String>. I don't think getParameterized() returns TypeToken<?>.
+- in test `assignableGenericArray()`, had to change the TypeToken<...> to TypeToken<?>.
+- for test `equalsAndHashCode()`, I did what the same thing in the previous error.
 
 After fixing all errors, 10 tests passed and 4 tests failed. Failed tests are:
-- in test *getParameterized_ownerTypeRequired()*, an exception is not thrown.
-- in test *getArray_success()*, two sides of an assertEquals were not equal.
-- in test *assignableWildcard()*, the assertion was incorrect.
-- in test *toStringDelegate()*, the expected string was wrong.
+- in test `getParameterized_ownerTypeRequired()`, an exception is not thrown.
+- in test `getArray_success()`, two sides of an assertEquals were not equal.
+- in test `assignableWildcard()`, the assertion was incorrect.
+- in test `toStringDelegate()`, the expected string was wrong.
 
 list of tests:
 1. default constructor captures generic type correctly
@@ -1892,11 +1895,11 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 4 errors:
-- missing import for *java.util.HashMap*.
+- missing import for `java.util.HashMap`.
 - Wrongly generated text. Correct values were "reflect", "HashMap", and "assertNotNull".
 
 After fixing all errors, 9 tests passed and 2 tests failed. Failed tests are:
-- in tests *get_throws_when_unsafe_disabled()* and *get_throws_when_blocked()*, no exception is thrown.
+- in tests `get_throws_when_unsafe_disabled()` and `get_throws_when_blocked()`, no exception is thrown.
 
 list of tests:
 1. checkInstantiable: return null for concrete class
@@ -1919,10 +1922,10 @@ Missing coverage:
 
 #### GPT-OSS Group
 The Generated file contained 3 errors:
-- in tests *rawTypeInstanceCreator()*, *defaultListConstructor()*, and *defaultMapConstructor()*, had to cast some assigned values.
+- in tests `rawTypeInstanceCreator()`, `defaultListConstructor()`, and `defaultMapConstructor()`, had to cast some assigned values.
 
 After fixing all errors, 8 tests passed and a test failed. Failed tests was:
-- in rawTypeInstanceCreator(), had to pass and extra argument to *getParameterized()* which was *Object.class*.
+- in rawTypeInstanceCreator(), had to pass and extra argument to `getParameterized()` which was `Object.class`.
 
 list of tests:
 1. instanceCreator wins over type creator
@@ -1937,7 +1940,7 @@ list of tests:
 
 
 A utility class, interface, and enum were created.  
-A helper method to create a *ConstructorConstructor* was created.
+A helper method to create a `ConstructorConstructor` was created.
 
 Missing coverage:
 - checkInstantiable(Class), newCollectionConstructor(Class), newDefaultConstructor(Class, ReflectionAccessFilter.FilterResult), newMapConstructor(Class), newSpecialCollectionConstructor(Type), and get(TypeToken, boolean) have missing branches.
@@ -1946,15 +1949,15 @@ Missing coverage:
 
 #### GPT-OSS Single
 The Generated file contained 4 errors.
-The agent was trying to instantiate *TypeToken* in two methods, which has a private constructor.
+The agent was trying to instantiate `TypeToken` in two methods, which has a private constructor.
 Couldn't find a proper way to fix this.
 The other errors are fixed.
-An import was required and *ReflectionAccessFilter* had to be adjusted.
+An import was required and `ReflectionAccessFilter` had to be adjusted.
 
 6 tests passed and 3 tests failed. Failed tests are:
-- in test *interface_checkInstantiable_throws()*, msg is actually null.
-- in test *inaccessibleConstructor_noUnsafe()*, exception is not thrown.
-- in test *instanceCreator_forRawType()*, the agent failed to construct a Number.
+- in test `interface_checkInstantiable_throws()`, msg is actually null.
+- in test `inaccessibleConstructor_noUnsafe()`, exception is not thrown.
+- in test `instanceCreator_forRawType()`, the agent failed to construct a Number.
 
 list of tests:
 1. Interface returns proper error message
@@ -2008,7 +2011,7 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained a single error:
-- in test *equals_comparesTypesCorrectly()*, there is a *assertNull(null, null)* statement!
+- in test `equals_comparesTypesCorrectly()`, there is a `assertNull(null, null)` statement!
 
 After fixing the error, all 9 tests passed.
 
@@ -2029,9 +2032,9 @@ Missing coverage:
 
 #### GPT-OSS Group
 The Generated file contained 3 errors:
-- in test *rawTypeForGenericArray()*, *TypeToken.arrayOf* is called which doesn't exist. *GsonTypes.arrayOf* fixed it.
-- in test *resolveTypeVariable()*, the same thing as above happened, for *TypeToken.subtypeOf()*.
-- in test *resolveTypeVariable()*, *ParameterizedType pt* was not correctly instantiated.
+- in test `rawTypeForGenericArray()`, `TypeToken.arrayOf` is called which doesn't exist. `GsonTypes.arrayOf` fixed it.
+- in test `resolveTypeVariable()`, the same thing as above happened, for `TypeToken.subtypeOf()`.
+- in test `resolveTypeVariable()`, `ParameterizedType pt` was not correctly instantiated.
 
 After fixing all errors, 6 tests passed and 3 tests failed. Failed tests are:
 - in resolveTypeVariable(), the last assertion is wrong, could be effect of me fixing a compiler error.
@@ -2058,9 +2061,9 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 2 errors:
 - missing package statement.
-- missing import of *java.util.Map*.
+- missing import of `java.util.Map`.
 
-After fixing all errors, 7 tests passed and 1 test failed. In test *getRawTypeBranches()*, the third assertion is wrong.
+After fixing all errors, 7 tests passed and 1 test failed. In test `getRawTypeBranches()`, the third assertion is wrong.
 
 list of tests:
 1. new parameterizedType with owner requires owner type
@@ -2101,8 +2104,8 @@ This file has 225 LOC, 396 statements and 32 decisions.
 The Generated file contained no error.
 
 4 tests passed and 2 tests failed. Failed tests are:
-- in *testIsStaticCorrect()*, the agent passed an argument to *isStatic* that caused exception.
-- in *testIsAnonymousOrNonStaticLocal()*, the assertion was wrong.
+- in `testIsStaticCorrect()`, the agent passed an argument to `isStatic` that caused exception.
+- in `testIsAnonymousOrNonStaticLocal()`, the assertion was wrong.
 
 list of tests:
 1. field toString
@@ -2112,7 +2115,7 @@ list of tests:
 5. isAnonymousOrNonStaticLocal()
 6. tryMakeAccessible()
 
-Utility class *TestClass* was created.
+Utility class `TestClass` was created.
 
 Missing coverage:
 - RecordNotSupportedHelper subclass is not tested at all.
@@ -2123,7 +2126,7 @@ Missing coverage:
 #### Gemma Single
 The Generated file contained no error.
 
-6 tests passed and 1 test failed. in *testCreateExceptionForUnexpectedIllegalAccess()*, exceptions are thrown, not returned. Anyhow, managed to assert the exception using a try-catch block.
+6 tests passed and 1 test failed. in `testCreateExceptionForUnexpectedIllegalAccess()`, exceptions are thrown, not returned. Anyhow, managed to assert the exception using a try-catch block.
 
 list of tests:
 1. isStatic() should return true for static fields and classes
@@ -2143,10 +2146,10 @@ Missing coverage:
 - createExceptionForRecordReflectionException(ReflectiveOperationException), getAccessor(Class, Field), getCanonicalRecordConstructor(Class), getRecordComponentNames(Class), isAnonymousOrNonStaticLocal(Class), isRecord(Class), and getInaccessibleTroubleshootingSuffix(Exception) are not tested at all.
 
 #### GPT-OSS Group
-The Generated file had one error. in test *ctorDescription()*, it was required to add *NoSuchMethodException* to method signature.
+The Generated file had one error. in test `ctorDescription()`, it was required to add `NoSuchMethodException` to method signature.
 
 After fixing the error, 4 tests passed and 2 tests failed. Failed tests are:
-- in makeAccessibleSuccess(), exception is thrown and can't test the purpose of the method. I just disabled it since it was not testing *ReflectionHelper* class.
+- in makeAccessibleSuccess(), exception is thrown and can't test the purpose of the method. I just disabled it since it was not testing `ReflectionHelper` class.
 - in tryMakeAccessibleFailure(), msg is null.
 
 list of tests:
@@ -2167,19 +2170,19 @@ Missing coverage:
 
 #### GPT-OSS Single
 The Generated file contained 4 errors:
-- in *testMakeAccessibleSuccess*, field::setAccessible is ambiguous.
-- in *testMakeAccessibleFailure* and *testTryMakeAccessibleFailure*, it was needed to add *NoSuchMethodException* to method signature.
-- in *descriptionUnknown*, *getAccessibleObjectDescription()* requires AccessibleObject for first argument which I couldn't instantiate. Test is commented.
-- in *descriptionConstructor*, had to change ctor type from *Constructor<? extends SampleRecord>* to *Constructor<?>*.
+- in `testMakeAccessibleSuccess`, field::setAccessible is ambiguous.
+- in `testMakeAccessibleFailure` and `testTryMakeAccessibleFailure`, it was needed to add `NoSuchMethodException` to method signature.
+- in `descriptionUnknown`, `getAccessibleObjectDescription()` requires AccessibleObject for first argument which I couldn't instantiate. Test is commented.
+- in `descriptionConstructor`, had to change ctor type from `Constructor<? extends SampleRecord>` to `Constructor<?>`.
 
 After fixing all errors, 7 tests passed and 7 tests failed. Failed tests are:
-- in *testMakeAccessibleSuccess()*, no exception is thrown.
-- in *testMakeAccessibleFailure()*, no exception is thrown.
-- in *descriptionField()*, the assertion is incorrect.
-- in *descriptionMethod()*, the assertion is incorrect.
-- in *descriptionConstructor()*, the assertion is incorrect.
-- in *testIsAnonymousOrNonStaticLocal()*, the last assertion is incorrect.
-- in *testTryMakeAccessibleFailure()*, variable *msg* is null.
+- in `testMakeAccessibleSuccess()`, no exception is thrown.
+- in `testMakeAccessibleFailure()`, no exception is thrown.
+- in `descriptionField()`, the assertion is incorrect.
+- in `descriptionMethod()`, the assertion is incorrect.
+- in `descriptionConstructor()`, the assertion is incorrect.
+- in `testIsAnonymousOrNonStaticLocal()`, the last assertion is incorrect.
+- in `testTryMakeAccessibleFailure()`, variable `msg` is null.
 
 list of tests:
 1. makeAccessible success
@@ -2223,9 +2226,9 @@ GPT-OSS is clearly the winner. There is no reason not to use GPT-OSS Single for 
 ### ReflectionAccessFilterHelper
 This file has 79 LOC, 101 statements and 22 decisions.
 #### Gemma Group
-The Generated file contained an error. *FilterResult.DENY* was not defined. It was replaced with *BLOCK_ALL*.
+The Generated file contained an error. `FilterResult.DENY` was not defined. It was replaced with `BLOCK_ALL`.
 
-After fixing all errors, 9 tests passed and a single test failed. in test *canAccessTest()*, an exception is thrown. An assertion was replaced with *assertThrows()*.
+After fixing all errors, 9 tests passed and a single test failed. in test `canAccessTest()`, an exception is thrown. An assertion was replaced with `assertThrows()`.
 
 list of tests:
 1. isJavaType() true
@@ -2246,12 +2249,12 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 3 errors:
-- could not resolve *javax.annotation.Nonnull* from isJavaTypeTest(). Hence, removed from the provider.
-- could not resolve *FilterResult.DENY*. Replaced with *FilterResult.BLOCK_ALL*.
-- could not resolve *ReflectionAccess*. Commented assertions that it was used. Apparently it was supposed to be a stub.
+- could not resolve `javax.annotation.Nonnull` from isJavaTypeTest(). Hence, removed from the provider.
+- could not resolve `FilterResult.DENY`. Replaced with `FilterResult.BLOCK_ALL`.
+- could not resolve `ReflectionAccess`. Commented assertions that it was used. Apparently it was supposed to be a stub.
 
 After fixing all errors, 10 tests passed and a test failed. Failed tests are:
-- in test *canAccessDefault()*, last assertions throws an exception. *assertThrows* was used instead.
+- in test `canAccessDefault()`, last assertions throws an exception. `assertThrows()` was used instead.
 
 list of tests:
 1. [parametrized] isJavaType checks if class name starts with java. or javax (counted 4)
@@ -2267,10 +2270,10 @@ Missing coverage:
 
 #### GPT-OSS Group
 The Generated file contained 4 errors:
-- wrong import path for *com.google.gson.internalReflectionAccessFilterHelper*. Still, the import was unused.
-- missing import of *java.util.List*
-- usage of *ReflectionAccessFilter.FilterResult.ALPHABET* which is not defined. Replaced with *DENY*.
-- in test *getFilterResultDecisive()*, *List.of()* didn't need the argument that was faulty code.
+- wrong import path for `com.google.gson.internalReflectionAccessFilterHelper`. Still, the import was unused.
+- missing import of `java.util.List`
+- usage of `ReflectionAccessFilter.FilterResult.ALPHABET` which is not defined. Replaced with `DENY`.
+- in test `getFilterResultDecisive()`, `List.of()` didn't need the argument that was faulty code.
 
 After fixing all errors, all 5 tests passed.
 
@@ -2290,15 +2293,15 @@ Missing coverage:
 
 #### GPT-OSS Single
 The Generated file contained 3 errors:
-- in tests *isJavaTypeJavaPackage()*, *isAnyPlatformType()*, and *isAndroidType()*, a wrong argument is passed to *isAnyPlatformType()*.
-- in test *isAnyPlatformType()*, a non-imported dependency is passed to *isAnyPlatformType()*. Code was commented.
-- in test *getFilterResultFirstDecisive()*, *FilterResult.DENY* is used which is undefined. Replaced with *FilterResult.BLOCK_ALL*
+- in tests `isJavaTypeJavaPackage()`, `isAnyPlatformType()`, and `isAndroidType()`, a wrong argument is passed to `isAnyPlatformType()`.
+- in test `isAnyPlatformType()`, a non-imported dependency is passed to `isAnyPlatformType()`. Code was commented.
+- in test `getFilterResultFirstDecisive()`, `FilterResult.DENY` is used which is undefined. Replaced with `FilterResult.BLOCK_ALL`
 
 After fixing all errors, 3 tests passed and 4 tests failed. Failed tests are:
-- in test *isJavaTypeJavaPackage()*, the wrong assertion was inverted.
-- in test *isAndroidType()*, the wrong assertions were inverted.
-- in test *isAnyPlatformType()*, the wrong assertion was inverted.
-- in test *canAccessTest()*, the wrong assertion was inverted.
+- in test `isJavaTypeJavaPackage()`, the wrong assertion was inverted.
+- in test `isAndroidType()`, the wrong assertions were inverted.
+- in test `isAnyPlatformType()`, the wrong assertion was inverted.
+- in test `canAccessTest()`, the wrong assertion was inverted.
 
 list of tests:
 1. isJavaType returns true for java and javax packages
@@ -2347,23 +2350,23 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 2 errors:
-- in test *verifyFilters()*, there was an unexpected new line.
-- in test *provideFilterTestData()*, a non-existing javax class was imported. I changed it to an existing javax class.
+- in test `verifyFilters()`, there was an unexpected new line.
+- in test `provideFilterTestData()`, a non-existing javax class was imported. I changed it to an existing javax class.
 
 After fixing all errors, 5 tests passed and 5 tests failed. Failed tests are:
-- in test *verifyFilters()*, five of the expectedResult were incorrect.
+- in test `verifyFilters()`, five of the expectedResult were incorrect.
 
 list of tests:
 1. [parametrized] Verify all static filters against various class types (9 tests)
-2. Verify test *toString()* implementations
+2. Verify test `toString()` implementations
 
 Missing coverage:
 - BLOCK_INACCESSIBLE_JAVA.check(Class), BLOCK_ALL_JAVA.check(Class), BLOCK_ALL_ANDROID.check(Class), and BLOCK_ALL_PLATFORM have.check(Class) have missing branches.
 
 #### GPT-OSS Group
-The Generated file contained an error. *java.util.List* was not imported.
+The Generated file contained an error. `java.util.List` was not imported.
 
-After fixing the error, 5 tests passed and a test failed. in test *blockAllPlatformPlatform()*, there was a wrong assertion.
+After fixing the error, 5 tests passed and a test failed. in test `blockAllPlatformPlatform()`, there was a wrong assertion.
 
 list of tests:
 1. BLOCK_INACCESSIBLE_JAVA on java class
@@ -2373,7 +2376,7 @@ list of tests:
 5. BLOCK_ALL_PLATFORM covers java and android
 6. filter result falls back to ALLOW when all INDECISIVE
 
-Helper class *CompositeFilter* was generated.
+Helper class `CompositeFilter` was generated.
 
 Missing coverage:
 - BLOCK_ALL_JAVA.check(Class) and BLOCK_ALL_ANDROID.check(Class) have missing branches.
@@ -2397,7 +2400,7 @@ list of tests:
 9. BLOCK_ALL_PLATFORM: non-platform type ⇒ INDECISIVE
 
 The model did a clever trick. It created two dummy classes which I believe were for replicating android and kotlin environment.  
-A simple helper class *NonJavaClass* was generated.
+A simple helper class `NonJavaClass` was generated.
 
 Missing coverage:
 - in all ReflectionAccessFilters, toString() was not tested at all.
@@ -2422,7 +2425,7 @@ This file has 38 LOC, 48 statements and 2 decisions.
 #### Gemma Group
 The Generated file contained no error.
 
-3 tests passed and 1 test failed. In *testGetAnnotation()*, a not null assertion was wrong.
+3 tests passed and 1 test failed. In `testGetAnnotation()`, a not null assertion was wrong.
 
 list of tests:
 1. FieldAttributes test
@@ -2435,7 +2438,7 @@ Missing coverage:
 
 
 #### Gemma Single
-The Generated file contained an error. in *setUp()*, clazz had the wrong type.
+The Generated file contained an error. in `setUp()`, clazz had the wrong type.
 
 After fixing the error, all 11 tests passed.
 
@@ -2456,8 +2459,8 @@ Full statement and decision coverage achieved.
 
 #### GPT-OSS Group
 The Generated file contained 2 errors:
-- Wrong import path for *com.google.gson.FieldAttributes*. Why would it import itself? This happened in *ReflectionAccessFilterHelper* too.
-- missing import of *java.lang.reflect.Modifier*.
+- Wrong import path for `com.google.gson.FieldAttributes`. Why would it import itself? This happened in `ReflectionAccessFilterHelper` too.
+- missing import of `java.lang.reflect.Modifier`.
 
 After fixing all errors, all 5 tests passed.
 
@@ -2468,12 +2471,12 @@ list of tests:
 4. modifier checks
 5. toString delegates to field
 
-a utility retention and a helper *Sample* class were generated.
+a utility retention and a helper `Sample` class were generated.
 
 Full statement and decision coverage achieved.
 
 #### GPT-OSS Single
-The Generated file contained an error. in *testGetAnnotations()*, variable *Set<Annotation> anns* was instantiated with a *Collection<Annotation>. I Fixed the typed.
+The Generated file contained an error. in `testGetAnnotations()`, variable `Set<Annotation> anns` was instantiated with a `Collection<Annotation>`. I Fixed the typed.
 
 After fixing the error, all 11 tests passed.
 
@@ -2490,7 +2493,7 @@ list of tests:
 10. hasModifier() returns false for non-present modifier
 11. toString() delegates to the underlying field
 
-A utility retention and a helper *GenericClass* was created.
+A utility retention and a helper `GenericClass` was created.
 
 Full statement and decision coverage achieved.
 
@@ -2510,8 +2513,8 @@ Full statement and decision coverage achieved.
 Firstly, because there were only two decisions, statement coverage percentage per token is used to calculate cost.
 Models did superb here.
 It was a small and simple file.
-I believe generating tests for *ReflectionAccessFilterHelper*,
-*ReflectionAccessFilter* and *FieldAttributes* together in a single prompt is ideal.
+I believe generating tests for `ReflectionAccessFilterHelper`,
+`ReflectionAccessFilter` and `FieldAttributes` together in a single prompt is ideal.
 Tests will achieve high coverage with much lower token consumption compared to generating tests for each file in separate sessions.
 GPT-OSS did slightly better here with lower cost.
 
@@ -2566,8 +2569,8 @@ The Generated file contained an error:
 - an unused import to a wrong path.
 
 After fixing the error, 2 tests passed and 2 tests failed. Failed tests are:
-- in *testExcludeField()*, after instantiating *since1*, the assertion was incorrect.
-- in *testExcludeClass()*, the first assertion was incorrect.
+- in `testExcludeField()`, after instantiating `since1`, the assertion was incorrect.
+- in `testExcludeClass()`, the first assertion was incorrect.
 
 list of tests:
 1. test clone() and with methods
@@ -2575,8 +2578,8 @@ list of tests:
 3. test excludeField() coverage
 4. test excludeClass() coverage
 
-*TestClass*, *InnerClass*, *StaticInnerClass* and *StaticInner* classes and *regardVersion* method were generated as utility.  
-*InnerClass* was static and had the same implementation as *StaticInnerClass*.
+`TestClass`, `InnerClass`, `StaticInnerClass` and `StaticInner` classes and `regardVersion` method were generated as utility.  
+`InnerClass` was static and had the same implementation as `StaticInnerClass`.
 
 Missing coverage:
 - clone(), excludeClass(Class, boolean), excludeField(Field, boolean), isExcludedByStrategy(Field, boolean), isInnerClass(Class), isValidSince(Since), isValidUntil(Until), isValidVersion(Since, Until), withExclusionStrategy(ExclusionStrategy, boolean, boolean), and isExcludedByExposeAnnotation(Field, boolean) have missing branches.
@@ -2584,7 +2587,7 @@ Missing coverage:
 
 #### GPT-OSS Group
 The Generated file contained an error:
-- in tests *excludesTransientAndStatic()* and *fieldExcludedByStrategy()*, it was necessary to add *NoSuchFieldException* to method signature.
+- in tests `excludesTransientAndStatic()` and `fieldExcludedByStrategy()`, it was necessary to add `NoSuchFieldException` to method signature.
 
 After fixing the error, all 10 tests passed.
 
@@ -2600,7 +2603,7 @@ list of tests:
 9. field excluded by strategy
 10. class excluded by strategy
 
-A *Dummy* class was generated.
+A `Dummy` class was generated.
 
 Missing coverage:
 - clone(), excludeField(Field, boolean), isExcludedByExposeAnnotation(Field, boolean), isExcludedByStrategy(Field, boolean), isExcludedByVersion(Field), isInnerClass(Class), isValidSince(Since), isValidUntil(Until), isValidVersion(Since, Until), withExclusionStrategy(ExclusionStrategy, boolean, boolean), and excludeClass(Class, boolean) have missing branches.
@@ -2609,11 +2612,11 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 2 errors:
 - missing package statement.
-- in *testVersionValidation()*, the model tried accessing private method *isValidSince*. I had to remove the test.
+- in `testVersionValidation()`, the model tried accessing private method `isValidSince`. I had to remove the test.
 
 After fixing all errors,6 tests passed and 2 tests failed. Failed tests are:
 - in testExcludeFieldByStrategy(), the agent tried to access a field that doesn't exist which threw exception. The instantiated variable was not even used.
-- in testIsInnerClassUtility(), the assertion threw exception. It was replaced with *assertThrows*.
+- in testIsInnerClassUtility(), the assertion threw exception. It was replaced with `assertThrows`.
 
 list of tests:
 1. excludeField() by modifier
@@ -2625,7 +2628,7 @@ list of tests:
 7. excludeClass() with version
 8. is inner class utility
 
-*TestClass*, *InnerTestClass*, and *AnonymousTest* classes were generated as utility.
+`TestClass`, `InnerTestClass`, and `AnonymousTest` classes were generated as utility.
 
 Missing coverage:
 - clone(), excludeClass(Class, boolean), excludeField(Field, boolean), isExcludedByExposeAnnotation(Field, boolean), isExcludedByVersion(Field), isValidSince(Since), isValidUntil(Until), isValidVersion(Since, Until), withExclusionStrategy(ExclusionStrategy, boolean, boolean), isInnerClass(Class), and isExcludedByStrategy(Field, boolean) have missing branches.
@@ -2650,8 +2653,8 @@ Gemma4 Single was the only class to test create(Gson, TypeToken). This is why ot
 This file has 76 LOC, 203 statements and 14 decisions.
 #### Gemma Group
 The Generated file contained 2 errors:
-- missing import for *java.lang.reflect.Field*.
-- a text generation error in *testUpperCaseFirstLetter()*.
+- missing import for `java.lang.reflect.Field`.
+- a text generation error in `testUpperCaseFirstLetter()`.
 
 After fixing all errors, 8 tests passed and 1 tests failed. in testSeparateCamelCase(), assertions were expecting a wrong string.
 
@@ -2666,14 +2669,14 @@ list of tests:
 8. separateCamelCase() utility
 9. upperCaseFirstLetter() utility
 
-a utility class *TestClass* was created.
+a utility class `TestClass` was created.
 
 Missing coverage:
 - upperCaseFirstLetter(String) and separateCamelCase(String, char) have missing branches.
 
 #### Gemma Single
 The Generated file contained 1 error:
-- in *testUpperCamelCaseWithSpaces()*, there was a text generation error.
+- in `testUpperCamelCaseWithSpaces()`, there was a text generation error.
 
 After fixing all errors, 36 tests passed and a test failed. In testUpperCaseFirstLetter(), the first assertion was wrong.
 
@@ -2688,7 +2691,7 @@ list of tests:
 8. separateCamelCase() decision coverage
 9. upperCaseFirstLetter() decision coverage
 
-Utility class *TestClass* and method *getField* were generated.
+Utility class `TestClass` and method `getField()` were generated.
 
 Full statement and decision coverage achieved.
 
@@ -2696,8 +2699,8 @@ Full statement and decision coverage achieved.
 The Generated file contained no error.
 
 11 tests passed and 2 tests failed. Failed tests are:
-- in test *separateCamelCaseSeparatesCorrectly()*, the first assertion was expecting the wrong string.
-- in test *upperCaseFirstLetterProperlyOpens()*, all assertions were expecting the wrong string.
+- in test `separateCamelCaseSeparatesCorrectly()`, the first assertion was expecting the wrong string.
+- in test `upperCaseFirstLetterProperlyOpens()`, all assertions were expecting the wrong string.
 
 list of tests:
 1. unchanged
@@ -2714,7 +2717,7 @@ list of tests:
 12. separate camel case separates correctly
 13. upper case first letter properly opens
 
-Utility *TestFields* class and *field(String)* method were generated.
+Utility `TestFields` class and `field(String)` method were generated.
 
 Missing coverage:
 - upperCaseFirstLetter(String) has missing branches.
@@ -2723,10 +2726,10 @@ Missing coverage:
 The Generated file contained an error which was not including package statement.
 
 After fixing the error, 2 tests passed and 7 tests failed. Failed tests are:
-- in utility class *Dummy*, a String field *someFieldName* with *someFieldName* value must have been created. This fixed test *upperCamelCaseWithSpacesSeparates()* and other methods that were trying to access this field through *Dummy.class.getDeclaredField()*.
-- Like above, field *aURL* with the same value must have been created. This fixed errors in tests *upperCaseWithUnderscoresTranslates()*, *lowerCaseWithUnderscoresTranslates()*, *lowerCaseWithDashes()*, and *lowerCaseWithDots()*.
-- in test *separateCamelCaseSeparatesCorrectly()*, two assertions were wrong. Somehow, it was asserting the same thing twice with different values.
-- in test *upperCaseFirstLetterUpperCasePreserved()*, three assertions had the wrong value.
+- in utility class `Dummy`, a String field `someFieldName` with `someFieldName` value must have been created. This fixed test `upperCamelCaseWithSpacesSeparates()` and other methods that were trying to access this field through `Dummy.class.getDeclaredField()`.
+- Like above, field `aURL` with the same value must have been created. This fixed errors in tests `upperCaseWithUnderscoresTranslates()`, `lowerCaseWithUnderscoresTranslates()`, `lowerCaseWithDashes()`, and `lowerCaseWithDots()`.
+- in test `separateCamelCaseSeparatesCorrectly()`, two assertions were wrong. Somehow, it was asserting the same thing twice with different values.
+- in test `upperCaseFirstLetterUpperCasePreserved()`, three assertions had the wrong value.
 
 list of tests:
 1. identity translates name
@@ -2739,7 +2742,7 @@ list of tests:
 8. separateCamelCase() separates correctly
 9. upperCaseFirstLetter() upper case preserved
 
-Utility *Dummy* class and *dummyField* method were generated.
+Utility `Dummy` class and `dummyField` method were generated.
 
 Missing coverage:
 - upperCaseFirstLetter(String) is missing a branch.
@@ -2767,7 +2770,7 @@ Overall, I am pleased with the performance of models for this file.
 ### LongSerializationPolicy
 This file has 32 LOC, 48 statements and 4 decisions.
 #### Gemma Group
-The Generated file contained an error. In *testDefaultNonNull()*, there was a text generation error.
+The Generated file contained an error. In `testDefaultNonNull()`, there was a text generation error.
 
 After fixing the error, all 4 tests passed.
 
@@ -2782,7 +2785,7 @@ Missing coverage:
 
 
 #### Gemma Single
-The Generated file contained an error. in test *stringSerializationProvider()*, there was a text generation fault.
+The Generated file contained an error. in test `stringSerializationProvider()`, there was a text generation fault.
 
 After fixing the error, all 9 tests passed.
 
@@ -2844,8 +2847,8 @@ That is GPT-OSS.
 This file has 61 LOC, 127 statements and 8 decisions.
 #### Gemma Group
 The Generated file contained 2 errors:
-- misspell of *LAZILY_PARSED_NUMBER*.
-- misspell of *JsonReader*. It was originally *JsonPRism*. If the agent hadn't had mentioned its typo, I wouldn't be able to fix it.
+- misspell of `LAZILY_PARSED_NUMBER`.
+- misspell of `JsonReader`. It was originally `JsonPRism`. If the agent hadn't had mentioned its typo, I wouldn't be able to fix it.
 
 After fixing all errors, all 6 tests passed.
 
@@ -2862,10 +2865,10 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 4 errors:
-- misspell of *ToNumberPolicy* in test *longOrDoublePolicy_fallbackToDoubleOnOverflow()*.
-- test *longOrDoublePolicy_allowsNaNOrInfinityWhenLenient()* must have *@ParameterizedTest* annotation instead of *@Test*.
-- in test *longOrDoublePolicy_throwsJsonParseException()*, wrong text is generated.
-- in test *bigDecimalPolicy_readsBigDecimal()*, variable *result* must be a *Number* type.
+- misspell of `ToNumberPolicy` in test `longOrDoublePolicy_fallbackToDoubleOnOverflow()`.
+- test `longOrDoublePolicy_allowsNaNOrInfinityWhenLenient()` must have `@ParameterizedTest` annotation instead of `@Test`.
+- in test `longOrDoublePolicy_throwsJsonParseException()`, wrong text is generated.
+- in test `bigDecimalPolicy_readsBigDecimal()`, variable `result` must be a `Number` type.
 
 After fixing all errors, all 16 tests passed.
 
@@ -2880,7 +2883,7 @@ list of tests:
 8. BIG_DECIMAL policy: reads big decimal correctly
 9. BIG_DECIMAL policy: throws JsonParseException for invalid format
 
-A utility function to instantiate *JsonReader* was created.
+A utility function to instantiate `JsonReader` was created.
 
 Full statement and decision coverage achieved.
 
@@ -2888,8 +2891,8 @@ Full statement and decision coverage achieved.
 The Generated file had no error.
 
 6 tests passed and 2 tests failed. Failed tests are:
-- in test *LongOrDouble.throwsOnNonNumber()*, another exception was thrown.
-- in test *BigDecimalPolicy.throwsOnInvalid()*, nothing is thrown.
+- in test `LongOrDouble.throwsOnNonNumber()`, another exception was thrown.
+- in test `BigDecimalPolicy.throwsOnInvalid()`, nothing is thrown.
 
 list of tests:
 1. DOUBLE parses double
@@ -2901,16 +2904,16 @@ list of tests:
 7. BIG_DECIMAL parses big decimal
 8. BIG_DECIMAL throws on invalid
 
-a utility method to instantiate *JsonReader* was generated.
+a utility method to instantiate `JsonReader` was generated.
 
 Missing coverage:
 - LONG_OR_DOUBLE.readNumber(JsonReader), LONG_OR_DOUBLE.parseAsDouble(String, JsonReader), and BIG_DECIMAL.readNumber(JsonReader) have missing branches.
 
 #### GPT-OSS Single
 The Generated file contained 3 errors:
-- wrong import path for *java.io.StringReader*.
-- in test *readReturnsDouble()*, variable *n* must be a *Number* type.
-- in test *singleValueReader()*, the instantiation of a *StringReader* was wrong. besides, inside the try block, *reader.beginObject()* must be called first.
+- wrong import path for `java.io.StringReader`.
+- in test `readReturnsDouble()`, variable `n` must be a `Number` type.
+- in test `singleValueReader()`, the instantiation of a `StringReader` was wrong. besides, inside the try block, `reader.beginObject()` must be called first.
 
 After fixing all errors, all 12 tests passed.
 
@@ -2928,7 +2931,7 @@ list of tests:
 11. BIG_DECIMAL valid big decimal
 12. BIG_DECIMAL invalid big decimal throws json parse exception
 
-a utility method to instantiate *JsonReader* was generated.
+a utility method to instantiate `JsonReader` was generated.
 
 Missing coverage:
 - LONG_OR_DOUBLE.parseAsDouble(String, JsonReade) has a missing branch.
@@ -2954,7 +2957,7 @@ In group mode, GPT-OSS performed slightly better, while in single mode, Gemma4 w
 This file has 43 LOC, 89 statements and 4 decisions.
 #### Gemma Group
 The Generated file contained 2 errors:
-- typos in *testPretty()* and *testWithIndent()*. The Agent did comment about them.
+- typos in `testPretty()` and `testWithIndent()`. The Agent did comment about them.
 
 After fixing all errors, all 8 tests passed.
 
@@ -2971,7 +2974,7 @@ list of tests:
 Full statement and decision coverage attained.
 
 #### Gemma Single
-The Generated file contained an error. In test *constructor_throwsException_onNullIndent()*, *NullPointerException* had a misspelling which the model mentioned.
+The Generated file contained an error. In test `constructor_throwsException_onNullIndent()`, `NullPointerException` had a misspelling which the model mentioned.
 
 After fixing the error, all 15 tests passed.
 
@@ -2987,7 +2990,7 @@ list of tests:
 Full statement and decision coverage obtained.
 
 #### GPT-OSS Group
-The Generated file contained an error. It tried to create *FormattingStyle* with a private constructor in tests *invalidNewlineThrows()* and *invalidIndentThrows()*. I managed to change these tests to behave like what the model intended.
+The Generated file contained an error. It tried to create `FormattingStyle` with a private constructor in tests `invalidNewlineThrows()` and `invalidIndentThrows()`. I managed to change these tests to behave like what the model intended.
 
 After fixing the error, all 3 tests passed.
 
@@ -3148,7 +3151,7 @@ Missing coverage:
 #### GPT-OSS Group
 The Generated file contained no error.
 
-3 tests passed and 1 test failed. In systemProperty(), the agent tried to set java version to 1.7.0_80 through *System.setProperty("java.version")* which didn't work and the test failed. Since I was using java 17.0.9, I changed the assertion so it works with my version.
+3 tests passed and 1 test failed. In systemProperty(), the agent tried to set java version to 1.7.0_80 through `System.setProperty("java.version")` which didn't work and the test failed. Since I was using java 17.0.9, I changed the assertion so it works with my version.
 
 list of tests:
 1. parseMajorJavaVersion handles legacy 1.x format
@@ -3161,7 +3164,7 @@ Missing coverage:
 - isJava9OrLater() was not tested at all.
 
 #### GPT-OSS Single
-The Generated file contained two errors. In many tests, the code was trying to access *parseDotted(String)* which is private. They have been commented. In addition, test *extractBeginningIntParameterized(String ,int)* was also trying to access *extractBeginningInt(String)* which is private. I Commented this test as well.
+The Generated file contained two errors. In many tests, the code was trying to access `parseDotted(String)` which is private. They have been commented. In addition, test `extractBeginningIntParameterized(String ,int)` was also trying to access `extractBeginningInt(String)` which is private. I Commented this test as well.
 
 After fixing all errors, all 8 tests passed.
 
@@ -3214,15 +3217,15 @@ In group mode, 20% more token usage might not worth the 7% difference in coverag
 This group is one of the smallest, therefore, a satisfactory coverage is achieved.
 
 ## Group 5: Adapter infrastructure
-Gemma4 in group mode didn't generate tests for *MapTypeAdapterFactory*,
-*CollectionTypeAdapterFactory*, and *TreeTypeAdapter* in first prompt response.
+Gemma4 in group mode didn't generate tests for `MapTypeAdapterFactory`,
+`CollectionTypeAdapterFactory`, and `TreeTypeAdapter` in first prompt response.
 
 ### TypeAdapter
 This file has 81 LOC, 125 statements and 6 decisions.
 #### Gemma Group
 The Generated file contained 2 errors:
-- missing import for *com.google.gson.stream.JsonToken*.
-- in tests *fromJsonReader()* and *fromJsonReaderNull()*, *JsonReader* is passed to *fromJson()* which is not possible. A *StringReader* is passed instead.
+- missing import for `com.google.gson.stream.JsonToken`.
+- in tests `fromJsonReader()` and `fromJsonReaderNull()`, `JsonReader` is passed to `fromJson()` which is not possible. A `StringReader` is passed instead.
 
 After fixing all errors, all 13 tests passed.
 
@@ -3241,7 +3244,7 @@ list of tests:
 12. fromJsonTree() null
 13. null safe
 
-Since *TypeAdapter* class is abstract, the agent created *TestTypeAdapter* class ,which inherits from it and only the abstract methods are overridden.
+Since `TypeAdapter` class is abstract, the agent created `TestTypeAdapter` class ,which inherits from it and only the abstract methods are overridden.
 
 Missing coverage:
 - NullSafeTypeAdapter.read(JsonReader), NullSafeTypeAdapter.write(JsonWriter, Object), fromJsonTree(JsonElement), toJson(Object), toJsonTree(Object), and nullSafe() have missing branches.
@@ -3249,7 +3252,7 @@ Missing coverage:
 
 
 #### Gemma Single
-The Generated file contained one error. in test *testFromJsonReader()*, like group mode, a JsonReader was passed to *fromJson()*.
+The Generated file contained one error. in test `testFromJsonReader()`, like group mode, a JsonReader was passed to `fromJson()`.
 
 After fixing the error, all 13 tests passed.
 
@@ -3268,14 +3271,14 @@ list of tests:
 12. nullSafe() read not null
 13. nullSafe() to string
 
-Similar to group mode, *TestTypeAdapter* class is created.
+Similar to group mode, `TestTypeAdapter` class is created.
 
 Missing coverage:
 - fromJsonTree(JsonElement), toJsonTree(Object), and toJson(Object) have missing branches. They are only catching IOExceptions, which are hard to emulate. As a result, if we ignore these, complete coverage was achieved.
 
 #### GPT-OSS Group
 The Generated file contained 3 errors:
-- missing import for *com.google.gson.stream.JsonReader*, *com.google.gson.stream.JsonWriter*, and *java.io.IOException*.
+- missing import for `com.google.gson.stream.JsonReader`, `com.google.gson.stream.JsonWriter`, and `java.io.IOException`.
 
 After fixing all errors, all 4 tests passed.
 
@@ -3285,7 +3288,7 @@ list of tests:
 3. toJsonTree() wraps null
 4. nullSafeAdapter() delegates
 
-Class *StringAdapter* was created with the same purpose as previous agents.  
+Class `StringAdapter` was created with the same purpose as previous agents.  
 I'm not surprised to see the weak coverage when there are four tests.
 
 Missing coverage:
@@ -3295,8 +3298,8 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 3 errors:
 - missing package statement.
-- wrong import path for *com.google.gson.stream.JsonToken* and
-- incorrect import path for *com.google.gson.internal.bind.JsonTreeWriter*. Still, the correct import is unused.
+- wrong import path for `com.google.gson.stream.JsonToken` and
+- incorrect import path for `com.google.gson.internal.bind.JsonTreeWriter`. Still, the correct import is unused.
 
 After fixing all errors, all 10 tests passed.
 
@@ -3312,7 +3315,7 @@ list of tests:
 9. nullSafe() singleton behavior
 10. nullSafe() to string includes wrapped adapter
 
-Class *StringAdapter* was generated with the same purpose as previous agents.
+Class `StringAdapter` was generated with the same purpose as previous agents.
 
 Missing coverage:
 - NullSafeTypeAdapter.read(JsonReader), NullSafeTypeAdapter.write(JsonWriter, Object), toJson(Object), toJsonTree(Object), and fromJsonTree(JsonElement) have missing branches.
@@ -3336,9 +3339,9 @@ Gemma4 is the winner here. Although in group mode, both models did poor. As I me
 This file has 82 LOC, 144 statements and 18 decisions.
 #### Gemma Group
 The Generated file contained 3 errors:
-- wrong import path for *com.google.gson.reflect.TypeToken*.
-- in test *factory_returnsArrayTypeAdapterForArrayType()*, *adapter* must be a *TypeAdapter<String[]>* type.
-- in test *read_handlesNull()* and onward tests, *ArrayTypeAdapter* had been instantiated wrongly. I Used *gson.getAdapter()* to fix this.
+- wrong import path for `com.google.gson.reflect.TypeToken`.
+- in test `factory_returnsArrayTypeAdapterForArrayType()`, `adapter` must be a `TypeAdapter<String[]>` type.
+- in test `read_handlesNull()` and onward tests, `ArrayTypeAdapter` had been instantiated wrongly. I Used `gson.getAdapter()` to fix this.
 
 After fixing all errors, all 7 tests passed.
 
@@ -3356,9 +3359,9 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 3 errors:
-- missing import for *com.google.gson.TypeAdapter*.
-- in test *factoryReturnsAdapterForClassArrayType()*, gson was not passed to *FACTORY.create()*.
-- in tests *readReturnsNullForJsonNull()* and onward, it was not possible to cast *TypeAdapter<{a primitive type}[]>* to *TypeAdapter<Object>. Therefore, changed adapter variable type so no casting was needed.
+- missing import for `com.google.gson.TypeAdapter`.
+- in test `factoryReturnsAdapterForClassArrayType()`, gson was not passed to `FACTORY.create()`.
+- in tests `readReturnsNullForJsonNull()` and onward, it was not possible to cast `TypeAdapter<{a primitive type}[]>` to `TypeAdapter<Object>. Therefore, changed adapter variable type so no casting was needed.
 
 After fixing all errors, all 11 tests passed.
 
@@ -3380,8 +3383,8 @@ Missing coverage:
 
 #### GPT-OSS Group
 The Generated file contained 3 errors:
-- unnecessary importing of *StringArrayAdapter* which doesn't exist.
-- I had to add a generic for the class for *createAdapter()* utility method to work. Then, I had to cast return values of this method to appropriate type.
+- unnecessary importing of `StringArrayAdapter` which doesn't exist.
+- I had to add a generic for the class for `createAdapter()` utility method to work. Then, I had to cast return values of this method to appropriate type.
 
 After fixing all errors, all 4 tests passed.
 
@@ -3391,7 +3394,7 @@ list of tests:
 3. read() primitive array
 4. read() null
 
-utility method *createAdapter* was generated to instantiate *ArrayTypeAdapter*.
+utility method `createAdapter` was generated to instantiate `ArrayTypeAdapter`.
 
 Missing coverage:
 - read(JsonReader) and write(JsonWriter, Object) have missing branches.
@@ -3433,8 +3436,8 @@ Obviously, Gemma4 performed here, however, with higher token usage, but the high
 This file has 134 LOC, 213 statements and 34 decisions.
 #### Gemma Group
 The Generated file contained 2 errors:
-- wrong import path for *com.google.gson.reflect.TypeToken*.
-- in test *factory_returnsNullForOtherClass()*, I had to change *adapter* type to *TypeAdapter<String>*.
+- wrong import path for `com.google.gson.reflect.TypeToken`.
+- in test `factory_returnsNullForOtherClass()`, I had to change `adapter` type to `TypeAdapter<String>`.
 
 After fixing all errors, all 8 tests passed.
 
@@ -3455,9 +3458,9 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 3 errors:
-- in *testGetFactoryOtherStrategy()*, replaced non-existing *ToNumberPolicy.LONG* to *ToNumberPolicy.LONG_OR_DOUBLE*.
-- in *testRead()*, *adapter* was not initialized correctly.
-- in *testWrite()*, *JsonWriter* was improperly reset.
+- in `testGetFactoryOtherStrategy()`, replaced non-existing `ToNumberPolicy.LONG` to `ToNumberPolicy.LONG_OR_DOUBLE`.
+- in `testRead()`, `adapter` was not initialized correctly.
+- in `testWrite()`, `JsonWriter` was improperly reset.
 
 After fixing all errors, all 12 tests passed.
 
@@ -3468,19 +3471,19 @@ list of tests:
 4. write should correctly serialize various objects
 5. write handles ObjectTypeAdapter case (empty object for Object class)
 
-*ObjectCompleter* and *ObjectTypeAdapterAccess* helper classes were generated. The latter was not used though.
+`ObjectCompleter` and `ObjectTypeAdapterAccess` helper classes were generated. The latter was not used though.
 
 Missing coverage:
 - readTerminal(JsonReader, JsonToken) a missing branch which is an exception thrown case.
 
 #### GPT-OSS Group
 The Generated file contained 6 errors:
-- wrong import path for *com.google.gson.ToNumberPolicy*.
-- wrong import path for *com.google.gson.ToNumberStrategy*. It was also unused.
-- missing import for *java.util.Arrays*.
-- missing import for *java.util.List*.
-- I had to cast the initialization of private variable *adapter* to its defined type.
-- in initialization of private *adapter*, a null argument was passed to *create* which caused exception.
+- wrong import path for `com.google.gson.ToNumberPolicy`.
+- wrong import path for `com.google.gson.ToNumberStrategy`. It was also unused.
+- missing import for `java.util.Arrays`.
+- missing import for `java.util.List`.
+- I had to cast the initialization of private variable `adapter` to its defined type.
+- in initialization of private `adapter`, a null argument was passed to `create` which caused exception.
 
 After fixing all errors, all 5 tests passed.
 
@@ -3497,12 +3500,12 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 5 errors:
 - missing package statement.
-- wrong import path for *com.google.gson.ToNumberPolicy*.
-- in *testGetFactoryOther()*, non-existing *ToNumberPolicy.INT* was used. It was replaced with *ToNumberPolicy.LONG_OR_DOUBLE*.
-- in *testGetFactoryOther()*, adapter was initialized incorrectly.
-- in *testGetFactoryOther()* last assertion, the second argument was given incorrectly.
+- wrong import path for `com.google.gson.ToNumberPolicy`.
+- in `testGetFactoryOther()`, non-existing `ToNumberPolicy.INT` was used. It was replaced with `ToNumberPolicy.LONG_OR_DOUBLE`.
+- in `testGetFactoryOther()`, adapter was initialized incorrectly.
+- in `testGetFactoryOther()` last assertion, the second argument was given incorrectly.
 
-After fixing all errors, 6 tests passed and a test failed. In *testReadArrayAndNested()*, three of the assertions were expecting wrong values.
+After fixing all errors, 6 tests passed and a test failed. In `testReadArrayAndNested()`, three of the assertions were expecting wrong values.
 
 list of tests:
 1. getFactory() returns DOUBLE_FACTORY when strategy is DOUBLE
@@ -3542,7 +3545,7 @@ list of tests:
 1. read delegates to delegate
 2. write delegates to delegate
 
-Variable *delegate* in both methods has the same implementation, causing redundant code.  
+Variable `delegate` in both methods has the same implementation, causing redundant code.  
 Coverage was very poor. The agent should have generated more tests.
 
 Missing coverage:
@@ -3551,12 +3554,12 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 3 errors:
-- wrong import path for *com.google.gson.stream.JsonWriter*.
-- missing import for *com.google.gson.TypeAdapter*.
-- utility class *TypeCReflectiveAdapterWrapper* is inherited from final class *TypeAdapterRuntimeTypeWrapper*. Still, I manage to run the tests correctly without this class.
+- wrong import path for `com.google.gson.stream.JsonWriter`.
+- missing import for `com.google.gson.TypeAdapter`.
+- utility class `TypeCReflectiveAdapterWrapper` is inherited from final class `TypeAdapterRuntimeTypeWrapper`. Still, I manage to run the tests correctly without this class.
 
 After fixing all errors, 2 tests passed and 2 tests failed. Failed tests are:
-- in write_usesDelegateWhenTypesMatch, there was no way to access what *JsonWriter* has written, which agent assumed it was possible through *toString*. Thus, I instantiated it again with a *StringWriter* , so I can access the output.
+- in write_usesDelegateWhenTypesMatch, there was no way to access what `JsonWriter` has written, which agent assumed it was possible through `toString`. Thus, I instantiated it again with a `StringWriter` , so I can access the output.
 - write_handlesMoreSpecificRuntimeType() was also the same deal as above.
 
 list of tests:
@@ -3573,8 +3576,8 @@ Missing coverage:
 
 #### GPT-OSS Group
 The Generated file contained 2 errors:
-- missing import for *com.google.gson.stream.JsonWriter*.
-- wrong import path for *com.google.gson.internal.Primitives*. This import was unused.
+- missing import for `com.google.gson.stream.JsonWriter`.
+- wrong import path for `com.google.gson.internal.Primitives`. This import was unused.
 
 After fixing all errors, all 2 tests passed.
 
@@ -3589,7 +3592,7 @@ Missing coverage:
 - isReflective(TypeAdapter) and read(JsonReader) are not tested at all.
 
 #### GPT-OSS Single
-The Generated file contained an error. I Had to add generic *T* to class signature since subclasses were using generic and this was causing errors.
+The Generated file contained an error. I Had to add generic `T` to class signature since subclasses were using generic and this was causing errors.
 
 After fixing the error, all 4 tests passed.
 
@@ -3599,7 +3602,7 @@ list of tests:
 3. delegate chosen when runtime adapter is reflective and delegate not
 4. runtime adapter chosen when both reflective
 
-Utility classes *Base*, *Sub*, *RecordingAdapter*, and *ContextHasNonReflectiveDelegate* alongside *TypeAdapterRuntimeTypeWrapper* method were generated.
+Utility classes `Base`, `Sub`, `RecordingAdapter`, and `ContextHasNonReflectiveDelegate` alongside `TypeAdapterRuntimeTypeWrapper` method were generated.
 
 Missing coverage:
 - getRuntimeTypeIfMoreSpecific(Type, Object) and isReflective(TypeAdapter) have missing branches.
@@ -3618,17 +3621,17 @@ Missing coverage:
 | tokens used                    |    2,135     |    12,563     |     1,128     |     12,187     |
 | tokens per decision coverage % |     107      |      503      |      45       |      222       |
 
-This file wasn't large. Nevertheless, all models failed to reach good coverage. There were many nested branches, especially the only way to access private method *isReflective* which was also checking something complicated. GPT-OSS single did noticeably better than other agents.
+This file wasn't large. Nevertheless, all models failed to reach good coverage. There were many nested branches, especially the only way to access private method `isReflective` which was also checking something complicated. GPT-OSS single did noticeably better than other agents.
 
 ### MapTypeAdapterFactory
 This file has 167 LOC, 403 statements and 46 decisions.
 #### Gemma Group
 The Generated file contained 5 errors:
-- wrong import path for *com.google.gson.reflect.TypeToken*.
-- Typo in importing *com.google.gson.stream.JsonReader*.
-- utility class *SimpleConstructorConstructor* is implementing *ConstructorConstructor* final class. It was removed and replaced with an alternative.
-- in test *adapter_read_handlesNull()*, there was a misspelling with *MapTypeAdapterFactory*.
-- in almost all tests, *factory.create()* had the wrong argument.
+- wrong import path for `com.google.gson.reflect.TypeToken`.
+- Typo in importing `com.google.gson.stream.JsonReader`.
+- utility class `SimpleConstructorConstructor` is implementing `ConstructorConstructor` final class. It was removed and replaced with an alternative.
+- in test `adapter_read_handlesNull()`, there was a misspelling with `MapTypeAdapterFactory`.
+- in almost all tests, `factory.create()` had the wrong argument.
 
 After fixing all errors, all 8 tests passed.
 
@@ -3648,10 +3651,10 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 2 errors:
-- variable *factoryComplex* was not initialized correctly. Since it was unused, It was removed.
+- variable `factoryComplex` was not initialized correctly. Since it was unused, It was removed.
 - the token adapter for map was not initialized correctly across methods. I replaced it with an alternative.
 
-After fixing all errors, 2 tests passed and 7 tests failed. These tests failed because *factorySimple* variable should not be initialized with *null* as arguments. The first argument which is a *ConstructorConstructor* at least shouldn't be null. Fix it by passing a correctly initialized *ConstructorConstructor*. After this, all tests passed.
+After fixing all errors, 2 tests passed and 7 tests failed. These tests failed because `factorySimple` variable should not be initialized with `null` as arguments. The first argument which is a `ConstructorConstructor` at least shouldn't be null. Fix it by passing a correctly initialized `ConstructorConstructor`. After this, all tests passed.
 
 list of tests:
 1. Should return null for non-map types
@@ -3672,21 +3675,21 @@ Missing coverage:
 
 #### GPT-OSS Group
 The Generated file contained 3 errors:
-- missing import for *com.google.gson.JsonSyntaxException*.
-- private variable *factory* was initialized incorrectly. Since it didn't have any use, I just removed it.
-- in test *complexKeyMapSerializesToArray()*, variable *complexFactory* was instantiated incorrectly. It also had no use.
+- missing import for `com.google.gson.JsonSyntaxException`.
+- private variable `factory` was initialized incorrectly. Since it didn't have any use, I just removed it.
+- in test `complexKeyMapSerializesToArray()`, variable `complexFactory` was instantiated incorrectly. It also had no use.
 
 After fixing all errors, a test passed and two tests failed. Failed tests are:
-- in test *complexKeyMapSerializesToArray()*, a map is converted into a *JsonTree*, then it was expected to be a JsonArray!
-- in test *duplicateKeysThrowException()*, an exception is expected to be thrown, but it doesn't.
+- in test `complexKeyMapSerializesToArray()`, a map is converted into a `JsonTree`, then it was expected to be a JsonArray!
+- in test `duplicateKeysThrowException()`, an exception is expected to be thrown, but it doesn't.
 
 list of tests:
 1. simple key map serialize to object
 2. complex key map serialize to array
 3. duplicate keys throw exception
 
-Utility class *Point* was created.  
-It looks like *Gson* was being tested rather than *MapTypeAdapterFactory*.
+Utility class `Point` was created.  
+It looks like `Gson` was being tested rather than `MapTypeAdapterFactory`.
 
 Missing coverage:
 - Adapter.write(JsonWriter, Map), getKeyAdapter(Gson, Type), and create(Gson, Type Token) have missing branches.
@@ -3695,7 +3698,7 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 2 errors:
 - missing package statement.
-- in utility method *gson*, *ctor* variable is not initialized correctly. Only one argument is given.
+- in utility method `gson`, `ctor` variable is not initialized correctly. Only one argument is given.
 
 After fixing all errors, all 7 tests passed.
 
@@ -3708,7 +3711,7 @@ list of tests:
 6. read duplicate key in object throws JsonSyntaxException
 7. read map from object JSON works
 
-Utility method *gson* was generated to instantiate Gson.
+Utility method `gson` was generated to instantiate Gson.
 
 Missing coverage:
 - read(JsonReader), write(JsonWriter, Map), and getKeyAdapter(Gson, Type) have missing branches.
@@ -3727,16 +3730,16 @@ Missing coverage:
 | tokens used                    |    5,750     |    16,810     |     3,037     |     13,961     |
 | tokens per decision coverage % |     134      |      454      |      202      |      259       |
 
-All agents did terrible. GPT-OSS in group mode was not really testing this unit. Gemma4 in group mode performed better. GPT-OSS had at least somewhat of a good statement coverage. Private method *Adapter.keyToString(JsonElement)* was not tested by agents. It was hard to access. Simple branches like a null map check at first of a function was missed by the best model. This proves that local models with around 20 billion parameters can't handle testing even medium complex units like this well.
+All agents did terrible. GPT-OSS in group mode was not really testing this unit. Gemma4 in group mode performed better. GPT-OSS had at least somewhat of a good statement coverage. Private method `Adapter.keyToString(JsonElement)` was not tested by agents. It was hard to access. Simple branches like a null map check at first of a function was missed by the best model. This proves that local models with around 20 billion parameters can't handle testing even medium complex units like this well.
 
 ### CollectionTypeAdapterFactory
 This file has 73 LOC, 119 statements and 10 decisions.
 #### Gemma Group
 The Generated file contained 4 errors:
-- wrong import path for *com.google.gson.reflect.TypeToken*.
-- typo in import path of *com.google.gson.stream.JsonWriter*.
-- many methods had an error in instantiating *adapter* variable.
-- utility class *SimpleConstructorConstructor* is implementing *ConstructorConstructor* final class. It was removed and replaced with an alternative.
+- wrong import path for `com.google.gson.reflect.TypeToken`.
+- typo in import path of `com.google.gson.stream.JsonWriter`.
+- many methods had an error in instantiating `adapter` variable.
+- utility class `SimpleConstructorConstructor` is implementing `ConstructorConstructor` final class. It was removed and replaced with an alternative.
 
 After fixing all errors, all 6 tests passed.
 
@@ -3753,7 +3756,7 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained an error.
-- Utility class *TestConstructorConstructor* was trying to inherit from final class *ConstructorConstructor*. I used an alternative way to initialize *ConstructorConstructor*, so this and *TestObjectConstructor* utility classes were removed.
+- Utility class `TestConstructorConstructor` was trying to inherit from final class `ConstructorConstructor`. I used an alternative way to initialize `ConstructorConstructor`, so this and `TestObjectConstructor` utility classes were removed.
 
 After fixing the error, all 6 tests passed.
 
@@ -3769,7 +3772,7 @@ Full statement and decision coverage obtained.
 
 #### GPT-OSS Group
 The Generated file contained one error:
-- variable *factory* is initiated incorrectly. Since it was not used, I simply removed it.
+- variable `factory` is initiated incorrectly. Since it was not used, I simply removed it.
 
 After fixing the error, all 3 tests passed.
 
@@ -3787,7 +3790,7 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 2 errors:
 - missing package statement.
-- private variable *factory* was initiated wrongly.
+- private variable `factory` was initiated wrongly.
 
 After fixing all errors, all 6 tests passed.
 
@@ -3820,9 +3823,9 @@ Other than GPT-OSS group, all models did great. Gemma4 in group mode achieved ne
 This file has 147 LOC, 271 statements and 36 decisions.
 #### Gemma Group
 The Generated file contained 3 errors:
-- incorrect import path for *com.google.gson.reflect.TypeToken*.
-- across all tests, *skipPast* was not instantiated correctly. Assigning it to null will fix the issue.
-- in test *write_withSerializer_handlesValue()*, serializer was incorrectly instantiated, but removed duo to being unused.
+- incorrect import path for `com.google.gson.reflect.TypeToken`.
+- across all tests, `skipPast` was not instantiated correctly. Assigning it to null will fix the issue.
+- in test `write_withSerializer_handlesValue()`, serializer was incorrectly instantiated, but removed duo to being unused.
 
 After fixing all errors, all 3 tests passed.
 
@@ -3840,11 +3843,11 @@ Missing coverage:
 #### Gemma Single
 The Generated file contained 4 errors:
 - An unused import with wrong path.
-- in seven methods, *deserializer* initialized had a bad lambda return statement.
-- in test *write_serializerPresent_writesSerializedValue()*, a text error occurred.
-- Utility class *TreeTypeParsingAdapter* inherited from final class TreeTypeAdapter. It wasn't really even needed.
+- in seven methods, `deserializer` initialized had a bad lambda return statement.
+- in test `write_serializerPresent_writesSerializedValue()`, a text error occurred.
+- Utility class `TreeTypeParsingAdapter` inherited from final class TreeTypeAdapter. It wasn't really even needed.
 
-After fixing all errors, 10 tests passed and a test failed. In test *read_deserializerPresent_returnsDeserializedValue()*, the last assertion was expecting an incorrect value.
+After fixing all errors, 10 tests passed and a test failed. In test `read_deserializerPresent_returnsDeserializedValue()`, the last assertion was expecting an incorrect value.
 
 list of tests:
 1. read: when deserializer is not null, handles non-null value
@@ -3865,14 +3868,14 @@ Missing coverage:
 
 #### GPT-OSS Group
 The Generated file contained 4 errors:
-- missing import for *com.google.gson.JsonSerializer*.
-- missing import for *com.google.gson.JsonElement*.
-- missing import for *com.google.gson.JsonSerializer*.
-- in tests *customSerializerWritesTree()*, *customDeserializerReturnsValue()*, and *nullSafeDeserialization()* *adapter* initialized incorrectly.
+- missing import for `com.google.gson.JsonSerializer`.
+- missing import for `com.google.gson.JsonElement`.
+- missing import for `com.google.gson.JsonSerializer`.
+- in tests `customSerializerWritesTree()`, `customDeserializerReturnsValue()`, and `nullSafeDeserialization()` `adapter` initialized incorrectly.
 
 After fixing all errors, a test passed and 2 tests failed. Failed tests are:
-- in test *customSerializerWritesTree()*, a string with value "value" was expected to be "null". After a change, the string is "null".
-- in test *customDeserializerReturnsValue()*, the last assertion was wrong.
+- in test `customSerializerWritesTree()`, a string with value "value" was expected to be "null". After a change, the string is "null".
+- in test `customDeserializerReturnsValue()`, the last assertion was wrong.
 
 list of tests:
 1. custom serializer writes tree
@@ -3886,14 +3889,14 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 5 errors:
 - missing package statement.
-- missing import for *java.util.List*.
-- instantiation of non-accessible *TreeTypeAdapter.SingleTypeFactory* in three methods.
-- usage of inaccessible *TreeTypeAdapter.delegate()*.
-- in *testNewFactoryWithMatchRawType()*, *notMatch* must be a *TypeAdapter<String>* type.
+- missing import for `java.util.List`.
+- instantiation of non-accessible `TreeTypeAdapter.SingleTypeFactory` in three methods.
+- usage of inaccessible `TreeTypeAdapter.delegate()`.
+- in `testNewFactoryWithMatchRawType()`, `notMatch` must be a `TypeAdapter<String>` type.
 
 After fixing all errors, 7 tests passed and 4 tests failed. Failed tests are:
-- in *testReadDelegateCalled()*, *testWriteDelegateCalled()*, *testGetSerializationDelegateWithSerializer()*, and *testGetSerializationDelegateWithoutSerializer()*, *skipPast* as an *adapter* constructor argument must not be null.
-- in *testGetSerializationDelegateWithSerializer()*, equals assertion between two different types was happening.
+- in `testReadDelegateCalled()`, `testWriteDelegateCalled()`, `testGetSerializationDelegateWithSerializer()`, and `testGetSerializationDelegateWithoutSerializer()`, `skipPast` as an `adapter` constructor argument must not be null.
+- in `testGetSerializationDelegateWithSerializer()`, equals assertion between two different types was happening.
 
 list of tests:
 1. read(): delegate read called when deserializer is null
@@ -3952,29 +3955,29 @@ I would say group mode coverage is not satisfactory at all if we consider 80% co
 ## Group 6: Specialized/reflective adapters
 After giving the initial prompt to Gemma4 in group mode, it abruptly stopped.
 With continue prompt, all tests were generated.
-Also, this happened to with test generation for *NumberTypeAdapter* in single mode.  
-GPT-OSS in group mode only generated test for *ReflectiveTypeAdapterFactory* in first prompt output.
+Also, this happened to with test generation for `NumberTypeAdapter` in single mode.  
+GPT-OSS in group mode only generated test for `ReflectiveTypeAdapterFactory` in first prompt output.
 Although it asked me if I wanted to proceed, which I did.
 
 ### ReflectiveTypeAdapterFactory
 This file has 505 LOC, 989 statements and 94 decisions.
 #### Gemma Group
 The Generated file contained 5 errors:
-- wrong import path for *com.google.gson.internal.ObjectConstructor*.
-- wrong import path for *com.google.gson.reflect.TypeToken*.
-- *StubConstructorConstructor* inherits from final class *ConstructorConstructor*. It was supplanted with an alternative.
-- *StubExcluder* implemented from final class *Excluder*.
-- in *setUp()*, unused variable *constructor* initialized incorrectly. The agent also realized it but didn't remove it.
+- wrong import path for `com.google.gson.internal.ObjectConstructor`.
+- wrong import path for `com.google.gson.reflect.TypeToken`.
+- `StubConstructorConstructor` inherits from final class `ConstructorConstructor`. It was supplanted with an alternative.
+- `StubExcluder` implemented from final class `Excluder`.
+- in `setUp()`, unused variable `constructor` initialized incorrectly. The agent also realized it but didn't remove it.
 
-After fixing all errors, all 3 tests failed! I couldn't figure out to fix the JsonIOException thrown. Assertion are converted to *assertThrows*.
+After fixing all errors, all 3 tests failed! I couldn't figure out to fix the JsonIOException thrown. Assertion are converted to `assertThrows`.
 
 list of tests:
 1. create returns null for primitive types
 2. create returns adapter for complex types
 3. serialization and deserialization of TestObject
 
-Despite being mentioned not to involve integration, stubs such as *StubFieldNamingStrategy* were created.
-A utility class *TestObject* was created.
+Despite being mentioned not to involve integration, stubs such as `StubFieldNamingStrategy` were created.
+A utility class `TestObject` was created.
 
 Coverage:
 - create(Gson, Type Token) getFieldNames(Field) getBoundFields(Gson, TypeToken, Class, boolean, boolean) createBoundField(Gson, Field, Method, String, Type Token, boolean, boolean) have missing branches.
@@ -3984,12 +3987,12 @@ Coverage:
 The Generated file contained 9 errors:
 - five missing imports.
 - two incorrect import paths.
-- overriding final class *constructorConstructor*.
-- overriding final class *Excluder*.
+- overriding final class `constructorConstructor`.
+- overriding final class `Excluder`.
 
 After fixing all errors, 2 tests passed and 2 tests failed. Failed tests are:
-- in *testPrimitiveTypes()*, an exception was thrown. if I replace *Integer.class*, with *int.class*, I will get away with the exception.
-- *testSerializedName()* had a wrong assertion.
+- in `testPrimitiveTypes()`, an exception was thrown. if I replace `Integer.class`, with `int.class`, I will get away with the exception.
+- `testSerializedName()` had a wrong assertion.
 
 list of tests:
 1. Should return null for primitive types (not Object.class)
@@ -3997,7 +4000,7 @@ list of tests:
 3. Should handle duplicate field names and throw exception
 4. Should handle interfaces by returning empty FieldsData (no adapters)
 
-Utility classes *TestClass*, *AnnotatedClass*, *InterfaceTest*, and *DuplicateFieldClass* are generated.  
+Utility classes `TestClass`, `AnnotatedClass`, `InterfaceTest`, and `DuplicateFieldClass` are generated.  
 Four tests for such a large file are extremely inadequate.
 The missing coverage is a long list.
 
@@ -4008,12 +4011,12 @@ Missing coverage:
 #### GPT-OSS Group
 The Generated file contained 3 errors:
 - missing package statement.
-- wrong instantiation of *ConstructorConstructor*.
-- missing argument for *JsonAdapterAnnotationTypeAdapterFactory* constructor.
+- wrong instantiation of `ConstructorConstructor`.
+- missing argument for `JsonAdapterAnnotationTypeAdapterFactory` constructor.
 
 After fixing all errors, all 2 tests failed.
-- in *testCreate_withPrimitiveClass_returnsNull()*, the same problem happened. Changed the used *int.class* to get away with it.
-- in *testGetFieldNames_singleName()*, *IllegalAccessException* is thrown, but for the same reason.
+- in `testCreate_withPrimitiveClass_returnsNull()`, the same problem happened. Changed the used `int.class` to get away with it.
+- in `testGetFieldNames_singleName()`, `IllegalAccessException` is thrown, but for the same reason.
 
 list of tests:
 1. create with primitive class returns null
@@ -4027,16 +4030,16 @@ Coverage:
 
 #### GPT-OSS Single
 The Generated file contained 6 errors:
-- wrong import path for *com.google.gson.internal.Excluder*
-- wrong import path for unused *Nullable*.
-- in utility method *ReflectiveTypeAdapterFactory* and some other methods, *Excluder.DEFAULT* was being accessed incorrectly.
-- in test *includeFieldExclusion()*, the code was trying to access private method *includeField*. This test is commented since I couldn't fix it.
-- in test *createAnonymousClassAdapter*, *type* was instantiated incorrectly.
-- in test *createAnonymousClassAdapter*, *adapter* had the wrong type.
+- wrong import path for `com.google.gson.internal.Excluder`
+- wrong import path for unused `Nullable`.
+- in utility method `ReflectiveTypeAdapterFactory` and some other methods, `Excluder.DEFAULT` was being accessed incorrectly.
+- in test `includeFieldExclusion()`, the code was trying to access private method `includeField`. This test is commented since I couldn't fix it.
+- in test `createAnonymousClassAdapter`, `type` was instantiated incorrectly.
+- in test `createAnonymousClassAdapter`, `adapter` had the wrong type.
 
-After fixing all errors, 1 test passed and 3 tests failed. Firstly, all instances of *ConstructorConstructor* were null and had to instantiate them correctly. Failed tests are:
-- in test *createAnonymousClassAdapter()*, the last assertion was wrong.
-- tests *getFieldNamesWithAnnotation()* and *getFieldNamesWithoutAnnotation()* would throw *IllegalAccessException*.
+After fixing all errors, 1 test passed and 3 tests failed. Firstly, all instances of `ConstructorConstructor` were null and had to instantiate them correctly. Failed tests are:
+- in test `createAnonymousClassAdapter()`, the last assertion was wrong.
+- tests `getFieldNamesWithAnnotation()` and `getFieldNamesWithoutAnnotation()` would throw `IllegalAccessException`.
 
 list of tests:
 1. getFieldNames respects @SerializedName
@@ -4044,7 +4047,7 @@ list of tests:
 3. create returns null for primitive types
 4. create for anonymous class returns adapter that writes null
 
-Helper *ReflectiveTypeAdapterFactory* method and *DummyClass* class were generated.  
+Helper `ReflectiveTypeAdapterFactory` method and `DummyClass` class were generated.  
 Again, the missing coverage is so much.
 Coverage is listed instead.
 
@@ -4076,7 +4079,7 @@ I admit that not being able to solve some of the tests fails can credit to lower
 This file has 88 LOC, 227 statements and 22 decisions.
 #### Gemma Group
 The Generated file contained an error:
-- in test *deserializationUnknownReturnsNull()*, *typeToken* had undefined type *TestToken*.
+- in test `deserializationUnknownReturnsNull()`, `typeToken` had undefined type `TestToken`.
 
 After fixing all errors, 3 tests passed and a test failed. In factoryReturnsAdapterForEnum, the last assertion is wrong.
 
@@ -4086,16 +4089,16 @@ list of tests:
 3. Serialization and deserialization of Enum with @SerializedName
 4. Deserialization of unknown enum constant returns null
 
-Utility Enum *TestEnum* was generated.
+Utility Enum `TestEnum` was generated.
 
 Missing coverage:
 - FACTORY.create(Gson, TypeToken), read(JsonReader), write(JsonWriter, Enum), and EnumTypeAdapter(Class) have missing branches.
 
 #### Gemma Single
 The Generated file contained 3 errors:
-- utility class *AnonymousEnum* was trying to inherit from an Enum which is not possible in java. Removed the test associated with it as well.
-- in test *returnsNullForEnumClass*, undefined class *EnumTypeTokenFactoryProxy* was used.
-- in test *readAlternateNames*, *reader2* is instantiated incorrectly.
+- utility class `AnonymousEnum` was trying to inherit from an Enum which is not possible in java. Removed the test associated with it as well.
+- in test `returnsNullForEnumClass`, undefined class `EnumTypeTokenFactoryProxy` was used.
+- in test `readAlternateNames`, `reader2` is instantiated incorrectly.
 
 After fixing all errors, all 12 tests passed.
 
@@ -4113,7 +4116,7 @@ list of tests:
 11. Read: use toString() mapping if name match fails
 12. Write: write null when value is null
 
-Utility Enum *TestEnum* was created.
+Utility Enum `TestEnum` was created.
 
 Missing coverage:
 - FACTORY.create(Gson, TypeToken) and EnumTypeAdapter(Class) have missing branches.
@@ -4122,8 +4125,8 @@ Missing coverage:
 The Generated file contained 5 errors:
 - missing package statement.
 - there was an annotation in the utility enum.
-- in test *readAndWrite_simpleEnum()*, a variable was initialized with a private constructor.
-- I had to add IOException to test *readAndWrite_simpleEnum* signature.
+- in test `readAndWrite_simpleEnum()`, a variable was initialized with a private constructor.
+- I had to add IOException to test `readAndWrite_simpleEnum()` signature.
 
 After fixing all errors, the single generated test passed.
 
@@ -4136,7 +4139,7 @@ Missing coverage:
 - EnumTypeAdapter(Class), read(JsonReader), write(JsonWriter, Enum), and FACTORY.create(Gson, TypeToken) have missing branches.
 
 #### GPT-OSS Single
-The Generated file contained an error. In many methods, variable *adapter* was initialized with a private constructor.
+The Generated file contained an error. In many methods, variable `adapter` was initialized with a private constructor.
 
 After fixing all errors, all 6 tests passed.
 
@@ -4148,7 +4151,7 @@ list of tests:
 5. write with null writes null
 6. write with non-null writes appropriate name
 
-Utility Enum *TestEnum* and method *readerOf* were generated.
+Utility Enum `TestEnum` and method `readerOf` were generated.
 
 Missing coverage:
 - EnumTypeAdapter(Class), and FACTORY.create(Gson, TypeToken) have missing branches.
@@ -4174,7 +4177,7 @@ This was a small file, so it was expected that models obtain high coverage.
 ### NumberTypeAdapter
 This file has 56 LOC, 73 statements and 7 decisions.
 #### Gemma Group
-The Generated file contained an error. It was a wrong import path for *com.google.gson.reflect.TypeToken*.
+The Generated file contained an error. It was a wrong import path for `com.google.gson.reflect.TypeToken`.
 
 After fixing the error, 2 tests passed and a test failed. In factoryReturnsAdapterForNumber, the last assertion was wrong.
 
@@ -4207,7 +4210,7 @@ Missing coverage:
 #### GPT-OSS Group
 The Generated file contained 2 errors:
 - missing package statement.
-- in both tests, *adapter* initialized using an inaccessible constructor.
+- in both tests, `adapter` initialized using an inaccessible constructor.
 
 After fixing all errors, all 2 tests passed.
 
@@ -4221,9 +4224,9 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 4 errors:
 - missing package statement.
-- wrong import path for *com.google.gson.ToNumberPolicy*.
-- wrong import path for unused import *com.google.gson.ToNumberStrategy*.
-- missing import for *com.google.gson.TypeAdapterFactory*.
+- wrong import path for `com.google.gson.ToNumberPolicy`.
+- wrong import path for unused import `com.google.gson.ToNumberStrategy`.
+- missing import for `com.google.gson.TypeAdapterFactory`.
 
 After fixing all errors, all 4 tests passed.
 
@@ -4233,7 +4236,7 @@ list of tests:
 3. read string number returns number
 4. read non‑numeric token throws JsonSyntaxException
 
-utility method *read* was created.
+utility method `read` was created.
 
 Missing coverage:
 - getFactory(ToNumberStrategy) and adapter.create(Gson, TypeToken) have missing branches.
@@ -4261,11 +4264,11 @@ Still, I prefer to generate this file along with other small files.
 ### DefaultDateTypeAdapter
 This file has 135 LOC, 260 statements and 16 decisions.
 #### Gemma Group
-The Generated file contained an error. It was a wrong import path for unused import *com.google.gson.reflect.TypeToken*.
+The Generated file contained an error. It was a wrong import path for unused import `com.google.gson.reflect.TypeToken`.
 
 After fixing the error, a test passed and 2 tests failed. Failed tests are:
 - in factoryReturnsAdapterForDate, the second assertion was wrong.
-- in serializationDeserializationDefault, *gson* was receiving the wrong date format.
+- in serializationDeserializationDefault, `gson` was receiving the wrong date format.
 
 list of tests:
 1. Factory returns adapter for Date
@@ -4278,12 +4281,12 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 3 errors:
-- wrong import path for *com.google.gson.reflect.TypeToken*.
-- in utility method *tearDown*, an undefined variable was passed to a method.
-- in tests *write_handlesNull* and write_formatsDate, undefined method *writer.endDocument* was called. Since it wasn't important, it was commented.
+- wrong import path for `com.google.gson.reflect.TypeToken`.
+- in utility method `tearDown`, an undefined variable was passed to a method.
+- in tests `write_handlesNull` and write_formatsDate, undefined method `writer.endDocument` was called. Since it wasn't important, it was commented.
 
 After fixing all errors, 9 tests passed and a test failed.
-In test *read_parsesValidDate*, json text was changed to be compatible with *DEFAULT_STYLE_FACTORY*.
+In test `read_parsesValidDate`, json text was changed to be compatible with `DEFAULT_STYLE_FACTORY`.
 
 list of tests:
 1. DEFAULT_STYLE_FACTORY should create adapter for Date class
@@ -4304,7 +4307,7 @@ Missing coverage:
 #### GPT-OSS Group
 The Generated file contained 2 errors:
 - missing package statement.
-- in the test, *DefaultDateTypeAdapter* instantiated with a private constructor.
+- in the test, `DefaultDateTypeAdapter` instantiated with a private constructor.
 
 After fixing all errors, the test passed.
 
@@ -4320,12 +4323,12 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 2 errors:
 - missing package statement.
-- instantiation of *DefaultDateTypeAdapter* with a private constructor across many methods.
+- instantiation of `DefaultDateTypeAdapter` with a private constructor across many methods.
 
 After fixing all errors, 3 tests passed and 3 tests failed. Failed tests are:
-- in test *writeDate()*, the last assertion was expecting the wrong string.
-- in tests *readWithPattern()* and *readIsoFallback()*, since *JsonReader* is reading a malformed json, it must be set to lenient strictness.
-- in test *readIsoFallback()*, is expected for read() to fall back to another date format, but an exception is thrown.
+- in test `writeDate()`, the last assertion was expecting the wrong string.
+- in tests `readWithPattern()` and `readIsoFallback()`, since `JsonReader` is reading a malformed json, it must be set to lenient strictness.
+- in test `readIsoFallback()`, is expected for read() to fall back to another date format, but an exception is thrown.
 
 list of tests:
 1. write() should output null for null value
@@ -4363,9 +4366,9 @@ This file has 387 LOC, 1051 statements and 66 decisions.
 
 #### Gemma Group
 The Generated file contained 3 errors:
-- wrong path for unused import *com.google.gson.reflect.TypeToken*.
-- text generation fault in test *factoryReturnsCorrectAdapters*
-- misspell of *JavaTimeTypeAdapters* in localDateTest
+- wrong path for unused import `com.google.gson.reflect.TypeToken`.
+- text generation fault in test `factoryReturnsCorrectAdapters`
+- misspell of `JavaTimeTypeAdapters` in localDateTest
 
 After fixing all errors, all 3 tests passed.
 
@@ -4394,10 +4397,10 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 4 errors:
-- in *testLocalTime*, a variable of undefined *LocalKeyTime* type was created. The variable was not used, so I just removed it.
-- in *testZoneIdOffset*, *getAdapter* must have *ZoneId.class* as argument.
-- in *testZonedDateTime*, there was an error with *writeAdapter* argument types.
-- at the last line, there was an *EOF* text.
+- in `testLocalTime`, a variable of undefined `LocalKeyTime` type was created. The variable was not used, so I just removed it.
+- in `testZoneIdOffset`, `getAdapter` must have `ZoneId.class` as argument.
+- in `testZonedDateTime`, there was an error with `writeAdapter` argument types.
+- at the last line, there was an `EOF` text.
 
 After fixing all errors, 16 tests passed and a test failed.
 In testZoneIdException, the wrong exception type was excepted.
@@ -4421,7 +4424,7 @@ list of tests:
 16. factory returns null for non-java.time types
 17. factory returns adapter for java.time types
 
-Utility methods *getAdapter*, *writeAdapter*, and *readAdapter* are generated. A dummy class was also generated for helping a cast which caused another error.  
+Utility methods `getAdapter`, `writeAdapter`, and `readAdapter` are generated. A dummy class was also generated for helping a cast which caused another error.  
 After seeing the coverage in group mode, I was surprised to see that single mode managed to cover the majority of this large file.
 
 Missing coverage:
@@ -4430,8 +4433,8 @@ Missing coverage:
 #### GPT-OSS Group
 The Generated file contained 3 errors:
 - missing package statement.
-- missing import for *com.google.gson.reflect.TypeToken*.
-- unnecessary text for type of *TypeAdapterFactory* variable.
+- missing import for `com.google.gson.reflect.TypeToken`.
+- unnecessary text for type of `TypeAdapterFactory` variable.
 
 After fixing all errors, the single generated test passed.
 
@@ -4462,7 +4465,7 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained no error.
 
-8 tests passed and a test failed. In test *zoneIdWithId()*, I ran into the reflection error where gson cannot access fields in *java.time.ZoneRegion*. Since the class package is private, there is nothing I could do other than just replacing it asserting a throw.
+8 tests passed and a test failed. In test `zoneIdWithId()`, I ran into the reflection error where gson cannot access fields in `java.time.ZoneRegion`. Since the class package is private, there is nothing I could do other than just replacing it asserting a throw.
 
 list of tests:
 1. duration round trip
@@ -4475,7 +4478,7 @@ list of tests:
 8. month day serialization
 9. zoned date time_null value
 
-Helper method *javaTimeGson()* was created.
+Helper method `javaTimeGson()` was created.
 
 Missing coverage:
 - offsetTime(Gson) was not tested at all.
@@ -4515,9 +4518,9 @@ so it's better to generate test for this file without other files alongside in a
 This file has 128 LOC, 235 statements and 34 decisions.
 #### Gemma Group
 The Generated file contained 3 errors:
-- wrong import path for unused class *com.google.gson.internal.ConstructorConstructor*.
-- wrong import path for *com.google.gson.reflect.TypeToken*.
-- utility class *DummyAdapter* was implementing class *TypeAdapter* instead of extending it.
+- wrong import path for unused class `com.google.gson.internal.ConstructorConstructor`.
+- wrong import path for `com.google.gson.reflect.TypeToken`.
+- utility class `DummyAdapter` was implementing class `TypeAdapter` instead of extending it.
 
 After fixing all errors, all 2 tests passed.
 
@@ -4525,7 +4528,7 @@ list of tests:
 1. Factory returns null if no annotation is present
 2. Factory returns adapter for TypeAdapter annotation
 
-Utility classes *DummyAdapter*, *AdapterFactory*, *AnnotatedClass*, and *FactoryAnnotatedClass* were generated.  
+Utility classes `DummyAdapter`, `AdapterFactory`, `AnnotatedClass`, and `FactoryAnnotatedClass` were generated.  
 The second test didn't have a body.  
 This test covered no decision point.
 
@@ -4535,10 +4538,10 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 4 errors:
-- in utility class *TestTypeAdapter*, final method *nullSafe* was overridden.
-- Utility class *SimpleConstructorConstructor* was inheriting from final class *ConstructorConstructor*.
-- in test *create_ReturnsTypeAdapter_WhenAnnotationIsTypeAdapter()*, couldn't compare instance of *adapter* to *TestTypeAdapter*.
-- tests *isClassJsonAdapterFactory_ReturnsFalse_WhenNoAnnotation()* and *isClassJsonAdapterFactory_ReturnsTrue_WhenFactoryMatches()* had initialized *TypeAdapterFactory* wrongly.
+- in utility class `TestTypeAdapter`, final method `nullSafe` was overridden.
+- Utility class `SimpleConstructorConstructor` was inheriting from final class `ConstructorConstructor`.
+- in test `create_ReturnsTypeAdapter_WhenAnnotationIsTypeAdapter()`, couldn't compare instance of `adapter` to `TestTypeAdapter`.
+- tests `isClassJsonAdapterFactory_ReturnsFalse_WhenNoAnnotation()` and `isClassJsonAdapterFactory_ReturnsTrue_WhenFactoryMatches()` had initialized `TypeAdapterFactory` wrongly.
 
 After fixing all errors, all 9 tests passed.
 
@@ -4553,7 +4556,7 @@ list of tests:
 8. isClassJsonAdapterFactory returns false when no annotation exists
 9. isClassJsonAdapterFactory returns true when factory matches existing factory
 
-Utility classes *AnnotatedWithAdapter*, *AnnotatedWithFactory*, *AnnotatedWithSerializer*, *AnnotatedWithDeserializer*, *AnnotatedWithInvalidAdapter*, *AnnotatedWithFactoryAndNullSafe*, *TestTypeAdapter*, *TestTypeAdapterFactory*, *TestTypeBooleanAdapter*, *TestJsonSerializer*, and *TestJsonDeserializer* were generated.
+Utility classes `AnnotatedWithAdapter`, `AnnotatedWithFactory`, `AnnotatedWithSerializer`, `AnnotatedWithDeserializer`, `AnnotatedWithInvalidAdapter`, `AnnotatedWithFactoryAndNullSafe`, `TestTypeAdapter`, `TestTypeAdapterFactory`, `TestTypeBooleanAdapter`, `TestJsonSerializer`, and `TestJsonDeserializer` were generated.
 
 Missing coverage:
 - areSameFactories(TypeAdapterFactory, TypeAdapterFactory), isClassJsonAdapterFactory(Type Token, TypeAdapterFactory), putFactoryAndGetCurrent(Class, TypeAdapterFactory), and getTypeAdapter(ConstructorConstructor, Gson, TypeToken, JsonAdapter, boolean) have missing branches.
@@ -4562,17 +4565,17 @@ Missing coverage:
 #### GPT-OSS Group
 The Generated file contained 5 errors:
 - missing package statement.
-- missing import statement for *com.google.gson.internal.ConstructorConstructor*.
-- missing import statement for *com.google.gson.reflect.TypeToken*.
-- in utility class *MyAdapter*, *write* and *read* methods access can only be public which weren't.
-- in the test, *ConstructorConstructor* was instantiated incorrectly.
+- missing import statement for `com.google.gson.internal.ConstructorConstructor`.
+- missing import statement for `com.google.gson.reflect.TypeToken`.
+- in utility class `MyAdapter`, `write` and `read` methods access can only be public which weren't.
+- in the test, `ConstructorConstructor` was instantiated incorrectly.
 
 After fixing all errors, the single test failed. The assertion was incorrect.
 
 list of tests:
 1. factory provides adapter
 
-Utility classes *TestClass* and *MyAdapter* were generated.  
+Utility classes `TestClass` and `MyAdapter` were generated.  
 A single test for this file is inadequate.  
 The missing coverage is so much that I will actually list what has been covered.
 
@@ -4583,9 +4586,9 @@ Coverage:
 #### GPT-OSS Single
 The Generated file contained 4 errors:
 - missing package statement.
-- wrong instantiation of private variable *CONSTRUCTOR_CONSTRUCTOR*.
-- Five methods had the wrong type for *adapter* variable.
-- the last assertion in *testCreateWithTypeAdapterAnnotation()* had error.
+- wrong instantiation of private variable `CONSTRUCTOR_CONSTRUCTOR`.
+- Five methods had the wrong type for `adapter` variable.
+- the last assertion in `testCreateWithTypeAdapterAnnotation()` had error.
 
 After fixing all errors, 5 tests passed and a tests failed. in testCreateWithInvalidAdapterClassThrows, no exception is thrown.
 
@@ -4597,7 +4600,7 @@ list of tests:
 5. create with invalid adapter class throws
 6. create without annotation returns null
 
-Utility classes *DummyAdapter*, *DummyTypeAdapterClass*, *DummyFactoryClass*, *DummySerializer*, *DummyDeserializer*, *DummySerializerClass*, *DummyDeserializerClass*, and *NoAnnotationClass* are generated.
+Utility classes `DummyAdapter`, `DummyTypeAdapterClass`, `DummyFactoryClass`, `DummySerializer`, `DummyDeserializer`, `DummySerializerClass`, `DummyDeserializerClass`, and `NoAnnotationClass` are generated.
 
 Missing coverage:
 - getTypeAdapter(ConstructorConstructor, Gson, TypeToken, JsonAdapter, boolean) and putFactoryAndGetCurrent(Class, TypeAdapterFactory) have missing branches.
@@ -4627,11 +4630,11 @@ This file has 123 LOC, 268 statements and 46 decisions.
 #### Gemma Group
 The Generated file contained 6 errors:
 - usage '/' instead of '.' in an import statement.
-- importing unused and non-existing *JsonStringWriter*
-- missing import for *java.util.stream.Stream*.
-- in test *writeJsonNull*, an unused and non-existing variable of *StringCRenderer* is initialized.
-- in test *readNumber*, an unused and non-existing variable of *JsonTokenReader* is initialized.
-- in test *readArray*, non-defined variable array was passed to a method.
+- importing unused and non-existing `JsonStringWriter`
+- missing import for `java.util.stream.Stream`.
+- in test `writeJsonNull()`, an unused and non-existing variable of `StringCRenderer` is initialized.
+- in test `readNumber()`, an unused and non-existing variable of `JsonTokenReader` is initialized.
+- in test `readArray()`, non-defined variable array was passed to a method.
 
 After fixing all errors, all 14 tests passed.
 
@@ -4687,8 +4690,8 @@ Missing coverage:
 The Generated file contained no error.
 
 11 tests passed and 2 tests failed. Failed tests are:
-- in test *readTerminalNumber()*, the model compared a *BigDecimal* with a *Number*.
-- in test *readDeepNestedObject()*, there were two roots before inner.
+- in test `readTerminalNumber()`, the model compared a `BigDecimal` with a `Number`.
+- in test `readDeepNestedObject()`, there were two roots before inner.
 
 list of tests:
 1. read() → terminal STRING returns JsonPrimitive with that value
@@ -4705,7 +4708,7 @@ list of tests:
 12. write() → array serializes elements recursively
 13. write() → object serializes properties recursively
 
-Utility methods *readViaAdapter* and *writeViaAdapter* were generated.
+Utility methods `readViaAdapter` and `writeViaAdapter` were generated.
 
 Missing coverage:
 - read(JsonReader), readTerminal(JsonReader, Json Token), and write(JsonWriter, JsonElement) have missing branches.
@@ -4729,9 +4732,9 @@ This was not a large file, so it was easy to obtain a high coverage even with fe
 This file has 940 LOC, 1890 statements and 177 decisions.
 #### Gemma Group
 The Generated file contained 3 errors:
-- wrong path for unused import *com.google.gson.reflect.TypeToken*.
-- in many methods, there was a typo in *TypeAdapters*
-- in local test, *writtenJson* name was not completely generated in a usage of it.
+- wrong path for unused import `com.google.gson.reflect.TypeToken`.
+- in many methods, there was a typo in `TypeAdapters`
+- in local test, `writtenJson` name was not completely generated in a usage of it.
 
 After fixing all errors, all 6 tests passed.
 
@@ -4779,17 +4782,17 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 4 errors:
-- wrong import path for *com.google.gson.stream.JsonReader*.
-- wrong import path for *com.google.gson.stream.JsonWriter*.
+- wrong import path for `com.google.gson.stream.JsonReader`.
+- wrong import path for `com.google.gson.stream.JsonWriter`.
 - in the majority of tests, some parts of the code needed to be surrounded by try-catch block.
-- in test *bigDecimalAdapter_works*, there is a text generation error.
+- in test `bigDecimalAdapter_works`, there is a text generation error.
 
 After fixing all errors, 17 tests passed and 5 tests failed. Failed tests are:
-- in test *bitSetAdapter_works*, ending and array with writer was redundant and caused exception. Furthermore, the last assertion was wrong.
-- in test *bigDecimalAdapter_works*, the first assertion was wrong.
-- in test*bigIntegerAdapter_works*, two assertions were wrong.
-- in test *urlAdapter_works*, the first assertion was wrong, then a *JsonReader* had to be set into *Lenient* mode to read a malformed json.
-- in test *uuidAdapter_works*, the expected string was wrong.
+- in test `bitSetAdapter_works`, ending and array with writer was redundant and caused exception. Furthermore, the last assertion was wrong.
+- in test `bigDecimalAdapter_works`, the first assertion was wrong.
+- in test`bigIntegerAdapter_works`, two assertions were wrong.
+- in test `urlAdapter_works`, the first assertion was wrong, then a `JsonReader` had to be set into `Lenient` mode to read a malformed json.
+- in test `uuidAdapter_works`, the expected string was wrong.
 
 list of tests:
 1. CLASS adapter throws exception on write and read
@@ -4812,7 +4815,7 @@ list of tests:
 18. URL adapter read and write
 19. UUID adapter read and write
 
-Utility methods *createReader*, *writeToString*, *readSD*, and *TypeAdapters_BIG_INTEGER_read_STUB* were generated.
+Utility methods `createReader`, `writeToString`, `readSD`, and `TypeAdapters_BIG_INTEGER_read_STUB` were generated.
 
 Missing coverage:
 - TypeAdapters(), atomicLongAdapter(TypeAdapter), atomicLongArrayAdapter(TypeAdapter), BOOLEAN_FACTORY, checkValidFloatingPoint(double), javaTimeTypeAdapterFactory(), newFactory(Type Token, TypeAdapter), newFactoryForMultipleTypes(Class, Class, TypeAdapter), newTypeHierarchyFactory(Class, TypeAdapter), toIntExact(long), and toString() are not tested at all.
@@ -4887,7 +4890,7 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 2 errors:
 - missing package statement.
-- in *testByteAdapter()*, *IOException* must be added to method signature.
+- in `testByteAdapter()`, `IOException` must be added to method signature.
 
 After fixing all errors, all 6 tests passed.
 
@@ -4968,16 +4971,16 @@ Still, the coverage is not satisfactory.
 It's worth it to use about 3 times tokens to achieve the double coverage between Gemma4 modes.
 
 ## Group 7: Internal utilities/data structures
-Gemma4 in group mode did not generate tests for *UnsafeAllocator* in the first prompt's output.
+Gemma4 in group mode did not generate tests for `UnsafeAllocator` in the first prompt's output.
 I prompt it to generate test for it after the first prompt, in the same session.  
-Also, Gemma4 in single mode wrote *StreamsTest* in wrong path.
+Also, Gemma4 in single mode wrote `StreamsTest` in wrong path.
 
 ### LinkedTreeMap
 This file has 488 LOC, 1149 statements and 180 decisions.
 #### Gemma Group
-The Generated file contained an errors. In test *remove()*, there was a text generation fault.
+The Generated file contained an errors. In test `remove()`, there was a text generation fault.
 
-After fixing the error, 8 tests passed and a test failed. In *nodeOperations()*, the last assertion was expecting wrong value.
+After fixing the error, 8 tests passed and a test failed. In `nodeOperations()`, the last assertion was expecting wrong value.
 
 list of tests:
 1. Natural order constructor and basic operations
@@ -4997,13 +5000,13 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 2 errors:
-- wrong import path for *java.util.ConcurrentModificationException*.
-- text generation error in tests *putNullKeyThrowsNPE* and *iteratorConcurrentModification*.
+- wrong import path for `java.util.ConcurrentModificationException`.
+- text generation error in tests `putNullKeyThrowsNPE` and `iteratorConcurrentModification`.
 
 After fixing all errors, 22 tests passed and 3 tests failed. Failed tests are:
-- in test *defaultConstructor*, the first assertion was wrong. It also looks like the model failed to fully generate this test. Also, putting null as key will throw exception.
-- in test *customComparator*, the order of assertions was wrong.
-- in test *testReadObjectThrows*, initializing an *ObjectInputStream* throws an exception. I was not able to fix this, and the last assertion was removed.
+- in test `defaultConstructor`, the first assertion was wrong. It also looks like the model failed to fully generate this test. Also, putting null as key will throw exception.
+- in test `customComparator`, the order of assertions was wrong.
+- in test `testReadObjectThrows`, initializing an `ObjectInputStream` throws an exception. I was not able to fix this, and the last assertion was removed.
 
 list of tests:
 1. Default constructor creates natural order map allowing null values
@@ -5039,7 +5042,7 @@ Missing coverage:
 #### GPT-OSS Group
 The Generated file contained no error.
 
-8 tests passed and a test failed. in test *nullValueNotAllowed()*, the assertion is wrong.
+8 tests passed and a test failed. in test `nullValueNotAllowed()`, the assertion is wrong.
 
 list of tests:
 1. put, get and size
@@ -5060,10 +5063,10 @@ Missing coverage:
 The Generated file contained an error, which was missing package statement.
 
 After fixing the error, 10 tests passed and 4 tests failed. Failed tests are:
-- in test *putNullValueWhenNotAllowed_ShouldThrowNPE()*, no exception is thrown.
-- in test *writeReplace_ShouldReturnLinkedHashMapEquivalent()*, the agent tried to access a private method.
-- in test *findWithNullComparatorAndNonComparableKey_ShouldThrowCce()*, no exception is thrown.
-- in test *findWithCustomComparator_ShouldRespectOrder()*, the assertions order was wrong.
+- in test `putNullValueWhenNotAllowed_ShouldThrowNPE()`, no exception is thrown.
+- in test `writeReplace_ShouldReturnLinkedHashMapEquivalent()`, the agent tried to access a private method.
+- in test `findWithNullComparatorAndNonComparableKey_ShouldThrowCce()`, no exception is thrown.
+- in test `findWithCustomComparator_ShouldRespectOrder()`, the assertions order was wrong.
 
 list of tests:
 1. put and get should store and return values
@@ -5109,9 +5112,9 @@ This file has 216 LOC, 658 statements and 91 decisions.
 #### Gemma Group
 The Generated file contained 2 errors:
 - wring package statement.
-- in test *formatDateUTC*, misspell of *ISO8601Utils*.
+- in test `formatDateUTC`, misspell of `ISO8601Utils`.
 
-After fixing all errors, 5 tests passed and a test failed. It looks like in test *parseValidDate()*, the assertion is expecting a wrong value.
+After fixing all errors, 5 tests passed and a test failed. It looks like in test `parseValidDate()`, the assertion is expecting a wrong value.
 
 list of tests:
 1. Format date without millis and UTC
@@ -5127,12 +5130,12 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 2 errors:
-- in test *parseLeapSeconds*, *cal.set* had an extra argument.
-- text generation error in test *parseMissingTimezoneIndicator*.
+- in test `parseLeapSeconds`, `cal.set` had an extra argument.
+- text generation error in test `parseMissingTimezoneIndicator`.
 
 After fixing all errors, 15 tests passed and 2 tests failed. Failed tests are:
-- in test *parseLeapSeconds*, in an assertEquals both objects had the same toString() values, but the assertion was incorrect.
-- in test *parseSimpleDate*, the assertion was wrong. It could be duo to time zone.
+- in test `parseLeapSeconds`, in an assertEquals both objects had the same toString() values, but the assertion was incorrect.
+- in test `parseSimpleDate`, the assertion was wrong. It could be duo to time zone.
 
 list of tests:
 1. format(Date) should use UTC and no millis
@@ -5153,9 +5156,9 @@ Missing coverage:
 #### GPT-OSS Group
 The Generated file contained 2 errors:
 - wrong package statement.
-- missing import for *java.text.ParsePosition*.
+- missing import for `java.text.ParsePosition`.
 
-After fixing all errors, 6 tests passed and a test failed. In test *formatWithTimeZone()*, a test failed potentially caused by timezone.
+After fixing all errors, 6 tests passed and a test failed. In test `formatWithTimeZone()`, a test failed potentially caused by timezone.
 
 list of tests:
 1. parse a simple date
@@ -5166,7 +5169,7 @@ list of tests:
 6. format with non‑UTC time zone
 7. invalid format throws ParseException
 
-an unused utility method *assertDatesEqual* was generated.
+an unused utility method `assertDatesEqual` was generated.
 
 Missing coverage:
 - format(Date, boolean, TimeZone), indexOfNonDigit(String, int), parse(String, ParsePosition), and parseInt(String, int, int) have missing branches.
@@ -5175,11 +5178,11 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 2 errors:
 - missing package statement.
-- missing import for *java.text.ParsePosition*.
+- missing import for `java.text.ParsePosition`.
 
 After fixing all errors, 4 tests passed and 2 tests failed. Failed tests are:
-- in test *parseWithPositiveTimezoneOffset()*, the test was failing with a difference less than a second. By setting calendar milliseconds to 0, it was fixed.
-- in test *parseWithNegativeTimezoneOffsetNoMinutes()*, the same thing as above happened.
+- in test `parseWithPositiveTimezoneOffset()`, the test was failing with a difference less than a second. By setting calendar milliseconds to 0, it was fixed.
+- in test `parseWithNegativeTimezoneOffsetNoMinutes()`, the same thing as above happened.
 
 list of tests:
 1. parse date only without time
@@ -5221,17 +5224,17 @@ list of tests:
 3. Parse invalid JSON throws JsonSyntaxException
 4. Write JSON element to writer
 
-Utility class *JsonElementReader* was created.
+Utility class `JsonElementReader` was created.
 
 Missing coverage:
-- private subclasses *AppendableWriter* and *AppendableWriter.CurrentWrite* are not tested at all.
+- private subclasses `AppendableWriter` and `AppendableWriter.CurrentWrite` are not tested at all.
 - Streams() and writerForAppendable(Appendable) are not tested at all.
 
 #### Gemma Single
 The Generated file contained 3 errors:
-- wrong import path for *com.google.gson.stream.JsonWriter*.
-- wrong import path for *java.lang.Appendable*.
-- test *writerForAppendable_returnsAppendableWriterIfInputIsAppendable()* needed to have *IOException* in its signature.
+- wrong import path for `com.google.gson.stream.JsonWriter`.
+- wrong import path for `java.lang.Appendable`.
+- test `writerForAppendable_returnsAppendableWriterIfInputIsAppendable()` needed to have `IOException` in its signature.
 
 After fixing all errors, all 10 tests passed.
 
@@ -5247,10 +5250,10 @@ list of tests:
 9. AppendableWriter - Closeable behavior
 10. AppendableWriter - Flushable behavior
 
-Utility classes *MockCloseable* and *MockFlushable* are created.
+Utility classes `MockCloseable` and `MockFlushable` are created.
 
 Missing coverage:
-- private subclass *AppendableWriter.CurrentWrite* is not tested at all.
+- private subclass `AppendableWriter.CurrentWrite` is not tested at all.
 - AppendableWriter.close(), AppendableWriter.flush(), and parse(JsonReader) have missing branches.
 - AppendableWriter.append(CharSequence, int, int), AppendableWriter.write(String, int, int), AppendableWriter.write(char[], int, int), AppendableWriter.write(int), and Streams() are not tested at all.
 
@@ -5267,18 +5270,18 @@ list of tests:
 5. writerForAppendable accepts Writer and Appendable
 
 Missing coverage:
-- private subclass *AppendableWriter.CurrentWrite* is not tested at all.
+- private subclass `AppendableWriter.CurrentWrite` is not tested at all.
 - AppendableWriter.flush(), and parse(JsonReader) have missing branches.
 - AppendableWriter.append(CharSequence, int, int), AppendableWriter.close(), AppendableWriter.write(char[], int, int), and Streams() are not tested at all.
 
 #### GPT-OSS Single
 The Generated file contained 2 errors:
-- missing import for *java.io.Writer*.
+- missing import for `java.io.Writer`.
 - in many strings throughout the file, two backslashes were used for '\\"'.
 
 After fixing all errors, 7 tests passed and 2 tests failed. Failed tests are:
-- in test *parseMalformedJsonException()*, no exception is thrown.
-- in test *wrapsAppendable()*, wrong string was expected.
+- in test `parseMalformedJsonException()`, no exception is thrown.
+- in test `wrapsAppendable()`, wrong string was expected.
 
 list of tests:
 1. parses valid JSON object
@@ -5291,10 +5294,10 @@ list of tests:
 8. flush delegates to Flushable appendable
 9. close delegates to Closeable appendable
 
-Utility classes *TestFlushableAppendable* and *TestCloseableAppendable* were generated.
+Utility classes `TestFlushableAppendable` and `TestCloseableAppendable` were generated.
 
 Missing coverage:
-- private subclass *AppendableWriter.CurrentWrite* is not tested at all.
+- private subclass `AppendableWriter.CurrentWrite` is not tested at all.
 - AppendableWriter.close(), and parse(JsonReader) have missing branches.
 - AppendableWriter.append(CharSequence), AppendableWriter.append(CharSequence, int, int), AppendableWriter.write(char[], int, int), and Streams() are not tested at all.
 
@@ -5314,13 +5317,13 @@ Missing coverage:
 GPT-OSS performed better in group mode.
 Interestingly, GPT-OSS achieved higher decision coverage in single mode but lower statement coverage than Gemma4.
 Considering the costs, GPT-OSS is probably winner here.
-Private subclass *AppendableWriter.CurrentWrite* was not tested at all between all methods.
+Private subclass `AppendableWriter.CurrentWrite` was not tested at all between all methods.
 This reduced statement coverage by 22%.
 
 ### LazilyParsedNumber
 This file has 72 LOC, 82 statements and 4 decisions.
 #### Gemma Group
-The Generated file contained an error. in *testCompareTo()*, there was a text generation error.
+The Generated file contained an error. in `testCompareTo()`, there was a text generation error.
 
 After fixing the error, all 6 tests passed.
 
@@ -5338,7 +5341,7 @@ Missing coverage:
 
 
 #### Gemma Single
-The Generated file contained an error which was a text generation error in test *intValue_largeInteger()*.
+The Generated file contained an error which was a text generation error in test `intValue_largeInteger()`.
 
 After fixing the errors, all 18 tests passed.
 
@@ -5362,8 +5365,8 @@ Missing coverage:
 The Generated file contained no error.
 
 5 tests passed and 2 tests failed. Failed tests are:
-- in test *intValueOverflow()*, the assertion is wrong.
-- in test *compareTo()*, the assertion is wrong.
+- in test `intValueOverflow()`, the assertion is wrong.
+- in test `compareTo()`, the assertion is wrong.
 
 list of tests:
 1. intValue parses integer
@@ -5379,11 +5382,11 @@ Missing coverage:
 - readObject(ObjectInputStream), toString(), and writeReplace() are not tested at all.
 
 #### GPT-OSS Single
-The Generated file contained an error. In test *writeReplaceReturnsBigDecimal()*, the agent tried to access *LazilyParsedNumber.writeReplace* private method.
+The Generated file contained an error. In test `writeReplaceReturnsBigDecimal()`, the agent tried to access `LazilyParsedNumber.writeReplace` private method.
 
 After fixing the error, 15 tests passed and 2 tests failed. Failed tests are:
-- in test *intValueFallbackToLong()*, the assertion was wrong.
-- in test *readObjectThrows()*, no exception was thrown.
+- in test `intValueFallbackToLong()`, the assertion was wrong.
+- in test `readObjectThrows()`, no exception was thrown.
 
 list of tests:
 1. returns parsed int when value is within int range
@@ -5471,7 +5474,7 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained an error which was missing package statement.
 
-After fixing the error, 6 tests passed and a test failed. In test *parseBigDecimal_TooLargeScale()*, the assertion was wrong.
+After fixing the error, 6 tests passed and a test failed. In test `parseBigDecimal_TooLargeScale()`, the assertion was wrong.
 
 list of tests:
 1. parseBigDecimal with valid number returns BigDecimal
@@ -5498,7 +5501,7 @@ Missing coverage:
 | tokens used                    |     857      |    10,582     |      771      |     10,337     |
 | tokens per decision coverage % |      11      |      141      |      10       |      138       |
 
-All agents performed exactly the same. They missed a branch in *parseBigDecimal(String)* which requires the scale of the big decimal to be over 10,000. It was actually really easy to cause it. Between two local models, with less token usage, GPT-OSS wins. However, since this was a small file, tests should be generated for it along with other small files in order to keep the costs low.
+All agents performed exactly the same. They missed a branch in `parseBigDecimal(String)` which requires the scale of the big decimal to be over 10,000. It was actually really easy to cause it. Between two local models, with less token usage, GPT-OSS wins. However, since this was a small file, tests should be generated for it along with other small files in order to keep the costs low.
 
 ### NonNullElementWrapperList
 This file has 85 LOC, 99 statements and 2 decisions.
@@ -5523,7 +5526,7 @@ The Generated file contained no error.
 All 19 tests passed.
 
 list of tests:
-1. Constructor should throw *NullPointerException* if a delegate is null
+1. Constructor should throw `NullPointerException` if a delegate is null
 2. get() should return the element at the specified index
 3. size() should return the correct size of the delegate
 4. set() should update element when not null
@@ -5546,7 +5549,7 @@ list of tests:
 Full statement and decision coverage attained.
 
 #### GPT-OSS Group
-The Generated file contained an error. In test *setNull()*, variable list must have been a *NonNullElementWrapperList<String>* Type.
+The Generated file contained an error. In test `setNull()`, variable list must have been a `NonNullElementWrapperList<String>` Type.
 
 After fixing all errors, all 7 tests passed.
 
@@ -5623,7 +5626,7 @@ Missing coverage:
 
 
 #### Gemma Single
-The Generated file contained an error. In test *newInstance_success_unsafe*, it was not possible to cast *java.lang.Exception* to *java.lang.AssertionError*.
+The Generated file contained an error. In test `newInstance_success_unsafe`, it was not possible to cast `java.lang.Exception` to `java.lang.AssertionError`.
 
 After fixing the error, all 4 tests passed.
 
@@ -5633,7 +5636,7 @@ list of tests:
 3. newInstance: throws AssertionError for abstract class
 4. newInstance: throws UnsupportedOperationException if all allocation methods fail
 
-Utility classes *ConcreteClass*, *AbstractClass*, and *NoNoArgsConstructor* were generated. In addition, helper interface *TestInterface* was generated.
+Utility classes `ConcreteClass`, `AbstractClass`, and `NoNoArgsConstructor` were generated. In addition, helper interface `TestInterface` was generated.
 
 Missing coverage:
 - create() has missing branches.
@@ -5641,7 +5644,7 @@ Missing coverage:
 #### GPT-OSS Group
 The Generated file contained no error.
 
-a test passed and a test failed. In test *newInstanceInterface*, wrong exception was expected.
+a test passed and a test failed. In test `newInstanceInterface`, wrong exception was expected.
 
 list of tests:
 1. INSTANCE is non‑null
@@ -5703,7 +5706,7 @@ There was no problem during test generation for this group.
 ### SqlTypesSupport
 This file has 58 LOC, 80 statements and 2 decisions.
 #### Gemma Group
-The Generated file contained an error. The agent tried to access undefined *SqlTypesSupport.SQL_TYPE_features* variable.
+The Generated file contained an error. The agent tried to access undefined `SqlTypesSupport.SQL_TYPE_features` variable.
 
 After fixing the error, the single test passed.
 
@@ -5716,7 +5719,7 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 1 error:
-- in *testSqlTypesSupportConstants*, there was a text generation error.
+- in `testSqlTypesSupportConstants`, there was a text generation error.
 
 After fixing the error, the single tests passed.
 
@@ -5728,9 +5731,9 @@ Missing coverage:
 
 #### GPT-OSS Group
 The Generated file contained 3 errors:
-- in *testDateTypeDeserialization()*, variable *adapter* is initialized incorrectly.
-- in *testDateTypeDeserialization()*, needed to add IOException to method signature.
-- in *testDateTypeDeserialization()*, had to use *read* method since there was no way to set strictness in order to read the malformed json.
+- in `testDateTypeDeserialization()`, variable `adapter` is initialized incorrectly.
+- in `testDateTypeDeserialization()`, needed to add IOException to method signature.
+- in `testDateTypeDeserialization()`, had to use `read` method since there was no way to set strictness in order to read the malformed json.
 
 After fixing all errors, all 4 tests passed.
 
@@ -5746,7 +5749,7 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained an error which was missing package statement.
 
-After fixing the error, a test passed and a test failed. Since the test environment supports SQL, test *whenSqlMissing_thenConstantsAreNull()* is going to fail.
+After fixing the error, a test passed and a test failed. Since the test environment supports SQL, test `whenSqlMissing_thenConstantsAreNull()` is going to fail.
 
 list of tests:
 1. Static initialization succeeds when java.sql is available
@@ -5778,11 +5781,11 @@ Since GPT-OSS consumes fewer tokens, it is the winner.
 This file has 62 LOC, 98 statements and 6 decisions.
 #### Gemma Group
 The Generated file contained 2 errors:
-- wrong import path for *org.junit.jupiter.api.Assertions.assertNotNull*.
-- initialization of private variable *adapter* with a private constructor.
+- wrong import path for `org.junit.jupiter.api.Assertions.assertNotNull`.
+- initialization of private variable `adapter` with a private constructor.
 
 After fixing all errors, 4 tests passed and 2 tests failed. Failed tests are:
-- in parametrized *testRead()*, because there was comma in a value in CSV source, test was failing even though the value with the comma was surrounded with double quotation. I replaced the CSV source with method source.
+- in parametrized `testRead()`, because there was comma in a value in CSV source, test was failing even though the value with the comma was surrounded with double quotation. I replaced the CSV source with method source.
 
 list of tests:
 1. writing Date to JSON
@@ -5796,10 +5799,10 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 2 errors:
-- in *setUp()*, there was a typo.
-- in test *writeNull and writeValidDate()*, non-existing and unnecessary *JsonWriter.endDocument()* was called.
+- in `setUp()`, there was a typo.
+- in test `writeNull and writeValidDate()`, non-existing and unnecessary `JsonWriter.endDocument()` was called.
 
-After fixing all errors, 4 tests passed and 2 tests failed. In parametrized test *readValidDate()*, CSV source is used to pass date that contains comma in them, and this time, the date is not wrapped around double quotation which doesn't change anything. Did the same thing as previous time.
+After fixing all errors, 4 tests passed and 2 tests failed. In parametrized test `readValidDate()`, CSV source is used to pass date that contains comma in them, and this time, the date is not wrapped around double quotation which doesn't change anything. Did the same thing as previous time.
 
 list of tests:
 1. Factory returns adapter for java.sql.Date
@@ -5814,8 +5817,8 @@ Full statement and decision coverage obtained.
 
 #### GPT-OSS Group
 The Generated file contained 2 errors:
-- missing import for *com.google.gson.JsonSyntaxException*.
-- instantiation of private variable *adapter* with a private constructor.
+- missing import for `com.google.gson.JsonSyntaxException`.
+- instantiation of private variable `adapter` with a private constructor.
 
 After fixing all errors, all 5 tests passed.
 
@@ -5831,8 +5834,8 @@ Missing coverage:
 
 #### GPT-OSS Single
 The Generated file contained 2 errors:
-- The agent tried to alias *java.sql.Date* which isn't possible in java.
-- instantiation of private variable *adapter* with a private constructor.
+- The agent tried to alias `java.sql.Date` which isn't possible in java.
+- instantiation of private variable `adapter` with a private constructor.
 
 After fixing all errors, all 5 tests passed.
 
@@ -5865,10 +5868,10 @@ Only Gemma4 single mode managed to achieve full coverage. All other agents were 
 This file has 39 LOC, 51 statements and 4 decisions.
 #### Gemma Group
 The Generated file contained 2 errors:
-- wrong import path for *org.junit.jupiter.api.BeforeEach*.
-- invalid text generation in *testWrite*.
+- wrong import path for `org.junit.jupiter.api.BeforeEach`.
+- invalid text generation in `testWrite`.
 
-After fixing all errors, 4 tests passed and a test failed. In *testRead()*, the agent had the wrong assumption about date format.
+After fixing all errors, 4 tests passed and a test failed. In `testRead()`, the agent had the wrong assumption about date format.
 
 list of tests:
 1. factory returns null for non-Timestamp types
@@ -5882,12 +5885,12 @@ Full statement and decision coverage attained.
 
 #### Gemma Single
 The Generated file contained 2 errors:
-- missing import for *com.google.gson.TypeAdapter*.
-- a typo in test *read_ValidDate_ReturnsTimestamp()*.
+- missing import for `com.google.gson.TypeAdapter`.
+- a typo in test `read_ValidDate_ReturnsTimestamp()`.
 
 After fixing all errors, 3 tests passed and 2 tests failed. Failed tests are:
-- in test *read_ValidDate_ReturnsTimestamp()*, *Date* variable *originalDate* was initialized with the current time, which resulted in considering hours, minutes, and seconds. The assertion was wrong for that.
-- in test *write_ValidTimestamp_WritesCorrectJson()*, milliseconds had to be removed in order for assertion to work correctly.
+- in test `read_ValidDate_ReturnsTimestamp()`, `Date` variable `originalDate` was initialized with the current time, which resulted in considering hours, minutes, and seconds. The assertion was wrong for that.
+- in test `write_ValidTimestamp_WritesCorrectJson()`, milliseconds had to be removed in order for assertion to work correctly.
 
 list of tests:
 1. factory returns adapter for timestamp
@@ -5900,10 +5903,10 @@ Full statement and decision coverage obtained.
 
 #### GPT-OSS Group
 The Generated file contained 2 errors:
-- private variable *dateAdapter* was initialized incorrectly.
-- private variable *adapter* was initialized with a private constructor.
+- private variable `dateAdapter` was initialized incorrectly.
+- private variable `adapter` was initialized with a private constructor.
 
-After fixing all errors, 2 tests passed and 1 test failed. In *testReadNotNull()*, the time zone most likely caused an assertion to fail.
+After fixing all errors, 2 tests passed and 1 test failed. In `testReadNotNull()`, the time zone most likely caused an assertion to fail.
 
 list of tests:
 1. read() converts Date to Timestamp
@@ -5915,12 +5918,12 @@ Missing coverage:
 
 #### GPT-OSS Single
 The Generated file contained 2 errors:
-- in test *write_roundTrip()*, there was a semicolon after an annotation
-- utility class *TimestampAdapter* was inheriting from final class *SqlTimestampTypeAdapter*.
+- in test `write_roundTrip()`, there was a semicolon after an annotation
+- utility class `TimestampAdapter` was inheriting from final class `SqlTimestampTypeAdapter`.
 
 After fixing all errors, 2 tests passed and 2 tests failed. Failed tests are:
-- in test *write_roundTrip()*, time with a wrong format was expected.
-- in test *read_nonNullNumber()*, *json* string had a wrong format, and the assertion was wrong.
+- in test `write_roundTrip()`, time with a wrong format was expected.
+- in test `read_nonNullNumber()`, `json` string had a wrong format, and the assertion was wrong.
 
 list of tests:
 1. read() returns Timestamp when JSON contains a number
@@ -5928,7 +5931,7 @@ list of tests:
 3. write() serializes a Timestamp to its epoch milliseconds
 4. Factory returns adapter for Timestamp.class and null otherwise
 
-Utility method *gsonFactoryInstance()* was generated to create a gson instance.
+Utility method `gsonFactoryInstance()` was generated to create a gson instance.
 
 Full statement and decision coverage attained.
 
@@ -5951,7 +5954,7 @@ Only GPT-OSS Group didn't achieve full coverage since it missed a single branch.
 This file has 63 LOC, 98 statements and 6 decisions.
 #### Gemma Group
 The Generated file contained an error:
-- missing import org.junit.jupiter.api.Assertions.*
+- missing import org.junit.jupiter.api.Assertions.`
 
 After fixing the error, all 6 tests passed.
 
@@ -5968,12 +5971,12 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 3 errors:
-- wrong instantiation for private variable *SqlTimeTypeAdapter*.
-- usage of undefined variable *SqlTime* in tests *factoryCreate_returnsAdapterForTimeClass()* and *factoryCreate_returnsNullForOtherClasses()*.
-- in test *read_parsesValidTimeStrings()* parameters, a double quotation was missing.
+- wrong instantiation for private variable `SqlTimeTypeAdapter`.
+- usage of undefined variable `SqlTime` in tests `factoryCreate_returnsAdapterForTimeClass()` and `factoryCreate_returnsNullForOtherClasses()`.
+- in test `read_parsesValidTimeStrings()` parameters, a double quotation was missing.
 
 After fixing all errors, 6 tests passed and 3 tests failed. Failed tests are:
-- in test *read_parsesValidTimeStrings()* the quotations were not needed and the expected times were wrong.
+- in test `read_parsesValidTimeStrings()` the quotations were not needed and the expected times were wrong.
 
 list of tests:
 1. FACTORY.create returns adapter for Time.class
@@ -5988,8 +5991,8 @@ Full statement and decision coverage obtained.
 
 #### GPT-OSS Group
 The Generated file contained 2 errors:
-- missing import for *com.google.gson.JsonSyntaxException*.
-- incorrect instantiation of private variable *adapter*.
+- missing import for `com.google.gson.JsonSyntaxException`.
+- incorrect instantiation of private variable `adapter`.
 
 After fixing all errors, all 5 tests passed.
 
@@ -6006,7 +6009,7 @@ Missing coverage:
 #### GPT-OSS Single
 The Generated file contained 2 errors:
 - missing package statement.
-- wrong instantiation of private variable *adapter*.
+- wrong instantiation of private variable `adapter`.
 
 After fixing all errors, all 5 tests passed.
 
@@ -6056,7 +6059,7 @@ Gemma4 performed slightly better in both modes.
 It's probably worth it to use Gemma4 rather than GPT-OSS in group mode to obtain the higher coverage.
 
 ## Group 9: Facade/configuration and Miscellaneous
-Gemma4 in group mode didn't generate *GsonTest* in the first prompt.
+Gemma4 in group mode didn't generate `GsonTest` in the first prompt.
 I had prompt the agent to do it in the same session.  
 GPT-OSS in group mode did not use skill.
 I tried three times!
@@ -6065,10 +6068,10 @@ I tried three times!
 This file has 456 LOC, 1047 statements and 74 decisions.
 #### Gemma Group
 The Generated file contained 4 errors:
-- text generation error in test *setLongSerializationSerializationPolicy_setsPolicy()*.
-- usage of non-existing enum *LongSerializationPolicy.OFFSET_LENGTH* in setLongSerializationSerializationPolicy_setsPolicy. Replaced with *DEFAULT*.
-- text generation error in test *serializeSpecialFloatingPointValues_setsFlag*.
-- in test *addReflectionAccessFilter_addsFilter()*, the instantiated *ReflectionAccessFilter*, need to override *check(Class) method and the unused method accepts was not overriding something.
+- text generation error in test `setLongSerializationSerializationPolicy_setsPolicy()`.
+- usage of non-existing enum `LongSerializationPolicy.OFFSET_LENGTH` in setLongSerializationSerializationPolicy_setsPolicy. Replaced with `DEFAULT`.
+- text generation error in test `serializeSpecialFloatingPointValues_setsFlag`.
+- in test `addReflectionAccessFilter_addsFilter()`, the instantiated `ReflectionAccessFilter`, need to override `check(Class) method and the unused method accepts was not overriding something.
 
 After fixing all errors, all 36 tests passed.
 
@@ -6110,7 +6113,7 @@ list of tests:
 35. addReflectionAccessFilter() should add filter and return this
 36. create() should return a Gson instance
 
-Helper method *tokenVerify* was generated.
+Helper method `tokenVerify` was generated.
 
 Missing coverage:
 - addDateTypeAdapters(List), addUserDefinedAdapters(List), checkDateFormatStyle(int), createFactories(ConstructorConstructor, JsonAdapterAnnotationTypeAdapterFactory), newImmutableList(Collection), registerTypeAdapter(Type, Object), registerTypeHierarchyAdapter(Class, Object), and setDateFormat(String) have missing branches.
@@ -6118,16 +6121,16 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 10 errors:
-- wrong import path for *com.google.gson.TypeAdapterFactory*.
-- in tests *serializeNulls_returnsThis()* and *addSerializationExclusionStrategy_returnsThis()*, it was not possible to cast the second argument in the first assertion to boolean.
-- across three tests, variable *strategy* must also override *shouldSkipField(FieldAttributes)*, not *shouldSkipField(TypeToken, ExclusionCriteria)*.
-- in test *setLongSerializationPolicy_returnsThis()*, undefined enum *LongSerializationPolicy.MAX_VALUE* is used. It was replaced with *DEFAULT*.
-- text generation error before test *setFieldNamingStrategy_null()*.
-- in test *setDateFormat_null()*, *Object.toString()* and utility method *toString(GsonBuilder)* were conflicting. Renamed the latter to *toStringUtility*.
-- in test *registerTypeAdapter_nullType()*, in the instantiated *TypeAdapter*, read(JsonReader) must be overridden, not read(JsonParsingException).
-- in test *registerTypeAdapterFactory_returnsThis()*, variable *factory* must override create(Gson, TypeToken), not create(Type, TypeAdapterContext).
-- in test *addReflectionAccessFilter_returnsThis()*, *filter* must override check(Class).
-- in test *addReflectionAccessFilter_returnsThis()*, *filter* was overriding non-existing isAllowed(Class, Class, Field, Method)
+- wrong import path for `com.google.gson.TypeAdapterFactory`.
+- in tests `serializeNulls_returnsThis()` and `addSerializationExclusionStrategy_returnsThis()`, it was not possible to cast the second argument in the first assertion to boolean.
+- across three tests, variable `strategy` must also override `shouldSkipField(FieldAttributes)`, not `shouldSkipField(TypeToken, ExclusionCriteria)`.
+- in test `setLongSerializationPolicy_returnsThis()`, undefined enum `LongSerializationPolicy.MAX_VALUE` is used. It was replaced with `DEFAULT`.
+- text generation error before test `setFieldNamingStrategy_null()`.
+- in test `setDateFormat_null()`, `Object.toString()` and utility method `toString(GsonBuilder)` were conflicting. Renamed the latter to `toStringUtility`.
+- in test `registerTypeAdapter_nullType()`, in the instantiated `TypeAdapter`, read(JsonReader) must be overridden, not read(JsonParsingException).
+- in test `registerTypeAdapterFactory_returnsThis()`, variable `factory` must override create(Gson, TypeToken), not create(Type, TypeAdapterContext).
+- in test `addReflectionAccessFilter_returnsThis()`, `filter` must override check(Class).
+- in test `addReflectionAccessFilter_returnsThis()`, `filter` was overriding non-existing isAllowed(Class, Class, Field, Method)
 
 After fixing all errors, all 53 tests passed.
 
@@ -6182,7 +6185,7 @@ list of tests:
 48. addReflectionAccessFilter() returns this
 49. create() returns a Gson instance
 
-Utility method *toStringUtility(GsonBuilder)* is generated.
+Utility method `toStringUtility(GsonBuilder)` is generated.
 
 Missing coverage:
 - addDateTypeAdapters(List), addUserDefinedAdapters(List), createFactories(ConstructorConstructor, JsonAdapterAnnotationTypeAdapterFactory), doubleAdapter(), floatAdapter(), newImmutableList(Collection), registerTypeAdapter(Type, Object), and registerTypeHierarchyAdapter(Class, Object) have missing branches.
@@ -6190,11 +6193,11 @@ Missing coverage:
 
 #### GPT-OSS Group
 The Generated file contained 5 errors:
-- wrong import path for *com.google.gson.FieldNamingPolicy*.
-- wrong import path for *com.google.gson.LongSerializationPolicy*.
-- wrong import path for *com.google.gson.ToNumberPolicy*.
-- missing import *java.text.DateFormat*.
-- in test *defaultBuilderCreatesGsonWithDefaults*, the last assertion was calling variable *Gson.generateNonExecutableJson* with parenthesis at the end.
+- wrong import path for `com.google.gson.FieldNamingPolicy`.
+- wrong import path for `com.google.gson.LongSerializationPolicy`.
+- wrong import path for `com.google.gson.ToNumberPolicy`.
+- missing import `java.text.DateFormat`.
+- in test `defaultBuilderCreatesGsonWithDefaults`, the last assertion was calling variable `Gson.generateNonExecutableJson` with parenthesis at the end.
 
 After fixing all errors, all 19 tests passed.
 
@@ -6225,8 +6228,8 @@ Missing coverage:
 
 #### GPT-OSS Single
 The Generated file contained 2 errors:
-- missing import for *com.google.gson.internal.Excluder*.
-- missing import for *java.text.DateFormat*.
+- missing import for `com.google.gson.internal.Excluder`.
+- missing import for `java.text.DateFormat`.
 
 After fixing all errors, all 12 tests passed.
 
@@ -6293,7 +6296,7 @@ list of tests:
 17. fromJson(JsonReader, TypeToken) should work
 18. toJson(JsonElement, JsonWriter) should work
 
-Utility class *TestClass* was created.
+Utility class `TestClass` was created.
 
 Missing coverage:
 - excluder() is not tested at all, however, it is a deprecated method.
@@ -6303,10 +6306,10 @@ Missing coverage:
 
 #### Gemma Single
 The Generated file contained 4 errors:
-- missing import for *java.io.StringWriter*.
-- missing import for *com.google.gson.stream.JsonWriter*.
-- missing import for *java.io.Reader*.
-- missing import for *java. io. Writer*.
+- missing import for `java.io.StringWriter`.
+- missing import for `com.google.gson.stream.JsonWriter`.
+- missing import for `java.io.Reader`.
+- missing import for `java.io.Writer`.
 
 After fixing all errors, all 27 tests passed.
 
@@ -6339,7 +6342,7 @@ list of tests:
 26. newBuilder() - returns new builder
 27. toString() - returns class info
 
-Helper class *TestClass* was generated.
+Helper class `TestClass` was generated.
 
 Missing coverage:
 - excluder() is not tested at all, however, it is a deprecated method.
@@ -6348,11 +6351,11 @@ Missing coverage:
 
 #### GPT-OSS Group
 The Generated file contained 5 errors:
-- missing import for *java.text.DateFormat*.
-- missing import for *com.google.gson.stream.JsonWriter*.
-- missing import for *java.io.StringReader*.
-- in test *toJsonWithFormatting()*, the second argument of the first assertion had error.
-- in test *newJsonWriterProperties()*, the agent tried to access undefined *Gson.JSON_NON_EXECUTABLE_PREFIX*. The assertion using it was commented.
+- missing import for `java.text.DateFormat`.
+- missing import for `com.google.gson.stream.JsonWriter`.
+- missing import for `java.io.StringReader`.
+- in test `toJsonWithFormatting()`, the second argument of the first assertion had error.
+- in test `newJsonWriterProperties()`, the agent tried to access undefined `Gson.JSON_NON_EXECUTABLE_PREFIX`. The assertion using it was commented.
 
 After fixing all errors, all 11 tests passed.
 
@@ -6369,7 +6372,7 @@ list of tests:
 10. fromJson() with reader and full consumption
 11. fromJson() with trailing data
 
-Helper class *SimplePojo* was created.
+Helper class `SimplePojo` was created.
 
 Missing coverage:
 - excluder() is not tested at all. However, it is a deprecated method.
@@ -6378,10 +6381,10 @@ Missing coverage:
 
 #### GPT-OSS Single
 The Generated file contained 2 errors:
-- in utility class *FooTypeAdapter*, method *read* wouldn't throw *IOException*; therefore, the try catch block is removed.
-- undefined *gson.jsonAdapterFactory* was used. I couldn't fix this, so the test is removed.
+- in utility class `FooTypeAdapter`, method `read` wouldn't throw `IOException`; therefore, the try catch block is removed.
+- undefined `gson.jsonAdapterFactory` was used. I couldn't fix this, so the test is removed.
 
-After fixing all errors, 11 tests passed and a test failed. In test *defaultConstructor_initializesFields()*, the third assertion was wrong.
+After fixing all errors, 11 tests passed and a test failed. In test `defaultConstructor_initializesFields()`, the third assertion was wrong.
 
 list of tests:
 1. default constructor should create a fully initialized Gson instance
@@ -6397,7 +6400,7 @@ list of tests:
 11. fromJson with malformed JSON throws JsonSyntaxException
 12. getAdapter should cache adapters after first creation
 
-Utility classes *Foo* and *Person* were created.
+Utility classes `Foo` and `Person` were created.
 
 Missing coverage:
 - excluder() is not tested at all. However, it is a deprecated method.
@@ -6427,7 +6430,7 @@ This file has 39 LOC, 42 statements and 9 decisions.
 #### Gemma Group
 The Generated file contained 2 errors:
 - wrong package statement.
-- a typo in test *getUsDateTimeFormat_validStyles_returnsCorrectFormat()*.
+- a typo in test `getUsDateTimeFormat_validStyles_returnsCorrectFormat()`.
 
 After fixing all errors, all 5 tests passed.
 
@@ -6442,11 +6445,11 @@ Full statement and decision coverage obtained.
 
 #### Gemma Single
 The Generated file contained an error:
-- in *testValidStyles()*, undefined method *SimpleDateFormat.getLocale()* is called.
+- in `testValidStyles()`, undefined method `SimpleDateFormat.getLocale()` is called.
 
 After fixing the error, 3 tests passed and 7 tests failed. Failed tests are:
-- in *testValidStyles()*, 5 of the tests were expecting the wrong value.
-- in *testValidStyles()*, tests with *dateStyle* = 4 would cause an exception.
+- in `testValidStyles()`, 5 of the tests were expecting the wrong value.
+- in `testValidStyles()`, tests with `dateStyle` = 4 would cause an exception.
 
 list of tests:
 1. [parametrized] Test valid DateFormat style combinations (8 tests)
@@ -6458,7 +6461,7 @@ Missing coverage:
 
 #### GPT-OSS Group
 The Generated file contained an error:
-- undefined call to method *DateFormat.toPattern()* in three tests. Fixed by casting *DateFormat* to *SimpleDateFormat* which has *toPatter()* method.
+- undefined call to method `DateFormat.toPattern()` in three tests. Fixed by casting `DateFormat` to `SimpleDateFormat` which has `toPatter()` method.
 
 After fixing all errors, all 7 tests passed.
 
@@ -6478,7 +6481,7 @@ Missing coverage:
 The Generated file contained an error which was missing package statement.
 
 After fixing all errors, 6 tests passed and 12 tests failed. Failed tests are:
-- all input for parametrized test *testPatternConstruction()* failed since it didn't encase expecting strings with quotations since they have comma in them.
+- all input for parametrized test `testPatternConstruction()` failed since it didn't encase expecting strings with quotations since they have comma in them.
 
 list of tests:
 1. [parametrized] pattern construction (16 tests)
@@ -6537,17 +6540,17 @@ Let's investigate this, I grouped all files based on their LOC. I made 5 groups:
 We need to consider that both models in single mode consume 2.4x tokens than group mode.
 
 ### Less than 50 LOC
-These files are *JsonNull, NumberLimits, LongSerializationPolicy, FieldAttributes, SqlTimestampTypeAdapter, PreJava9DateFormatProvider,
-FormattingStyle, Primitives, and JsonStreamParser*.
+These files are `JsonNull`, `NumberLimits`, `LongSerializationPolicy`, `FieldAttributes`, `SqlTimestampTypeAdapter`, `PreJava9DateFormatProvider`,
+`FormattingStyle`, `Primitives`, and `JsonStreamParser`.
 
 On average, single mode agents covered 6% more statements and 9% more decisions.
 Considering that already in group mode, more than 80% of both statements and decisions are covered,
 group mode is preferred.
 
 ### Between 50-74 LOC
-These files are *JavaVersion NumberTypeAdapter, SqlTypesSupport, JsonParser, ToNumberPolicy,
-TypeAdapterRuntimeTypeWrapper, SqlDateTypeAdapter, SqlTimeTypeAdapter, ReflectionAccessFilter,
-LazilyParsedNumber, and CollectionTypeAdapterFactory*.
+These files are `JavaVersion`, `NumberTypeAdapter`, `SqlTypesSupport`, `JsonParser`, `ToNumberPolicy`,
+`TypeAdapterRuntimeTypeWrapper`, `SqlDateTypeAdapter`, `SqlTimeTypeAdapter`, `ReflectionAccessFilter`,
+`LazilyParsedNumber`, and `CollectionTypeAdapterFactory`.
 
 On average, single mode agents covered 11% more statements and 17% more decisions.
 The difference is getting noticeable. Group mode coverage has fallen below 80% while single hasn't.
@@ -6556,9 +6559,10 @@ If you are content with 76% statement and 61 decision coverage, group mode is th
 
 
 ### Between 75-139 LOC
-These files are *JsonObject, FieldNamingPolicy, UnsafeAllocator, ReflectionAccessFilterHelper, TypeAdapter,
-ArrayTypeAdapter, NonNullElementWrapperList, EnumTypeAdapter, JsonElement, Streams, JsonElementTypeAdapter,
-JsonAdapterAnnotationTypeAdapterFactory, ObjectTypeAdapter, and DefaultDateTypeAdapter.
+These files are `JsonObject`, `FieldNamingPolicy`, `UnsafeAllocator`, `ReflectionAccessFilterHelper`, `TypeAdapter`,
+`ArrayTypeAdapter`, `NonNullElementWrapperList`, `EnumTypeAdapter`, `JsonElement`,
+`Streams` `JsonElementTypeAdapter`,`JsonAdapterAnnotationTypeAdapterFactory`, `ObjectTypeAdapter`,
+and `DefaultDateTypeAdapter`.
 
 On average, single mode agents covered 18% more statements and 23% more decisions.
 Single mode coverage is about 80% now.
@@ -6567,8 +6571,8 @@ However, the difference is getting to a point where it might be worth to spend 2
 20% more coverage.
 
 ### Between 140-299 LOC
-These files are *JsonArray, TreeTypeAdapter, MapTypeAdapterFactory, JsonPrimitive, Excluder, JsonTreeWriter,
-ISO8601Utils, ReflectionHelper, TypeToken, ConstructorConstructor.
+These files are `JsonArray`, `TreeTypeAdapter`, `MapTypeAdapterFactory`, `JsonPrimitive`, `Excluder`, 
+`JsonTreeWriter`, `ISO8601Utils`, `ReflectionHelper`, `TypeToken`, and `ConstructorConstructor`.
 
 On average, single mode agents covered 19% more statements and 21% more decisions.
 The Difference is about the same as the previous group.
@@ -6625,7 +6629,7 @@ GPT-OSS Group:
 GPT-OSS Single:
 ![gpt-oss_single.png](img/gpt-oss_single.png)
 
-Also jacoco report for each model is available in *"project2\reports\opencode\jacoco reports.zip"*.
+Also jacoco report for each model is available in `"project2\reports\opencode\jacoco reports.zip"`.
 
 Clearly, raw tests generated by Gemma4 were the least faulty one.
 It isn't surprising to see that
@@ -6667,6 +6671,10 @@ If you don't want to spend much, It is a good idea to use these local models.
 Furthermore,
 it is possible to increase the coverage by addressing the agent to add new tests to cover the rest of the code.
 I might try this out for the next reports.
+
+No model generated tests with IO and large json files.
+Since IO is handled by java, it doesn't matter.
+It would have been interesting to see some large json files for tests though.
 
 So all in all, gpt-oss:20b covered 5% of code less than gemma4:26b, but it used 25% less than gemma4:26b.
 group mode achieved 15% less coverage than single mode, but used 60% less tokens.
