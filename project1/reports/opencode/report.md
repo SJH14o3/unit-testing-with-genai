@@ -72,7 +72,7 @@ You can also configure local models in the path below:
 "(user)\.config\opencode\opencode.jsonc"  
 However, in order to apply the changes to the json file, you will need to restart OpenCode.
 
-#### Linking something
+#### Linking context
 Users can attach files or images to the AI chatbot by typing @ followed by the file's relative path.
 
 After You have written your prompt, you can click on the enter
@@ -98,6 +98,7 @@ for the suffix, if the model name is gemma4, then a test class name will have "T
 ### GPT-OSS:20b
 It completed generating all test files after 19 minutes and 41 seconds!
 With Continue.dev, this took 10 minutes and 23 seconds!
+This agent managed to write the tests in the correct folder.
 
 #### MyMath Unit
 ```java
@@ -336,6 +337,7 @@ Overall, there are no major differences.
 ### Gemma4:e4b
 The agent generated all the unit tests in one go. Last time, I ran into some issues.
 It took 5 minutes and 24 seconds to generate tests.
+The tests are written the correct folder.
 
 #### MyMath Unit
 ```java
@@ -2054,12 +2056,14 @@ Compared to Continue, the all matching test is added, but it's not really import
 
 
 #### Comparison
-Continue.dev did have MC/DC over all methods, but OpenCode doesn't.  
+Continue.dev has MC/DC over all methods, but OpenCode doesn't.  
 Overall, Continue.dev did slightly better.
 
 
 ## Final Conclusion
-I have no idea why it took OpenCode much longer to generate the code than Continue.dev.
+I assume OpenCode's using more tools than Continue.dev is the reason why
+it took its tests longer to generate.
+We can see that models are better at writing which is credited to OpenCode's tools.
 This was quite a difference.  
 In the first prompt, there were minor differences, but with the more
 complex prompt, these differences grew. In some methods, there were major differences,

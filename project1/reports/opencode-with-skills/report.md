@@ -1414,7 +1414,7 @@ After I checked *MyMath*, I was so sure that it was the skills
 that elevated the performance of this agent, but after that unit, the gap between two rounds
 was reduced by a lot!  
 Definitely, the previous round structure is much better than this since the skills provide a framework
-for the AI to work with. Also, more edge cases were covered in the previous round, but some of them
+for the model to work with. Also, more edge cases were covered in the previous round, but some of them
 were unnecessary.  
 By default, this model is great, but users can also improve it further with skills.
 The skills caused the agent to cover more boundary values, edge cases and much better structure.
@@ -1430,3 +1430,4 @@ testing too.
 It does take longer to generate tests since agent need to read the skill as well and more redundant
 tests will be generated.  
 Using skills should be done if you agree to more token consumption and time for code generation.
+As we saw, DeepSeek took 5 times longer to generate tests with two skills.

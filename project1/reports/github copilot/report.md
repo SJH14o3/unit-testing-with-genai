@@ -5,8 +5,8 @@ developed and maintained by GitHub (Owned by Microsoft). It can be installed
 on many integrated development environments (IDE) such as Visual Studio Code (VS Code),
 Visual Studio, Eclipse, JetBrains products, etc. It was released in October 2021.
 It is not a model, instead it allows the user to choose a model to generate code
-with. as of now, users can choose many models from different companies.
-This list shows some available  models from different companies as
+with. as of now, users can choose many models from different providers.
+This list shows some available  models from different providers as
 of the time this markdown is being written:
 - Anthropic:
   - Claude Haiku 4.5
@@ -39,7 +39,7 @@ Now You should be ready to go.
 
 ### How to use GitHub Copilot
 A chat icon must have appeared on top bar of Visual Studio Code. clicking on it will open
-a chat tab. here you can type your prompt, access your previous chat, choose model,
+a chat tab. here you can type your prompt, access your previous sessions, choose model,
 choose agent type and choose the agent session.
 
 In the prompt field, you can attach some of the files available in the currently open
@@ -71,7 +71,7 @@ understanding the provided context, is generating code, etc.
 
 ## Generating Unit Tests with GitHub Copilot
 Now we can generate unit tests. Since it's not a model, and you choose the model and
-models differ by how large they are, what company made them, and how many tokens
+models differ by how large they are, what provider made them, and how many tokens
 they consume, I will try three different models with three different
 token modifiers. This includes:
 - OpenAI GPT-5.1-Codex-Mini (0.33x)

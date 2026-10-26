@@ -121,7 +121,7 @@ I noticed that the agents tried to run the tests which wasn't necessary at first
 therefore I added to the prompt to avoid running the tests.
 Files will be linked to the prompt.
 At last, this is the prompt given to the agents:
-> For these files, generate unit tests using Junit5.
+> For these files, generate unit tests using JUnit5.
 > Achieve decision coverage. Use "junit-5-skill" skill.
 > Concentration is only on units, so don't test integration and don't use mocking.
 > do not build and run the tests, only generate them.
@@ -141,11 +141,11 @@ You will find that the folder containing the tests has three sub folders.
 Some tests will fail.
 3. *tests correct* is a copy of *error free*; however, all the tests will pass.
 
-### How Coverage is calculated? Introduction to Jacoco
+### How Coverage is calculated? Introduction to JaCoCo
 After the tests were generated,
 I realized that calculating coverage for over ten thousand lines of code would take forever.
 So I looked up tools that calculate coverage.
-I found a tool called **Jacoco**.
+I found a tool called **JaCoCo**.
 It measures instructions and branch/decision coverage.
 Since I prompted the agents to achieve decision coverage, this is a perfect tool to assess the coverage.
 This tool can be added to a project dependencies as a plugin,
@@ -160,21 +160,25 @@ As a result, I fixed assertions that generated wrongly, but the generated test f
 Here is a demonstration of the output of this tool:
 
 The main page:
+
 ![jacoco_main.png](img/jacoco_main.png)
 
 A package overview:
+
 ![inside_package.png](img/inside_package.png)
 
 A file overview:
+
 ![file_overview.png](img/file_overview.png)
 
 Inside a file:
+
 ![inside_file.png](img/inside_file.png)
 
-#### Jacoco Weaknesses
-Firstly, *Jacoco* also counts deprecated methods for coverage. This is probably not good in practice.
+#### JaCoCo Weaknesses
+Firstly, *JaCoCo* also counts deprecated methods for coverage. This is probably not good in practice.
 
-Secondly, deep into the project, I realized that the *Jacoco* branch coverage isn't exactly decision coverage.
+Secondly, deep into the project, I realized that the *JaCoCo* branch coverage isn't exactly decision coverage.
 Consider this file:
 ```java
 public class BranchDemonstration {
@@ -261,7 +265,7 @@ public class BranchDemonstrationTest {
 Here is the coverage result of these tests:
 
 ![coverage.png](img/coverage.png)  
-As we can see, *Jacoco* is actually calculating MC/DC!
+As we can see, *JaCoCo* is actually calculating MC/DC!
 Which is unnecessary to an ordinary commercial project.
 It was too late to change the tool.
 However, I will try to find another tool that truly the required coverage in the next reports.
@@ -300,12 +304,12 @@ class CoverageDemonstrationTest {
     }
 }
 ```
-Here is the report of *Jacoco*:
+Here is the report of *JaCoCo*:
 ![statement.png](img/statement.png)  
 As I said, all statements are not covered, but all decisions are covered.
 There might be other ways too.
 I only noticed this one.
-Jacoco probably should have considered every catch block as a branch.
+JaCoCo probably should have considered every catch block as a branch.
 
 ### Each group analysis format
 First, I wrote problems that I ran into while generating tests for files in the group.
@@ -1339,7 +1343,7 @@ list of tests:
 5. throws on invalid JSON when strict
 
 5 tests for a mammoth of a file is not enough.  
-A utility method to instantiate JsonReader is created. The Junit way is to have a private JsonReader that is instantiated with a `@BeforeEach` method.
+A utility method to instantiate JsonReader is created. The JUnit way is to have a private JsonReader that is instantiated with a `@BeforeEach` method.
 
 Missing coverage:
 - setLenient(boolean) is not tested, however, it's deprecated.
@@ -1730,6 +1734,8 @@ However, the coverage is not acceptable.
 These local models can't cover a good portion of large files like `JsonReader`.
 The best decision coverage for `JsonReader` was 34%.
 Since models didn't perform significantly better in single mode, it's just better to use group mode, unfortunately.
+Unless, you are willing to pay double tokens or more for a 50% more coverage which is
+not a bad trade-off actually.
 
 ## Group 3: Reflection & Type System
 In the first attempt to generate test for `ReflectionHelper` with Gemma4,
@@ -3214,7 +3220,8 @@ It might not be worth it to spend more than triple tokens to get it.
 Gemma4 won in both single and group mode.
 However, considering the cost, in single mode, GPT-OSS should be used.
 In group mode, 20% more token usage might not worth the 7% difference in coverage.
-This group is one of the smallest, therefore, a satisfactory coverage is achieved.
+This group is one of the smallest, therefore, it isn't surprising that a satisfactory
+coverage is achieved in single mode.
 
 ## Group 5: Adapter infrastructure
 Gemma4 in group mode didn't generate tests for `MapTypeAdapterFactory`,
@@ -6639,7 +6646,6 @@ GPT-OSS had 205 compile errors and failed tests in total.
 More tests are generated in single mode. For both models, it's about twice compared to group mode.
 
 It is a good practice that these test names start with "test".
-This is also mentioned in the skill.
 We can see that Gemma4 did this more than GPT-OSS.
 Using private variables is also a good practice.
 However, they are not always necessary.
@@ -6650,7 +6656,6 @@ Gemma4 performed slightly better than GPT-OSS in both single mode and group mode
 Considering that Gemma4 used up 36% more tokens than GPT-OSS, GPT-OSS is preferred.
 For 3% more coverage, 36% more tokens is not worth it.
 Besides, even Gemma4 in single mode didn't reach a satisfactory coverage.
-We can see that GPT-OSS
 
 Do we use single mode or group mode for this project?
 Generated tests in single mode cover 15% more coverage than group mode.

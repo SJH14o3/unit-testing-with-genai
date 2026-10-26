@@ -1,5 +1,5 @@
 ## The Hard Project
-This is  keycloak, an open source identity and access management which
+This is keycloak, an open source identity and access management which
 users authenticate with Keycloak rather than individual applications. This means that your
 applications don't have to deal with login forms, authenticating users, and storing users.
 Keycloak provides user federation, strong authentication, user management, fine-grained authorization, and more.  
@@ -39,7 +39,7 @@ Many mocks were needed to unit test for this project.
 In total: (9264, 27984, 2686)
 
 LOC is calculated with a script that counts lines with a java statement.  
-Statements and decisions are given by Jacoco.
+Statements and decisions are given by JaCoCo.
 
 To understand how complex this project is, Gson's `pom.xml` contained three
 dependency tags, while keycloak has 175 in its main "pom.xml".

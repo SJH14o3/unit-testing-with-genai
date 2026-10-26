@@ -238,19 +238,22 @@ That included some of the keycloak modules.
 I wasn't sure if mocking should be used duo to sheer amount of dependencies.
 I was running GPT-OSS locally, and the context windows was set to 64K context.
 This will matter in later attempts.
-So I tried generating tests with and without mocking first.
+However, I found out after finishing this report that getting close to context window limit will cause hallucinations and errors.
+This is a low context size for such a heavy task.
+I admit I had originally done this to improve output speed.
+I tried generating tests with and without mocking first.
 
 #### First attempt: Build test using mock
 In the first attempt, GPT-OSS is given this prompt:
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
-> create unit tests using Junit5 and Mockito.
+> create unit tests using JUnit5 and Mockito.
 > Achieve decision coverage. Use "junit-5-skill" skill.
 > Make sure that all tests pass.
 
 The Agent only generated two tests which is very inadequate for this large file.
 It didn't verify that all tests pass.
 So I sent this prompt: "You didn't verify the tests".
-The agents then started to search for "AuthenticationFlowException" class which wasn't present in that folder.
+The agents then started to search for `AuthenticationFlowException` class which wasn't present in that folder.
 This was the point which I realized it might be needed to include the dependencies files in the project folder.
 
 I didn't run these tests since they contained many compile errors. Since there were only two tests,
@@ -258,7 +261,7 @@ the coverage was going to be very low, so I didn't bother to fix all those compi
 
 #### Second Attempt: Build Tests Without Mock
 So plan this time is to not mock the integrations:
-> For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java create unit tests using Junit5.
+> For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java create unit tests using JUnit5.
 > Achieve decision coverage. Use "junit-5-skill" skill.
 > Concentration is only on units, so don't test integration and don't use mocking.
 > Verify that all tests pass using "mvn clean verify" command.
@@ -280,10 +283,10 @@ At this point, I was really disappointed with generating tests without mocking u
 I add all the needed project files which would take some time.
 Therefore, I tried mocking again.
 I thought I should be more clear about running the tests,
-so I told the agent to verify the tests using "mvn clean verify" command.
+so I told the agent to verify the tests using `mvn clean verify` command.
 Agent should run this until all compilation errors are fixed and all tests are correct:
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
-> create unit tests using Junit5 and Mockito.
+> create unit tests using JUnit5 and Mockito.
 > Achieve decision coverage. Use "junit-5-skill" skill.
 > Verify that all tests pass using "mvn clean verify" command.
 > Don't stop until all compilation errors are fixed and all tests pass. 
@@ -299,7 +302,7 @@ So I decided to use plan mode first before generating the tests.
 #### Fourth Attempt: Plan before generation
 As I mentioned, let's plan the test generation. The agent is switched to plan mode.
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
-> plan out creating unit tests using Junit5 and Mockito.
+> plan out creating unit tests using JUnit5 and Mockito.
 > Plan many tests to obtain a high decision coverage.
 
 The agent planned about 17 tests.
@@ -324,7 +327,7 @@ I admit this was not really the correct approach.
 I used plan mode at the beginning again.
 There is no way that this model can generate good tests in one go:
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
-> plan out creating unit tests using Junit5. Use "junit-5-skill" skill.
+> plan out creating unit tests using JUnit5. Use "junit-5-skill" skill.
 > Concentration is only on units, so don't test integration and don't use mocking.
 > Plan many tests to obtain a high decision coverage for this file.
 
@@ -361,7 +364,7 @@ it said that LSP will be used when files are read.
 
 This prompt was given to the model:
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
-> plan out creating unit tests using Junit5 and Mockito.
+> plan out creating unit tests using JUnit5 and Mockito.
 > Use "junit-5-skill" skill.
 > Plan many tests to obtain a high decision coverage.
 
@@ -391,7 +394,7 @@ I also thought since last time the model said it wasn't possible to generate a
 full and exhaustive set of unit tests,
 I changed high coverage to a satisfactory coverage. Still, 80% decision coverage is what I'm aiming for.
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
-> create unit tests using Junit5 and Mockito. Aim for a satisfactory decision coverage.
+> create unit tests using JUnit5 and Mockito. Aim for a satisfactory decision coverage.
 > Use "junit-5-skill" skill. Verify that all tests pass using "mvn clean verify" command.>
 Don't stop until all compilation errors are fixed and all tests pass. 
 
@@ -415,7 +418,7 @@ so instead of using a cloud server which was the default option, I tried running
 I also prompted the agent to plan the implementation is multiple stages.
 
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java 
-> plan out creating unit tests using Junit5 and Mockito.Use "junit-5-skill" skill.
+> plan out creating unit tests using JUnit5 and Mockito.Use "junit-5-skill" skill.
 > Plan many tests to obtain a satisfactory decision coverage.
 > The implementation will be done in multiple stages, so plan these stages as well.
 
@@ -444,7 +447,7 @@ I disabled LSP, since I didn't notice any benefit.
 In fact, it was causing more trouble and token usage.
 This is the prompt given:
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
-> plan out creating unit tests using Junit5 and Mockito.
+> plan out creating unit tests using JUnit5 and Mockito.
 > Use "junit-5-skill" skill. Plan many tests to obtain a satisfactory decision coverage.
 > The implementation will be done in multiple stages, so plan these stages as well.
 > Remember that you should avoid fixing the errors LSP determines. 
@@ -456,7 +459,7 @@ I decided to start a new session.
 
 #### Eleventh Attempt: LSP Disabled, Definite Stages.
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
-> plan out creating unit tests using Junit5 and Mockito. Use "junit-5-skill" skill.
+> plan out creating unit tests using JUnit5 and Mockito. Use "junit-5-skill" skill.
 > Plan many tests to obtain a satisfactory decision coverage.
 > The implementation will be done in multiple stages (max 5 stages), so plan these stages as well.
 
@@ -468,7 +471,7 @@ In the next attempt, all three MCP servers I have introduced will be used.
 
 #### Twelfth Attempt: MCP Servers Enabled.
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
-> plan out creating unit tests using Junit5 and Mockito.
+> plan out creating unit tests using JUnit5 and Mockito.
 > Use "junit-5-skill" skill. Use "context7-mcp" skill if you need to fetch information about dependencies.
 > Plan many tests to obtain a satisfactory decision coverage.
 > The implementation will be done in five stages, so plan these stages as well.
@@ -484,7 +487,7 @@ I decided to add more clarification to the prompt, so agent will get to work rig
 
 #### Thirteenth Attempt: MCP Servers Enabled & More Clarification
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
-> plan out creating unit tests using Junit5.
+> plan out creating unit tests using JUnit5.
 > Use real instances of dependencies.
 > You will implement based on this plan later on.
 > Use "junit-5-skill" skill.
@@ -506,7 +509,7 @@ This does increase token usage for sure, but I believe it is worth it.
 
 #### Fourteenth Attempt: Mock Only When Needed.
 > For @src/main/java/org/keycloak/authentication/AuthenticationProcessor.java ,
-> plan out creating unit tests using Junit5 and Mockito.
+> plan out creating unit tests using JUnit5 and Mockito.
 > You will implement based on this plan later on.
 > Use "junit-5-skill" skill. Use "context7-mcp" skill if you need to fetch information about dependencies.
 > I don't have any particular branch or concrete scenario to test in mind.
@@ -528,7 +531,7 @@ After all of these attempts, I had finally found an excellent flow.
 
 ### Prompts Given to Models to Generate Test
 To generate the initial plan, this prompt is given to the agent in plan mode:
-> For @[file] , plan out creating unit tests using Junit5 and Mockito.
+> For @[file] , plan out creating unit tests using JUnit5 and Mockito.
 > You will implement based on this plan later on.
 > Use "junit-5-skill" skill.
 > Use "context7-mcp" skill if you need to fetch information about dependencies. 
@@ -538,7 +541,7 @@ To generate the initial plan, this prompt is given to the agent in plan mode:
 > If it wasn't, use a simple mock or stub.
 > Since this file is large and complex,
 > the implementation of tests will be done in five stages, so plan these stages as well.
-> Generate tests for each stages in separate test files.
+> Generate tests for each stage in separate test files.
 > The repository has been indexed with codebase-memory.
 > Test directory exist but there are no tests.
 
@@ -557,13 +560,13 @@ Then, this prompt is given 2 times in build mode:
 
 ## How Coverage is Calculated
 Our focus again is on decision coverage.
-Jacoco is a really helpful tool, but it was not showing me decision coverage.
+JaCoCo is a really helpful tool, but it was not showing me decision coverage.
 I decided to try another tool called "OpenClover"
 
 ### Introduction to OpenClover
 OpenClover is a free and open-source code coverage tool for Java, Groovy, and AspectJ.
 Based on Atlassian Clover.
-Like Jacoco, you can generate an html report of coverage by building the project.
+Like JaCoCo, you can generate an html report of coverage by building the project.
 It also generates an xml file containing the missing statements and branches.
 This will be very useful to calculate raw decision coverage.
 The main reason I am using it is for showing if the two outcomes of a decision point like an
@@ -605,7 +608,7 @@ The number to the right of number of a line shows how many times that line of co
 A method is not entered
 
 Turns out these coverage tools measure the complexity of a file differently.
-For example, Jacoco reported that `UserAdapter` has 1250 statements, while OpenClover reported 263.
+For example, JaCoCo reported that `UserAdapter` has 1250 statements, while OpenClover reported 263.
 As I had mentioned, these tools also calculate decision differently.
 For LOC, I created a straight-forward python script to count lines that are non-white space and
 are not just comment.
@@ -642,12 +645,12 @@ This prompt was given to stronger models in a new session:
 > Some unit tests were created for @[file path] but some of their tests won't pass.
 > Try to fix these.
 > The project has been indexed with codebase-memory.
-> Try to make these change have minimum impact on coverage;
+> Try to make these changes have minimum impact on coverage;
 > For example, reverse failed assertions, or change wrongly expected values to the received values.
 > Don't stop until all tests pass.
 > Many of the tests fail because of incomplete mocking of method calls.
 > Failed tests are in @[test files containing the failed tests].
-> Errors and failures are [errors and failures list by `mvn clean verify` command].
+> Errors and failures are [errors and failures listed by `mvn clean verify` command].
 
 One main goal is to make these fixes have minimum effect on coverage.
 I specifically gave the failed test files, errors, and failures to reduce token usage.
@@ -921,7 +924,6 @@ generate test with higher coverage.
 With all these 7 stages, the token window was at 55,611 tokens.
 
 #### GPT-OSS
-##### Initial Implementation
 ##### Initial Implementation Plan
 ###### Stage 1: Object life‑cycle & trivial helpers
 - set/get boilerplate (browserFlow, session, connection, uriInfo, flowId/flowPath, client, realm, eventBuilder, request).
@@ -2070,12 +2072,11 @@ GPT-OSS missed many planned tests. Therefore, total tests are much lower than Ge
 ### ModelToRepresentation
 This file has 1,555 LOC, 74 methods, 887 statements, and 188 branches.
 
+#### Gemma4
 In the first attempt to generate a plan, the model got stuck in a loop in which it was just printing the plan, and
 it was adding a minor thing to it every time. After some minutes, the model stopped without the final plan.
 This used 73,292 input and 1,334 output tokens. I started a new session and I gave the initial prompt again.
 This time, nothing went wrong.
-
-#### Gemma4
 ##### Initial Implementation Plan
 ###### Stage 1: Groups & Roles
 * `buildGroupPath()`
@@ -4148,7 +4149,7 @@ Gemma4 clearly wins again. Less token usage thanks to caching and also more cove
 Gemma4 attained satisfactory coverage but GPT-OSS did not. GPT-OSS always generates much fewer tests.
 
 ## Aggregated Result
-In total, there are 9264 LOC, 27984 statements, and 2686 decisions (given by Jacoco and LOC script).  
+In total, there are 9264 LOC, 27984 statements, and 2686 decisions (given by JaCoCo and LOC script).  
 In total, there are 11840 LOC, 5148 statements, and 1922 decisions (given by OpenClover).
 
 | Title                            |  Gemma4   |  GPT-OSS   |

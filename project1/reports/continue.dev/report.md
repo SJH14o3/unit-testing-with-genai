@@ -89,7 +89,7 @@ that model is present. After filling all fields, you can click on the connect bu
 will update the config file. you could also do all of this yourself in the config file.  
 The added model now can be selected.
 
-#### Linking something
+#### Linking file/context
 User can attach files, images, etc. to the AI chatbot either by clicking "@" button or
 typing "@" in the chat box. User could link files, images (if the selected model supports it),
 Git diff, Terminal (Referencing last terminal command), Problems (Problems in the current
@@ -872,7 +872,7 @@ Two methods were generated that include:
 - a normal test
 - a non-existing file
 
-A non-Junit way of temporary directory is used.  
+A non-JUnit way of temporary directory is used.  
 We do run into exception thus we achieve MC/DC.
 
 #### NameSearch Unit
@@ -1162,7 +1162,7 @@ Two methods were generated that include:
 - a normal test
 - an empty file
 
-The Junit way of testing with temporary directory is not used.  
+The JUnit way of testing with temporary directory is not used.  
 We do not exception, thus we don't achieve statement coverage.  
 many edge cases like non-existing file are not covered.
 
@@ -1537,7 +1537,7 @@ Three methods were generated that include:
 - an empty file test
 - a non-existing file
 
-The Junit way of testing with temporary directory is not used.  
+The JUnit way of testing with temporary directory is not used.  
 We do run into exception, and we achieve MC/DC.  
 This has been the only model so far to cover both empty file and non-existing file.  
 It has written in binary to temporary files. this was unnecessary.  
